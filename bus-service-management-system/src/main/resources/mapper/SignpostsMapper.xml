@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.SignpostsMapper">
+
+    <insert id="registerSignpost" useGeneratedKeys="true" keyProperty="signpostId">
+        INSERT INTO "signposts" (
+        "bus_stop_id"
+        , "signpost_branch_number"
+        , "signpost_code"
+        , "signpost_name"
+        , "signpost_kana_name"
+        , "signpost_en_name"
+        , "signpost_sub_name"
+        , "address"
+        , "place_name"
+        , "signpost_desc"
+        , "signpost_url"
+        , "bus_stop_type"
+        , "platform_code"
+        , "available_flag"
+        , "latitude_longitude"
+        , "wheelchair_accessible_type"
+        , "arrival_point"
+        , "arrival_point_radius"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+        #{busStopId}
+        , #{signpostBranchNumber}
+        , #{signpostBranchCode}
+        , #{signpostName}
+        , #{signpostKanaName}
+        , #{signpostEnName}
+        , #{signpostSubName}
+        , #{address}
+        , #{placeName}
+        , #{signpostDesc}
+        , #{signpostUrl}
+        , #{busStopType}
+        , #{platformCode}
+        , #{availableFlag}
+        , #{latitudeLongitude}
+        , #{wheelchairAccessibleType}
+        , #{arrivalPoint}
+        , #{arrivalPointRadius}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateSignpost">
+        UPDATE "signposts"
+        SET "signpost_code"              = #{signpostBranchCode}
+        , "signpost_name"              = #{signpostName}
+        , "signpost_kana_name"         = #{signpostKanaName}
+        , "signpost_en_name"           = #{signpostEnName}
+        , "signpost_sub_name"          = #{signpostSubName}
+        , "address"                    = #{address}
+        , "place_name"                 = #{placeName}
+        , "signpost_desc"              = #{signpostDesc}
+        , "latitude_longitude"         = #{latitudeLongitude}
+        , "signpost_url"               = #{signpostUrl}
+        , "platform_code"              = #{platformCode}
+        , "available_flag"             = #{availableFlag}
+        , "wheelchair_accessible_type" = #{wheelchairAccessibleType}
+        , "arrival_point"              = #{arrivalPoint}
+        , "arrival_point_radius"       = #{arrivalPointRadius}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "del_flag"                   = 0
+        AND "signpost_id"                = #{signpostId}
+    </update>
+
+</mapper>

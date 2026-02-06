@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.CodeMasterMapper">
+
+    <select id="getCodeMasterIndex" resultType="codeMasterEntity">
+        SELECT "code_master_id"
+             , "code_name"
+             , "main_code"
+             , "sub_code"
+             , "code_key"
+             , "code_value"
+             , "code_text"
+          FROM "code_master"
+         WHERE "del_flag" = 0
+    </select>
+
+</mapper>

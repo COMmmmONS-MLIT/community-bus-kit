@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='運行実績管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${operationRecordsForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <form method="post" th:action="@{#}" class="form-horizontal">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>運行実績管理</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="form-group">
+                                        <label style="width: 150px" class="col-md-1 control-label ichiran-label"> <span class="badge badge-danger require-txt">必須</span>
+                                            <span class="form-item-name">路線</span>
+                                        </label>
+                                        <div class="col-md-9">
+                                            <select class="form-control select2" th:field="*{rosenId}" th:classappend="${#fields.hasErrors('rosenId')} ? 'error' : ''">
+                                                <option value="">------------</option>
+                                                <option th:each="line : ${lineList}" th:value="${line.rosenId}" th:text="${line.rosenName}"></option>
+                                            </select>
+                                            <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" class="text-danger"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-9">
+                                  <div class="form-group">
+                                      <label style="width: 150px" class="col-md-1 control-label ichiran-label"> <span class="badge badge-danger require-txt">必須</span>
+                                          <span class="form-item-name">抽出期間</span>
+                                      </label>
+                                      <div class="col-md-9">
+                                          <div style="display:flex; align-items:flex-start; gap:8px;">
+                                              <div style="display:flex; flex-direction:column; width:150px;">
+                                                  <div style="display:flex; align-items:center; gap:8px;">
+                                                      <input class="form-control w-auto" type="date" th:field="*{extractionStartDate}"
+                                                             max="9999-12-31" style="flex:1;" th:classappend="${#fields.hasErrors('extractionStartDate')} ? 'error' : ''" />
+                                                      <span>～</span>
+                                                  </div>
+                                                  <span th:if="${#fields.hasErrors('extractionStartDate')}" th:errors="*{extractionStartDate}" class="text-danger" style="margin-top:4px;"></span>
+                                              </div>
+                                              <div style="display:flex; flex-direction:column; width:150px;">
+                                                  <input class="form-control w-auto" type="date" th:field="*{extractionEndDate}" max="9999-12-31"
+                                                         th:classappend="${#fields.hasErrors('extractionEndDate')} ? 'error' : ''" />
+                                                  <span th:if="${#fields.hasErrors('extractionEndDate')}" th:errors="*{extractionEndDate}" class="text-danger" style="margin-top:4px;"></span>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-footer">
+                            <div style="display: flex;" class="pull-right">
+                                <button th:if="${downloadFlag}" type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
+                                        th:formaction="@{/record/operationRecords/downloadExcel}">
+                                    抽出する
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

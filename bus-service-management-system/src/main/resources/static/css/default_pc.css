@@ -1,0 +1,101 @@
+.row,
+.form-group{
+	display:flex;
+}
+
+.col-md-6 {
+    width: 50% !important;
+}
+
+.col-md-9{
+	width:70% !important;
+}
+select{
+	width:100% !important;
+	box-sizing:border-box;
+}
+
+select,
+.select2-hidden-accessible{
+	max-width:initial !important;
+}
+
+@media (min-width:992px) and (max-width:1200px){
+	.col-md-9{
+		width:55% !important;
+	}
+}
+@media (max-width:991px){
+	body{
+		overflow-x:auto;
+	}
+	.panel .panel-heading, .panel .panel-footer, .panel .panel-body{
+	width:100vw
+	}
+
+	.form-control {
+		max-width:170px !important;
+	}
+
+	.form-control span{
+		width:initial !important;
+	}
+
+	.col-md-6 .col-md-9{
+		width:70% !important;
+	}
+
+	.control-label{
+		max-width:80px !important;
+		width:80px !important;
+	}
+}
+
+@media (max-width:767px){
+
+	.form-control,
+	.col-md-1.control-label{
+		max-width:80px !important;
+		width:80px !important;
+	}
+}
+
+/** 追加 */
+.div-flex {
+	display: flex;
+}
+
+select#busServicesList{
+	width: auto !important;
+}
+
+select#searchBusServiceId{
+	width: auto !important;
+}
+
+select.cancelPolicyDetail{
+	width: auto !important;
+}
+
+.calendar-legend{
+	display:flex; flex-wrap:wrap; align-items:center;
+	gap:18px; margin:10px 0 14px; font-size:14px;
+}
+.calendar-legend .legend-item{
+	display:inline-flex; align-items:center; gap:8px; line-height:1;
+}
+
+.calendar-legend .legend-color{
+	--legend-size: 28px;
+	width: var(--legend-size);
+	height: var(--legend-size);
+	border: 1px solid #bbb;
+	border-radius: 4px;
+	box-sizing: border-box;
+	display:inline-block;
+}
+
+@media (max-width: 768px){
+	.calendar-legend{ gap:12px; }
+	.calendar-legend .legend-color{ --legend-size: 24px; }
+}

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.DaiyaRevisionsMapper">
+
+    <select id="countDaiyaRevisionForLine" resultType="java.lang.Long">
+        SELECT COUNT("daiya_revision_id")
+          FROM "daiya_revisions"
+         WHERE "del_flag" = 0
+           AND "rosen_id" = #{rosenId}
+    </select>
+
+    <select id="countDaiyaRevisionForLineRoute" resultType="java.lang.Long">
+        SELECT COUNT("dr"."daiya_revision_id")
+          FROM "daiya_revisions" "dr"
+          JOIN "bus_services" "bs"
+            ON "bs"."del_flag" = 0
+           AND "bs"."daiya_revision_id" = "dr"."daiya_revision_id"
+           AND "bs"."line_route_id" = #{lineRouteId}
+         WHERE "dr"."del_flag" = 0
+           AND "dr"."service_end_date" &gt; CAST(#{serviceEndDate} AS date)
+           AND "dr"."rosen_id" = #{rosenId}
+    </select>
+
+    <select id="getDaiyaRevisionsBySearch" resultType="DaiyaRevisionsDetailDto">
+          SELECT "a"."daiya_revision_id"
+               , "a"."daiya_revision_name"
+               , "a"."rosen_id"
+               , "a"."service_end_date"
+               , "a"."service_start_date"
+               , "b"."rosen_name"
+        <include refid="fromWhereBySearch"/>
+        ORDER BY "a"."service_start_date" DESC
+               , "b"."rosen_name"         ASC
+        LIMIT  #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+   <update id="updateDaiyaRevisionByCondition" parameterType="maint.entity.DaiyaRevisionsEntity">
+      WITH "target_revisions" AS (
+           SELECT "dr"."daiya_revision_id"
+                 ,"dr"."service_end_date"             AS "before_service_end_date"
+                 ,CAST(#{serviceEndDate}     AS DATE) AS "after_service_end_date"
+                 ,"dr"."service_start_date"           AS "before_service_start_date"
+                 ,CAST(#{serviceStartDate}   AS DATE) AS "after_service_start_date"
+           FROM "daiya_revisions" "dr"
+          WHERE "dr"."del_flag"           = 0
+            AND "dr"."rosen_id"           = #{rosenId}
+            AND "dr"."service_start_date" &lt;  CAST(#{serviceStartDate} AS DATE)
+            AND "dr"."service_end_date"   &gt;= CAST(#{serviceStartDate} AS DATE)
+      ),
+      "updated_revisions" AS (
+          UPDATE "daiya_revisions"
+             SET "service_end_date"       =  CAST(#{serviceEndDate} AS DATE) - INTERVAL '1 day'
+           WHERE "daiya_revision_id" IN (
+          SELECT "daiya_revision_id"
+            FROM "target_revisions"
+          )
+       RETURNING "daiya_revision_id","service_end_date"
+      ),
+      "target_bus_services" AS (
+          SELECT "bs"."bus_service_id"
+                ,"tr"."before_service_start_date"
+                ,"tr"."after_service_start_date"
+                ,"tr"."before_service_end_date"
+                ,"tr"."after_service_end_date"
+                ,"tr"."daiya_revision_id"
+           FROM "bus_services" "bs"
+           JOIN "target_revisions" "tr"
+             ON "bs"."del_flag"           = 0
+            AND "bs"."daiya_revision_id"  = "tr"."daiya_revision_id"
+      ),
+      "deleted_daily_daiyas" AS (
+          UPDATE "daily_bus_daiyas" "d"
+             SET "del_flag"               = "d"."daily_bus_daiya_id"
+            FROM "target_bus_services"   "tbs"
+           WHERE "d"."del_flag"           = 0
+             AND "d"."bus_service_id"     = "tbs"."bus_service_id"
+             AND "d"."service_date"   &gt;= CAST("tbs"."after_service_end_date" AS DATE)
+             AND "d"."service_date"   &lt;= CAST("tbs"."before_service_end_date" AS DATE)
+          RETURNING "daily_bus_daiya_id"
+      )
+      SELECT COUNT(*)
+          AS "updated_count"
+        FROM "deleted_daily_daiyas"
+    </update>
+
+     <update id="deleteCascadeByRosenAndStartDate" parameterType="maint.entity.DaiyaRevisionsEntity">
+      WITH "r" AS (
+        SELECT nextval(pg_get_serial_sequence('daiya_revisions', 'daiya_revision_id')) AS "daiya_revision_id"
+      ),
+      "target" AS (
+        SELECT "dr"."daiya_revision_id"
+          FROM "daiya_revisions" "dr"
+         WHERE "dr"."daiya_revision_id"       IN (SELECT "daiya_revision_id" FROM "r")
+           AND "dr"."rosen_id"                = #{rosenId}
+           AND "dr"."service_start_date"      &gt;= CAST(#{serviceStartDate} AS DATE)
+      ),
+      "upd_daily" AS (
+        UPDATE "daily_bus_daiyas" "dy"
+           SET "del_flag"                     =  "dy"."daily_bus_daiya_id"
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "dy"."del_flag"                = 0
+           AND EXISTS (
+             SELECT 1
+               FROM "bus_services" "bs"
+              WHERE "bs"."del_flag"           = 0
+                AND "bs"."bus_service_id"     = "dy"."bus_service_id"
+                AND "bs"."daiya_revision_id"  IN (SELECT "daiya_revision_id" FROM "target")
+           )
+      ),
+      "upd_detail" AS (
+        UPDATE "bus_daiyas" "bd"
+           SET "del_flag"                     = "bd"."bus_daiya_id"
+         <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "bd"."del_flag"                = 0
+           AND EXISTS (
+             SELECT 1
+               FROM "bus_services" "bs"
+              WHERE "bs"."del_flag"           = 0
+                AND "bs"."bus_service_id"     = "bd"."bus_service_id"
+                AND "bs"."daiya_revision_id"  IN (SELECT "daiya_revision_id" FROM "target")
+           )
+      ),
+      "upd_service" AS (
+        UPDATE "bus_services" "bs"
+           SET "del_flag"                     = "bs"."bus_service_id"
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "bs"."del_flag"                = 0
+           AND "bs"."daiya_revision_id"       IN (SELECT "daiya_revision_id" FROM "target")
+      )
+      UPDATE "daiya_revisions" "dr"
+         SET "del_flag"                       = "dr"."daiya_revision_id"
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+       WHERE "dr"."del_flag"                  = 0
+         AND "dr"."daiya_revision_id"         IN (SELECT "daiya_revision_id" FROM "target")
+    </update>
+
+    <update id="updateDaiyaRevisions">
+        UPDATE "daiya_revisions"
+           SET "rosen_id"            = #{rosenId}
+             , "daiya_revision_name" = #{daiyaRevisionName}
+             , "service_start_date"  = CAST(#{serviceStartDate} AS date)
+             , "service_end_date"    = CAST(#{serviceStartDate} AS date) - 1
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"            = 0
+           AND "daiya_revision_id"   = #{daiyaRevisionId}
+           AND "rosen_id"            = #{rosenId}
+           AND "service_end_date"    = DATE '9999-12-31'
+    </update>
+
+    <select id="getDaiyaRevisionsByPk" resultType="DaiyaRevisionsDetailDto">
+     SELECT "a"."daiya_revision_id"   AS "daiyaRevisionId"
+          , "a"."daiya_revision_name" AS "daiyaRevisionName"
+          , "a"."rosen_id"            AS "rosenId"
+          , "a"."service_end_date"    AS "serviceEndDate"
+          , "a"."service_start_date"  AS "serviceStartDate"
+          , "b"."rosen_name"          AS "rosenName"
+       FROM "daiya_revisions" "a"
+ INNER JOIN "lines" "b"
+         ON "b"."del_flag"            = 0
+        AND "b"."available_flag"      = 1
+        AND "a"."rosen_id"            = "b"."rosen_id"
+ INNER JOIN "agencies" "ag"
+         ON "ag"."del_flag"           = 0
+        AND "ag"."available_flag"     = 1
+        AND "b"."business_corp_id"    = "ag"."business_corp_id"
+      WHERE "a"."daiya_revision_id"   = #{id}
+        AND "a"."del_flag"            = 0
+      LIMIT 1
+    </select>
+
+    <select id="countRosenAvailableOnServiceStartDate" resultType="java.lang.Integer">
+      SELECT COUNT("rosen_id")
+        FROM "lines"
+       WHERE "del_flag"           = 0
+         AND "available_flag"     = 1
+         AND "rosen_id"           = #{rosenId}
+         AND "service_start_date" &lt;= CAST(#{serviceStartDate} AS DATE)
+         AND "service_end_date"   &gt;= CAST(#{serviceStartDate} AS DATE)
+    </select>
+
+    <select id="countDaiyaRevisions" resultType="java.lang.Long">
+        SELECT COUNT("a"."daiya_revision_id")
+        <include refid="fromWhereBySearch"/>
+    </select>
+
+    <insert id="registerDaiyaRevision" parameterType="maint.entity.DaiyaRevisionsEntity" useGeneratedKeys="true" keyProperty="daiyaRevisionId">
+INSERT INTO "daiya_revisions" (
+            "rosen_id"
+          , "daiya_revision_name"
+          , "service_start_date"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+            #{rosenId}
+          , #{daiyaRevisionName}
+          , CAST(#{serviceStartDate} AS date)
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <sql id="fromWhereBySearch">
+      FROM "daiya_revisions" "a"
+INNER JOIN "lines" "b"
+        ON "b"."del_flag"            = 0
+       AND "b"."available_flag"      = 1
+       AND "a"."rosen_id"            = "b"."rosen_id"
+INNER JOIN "agencies" "ag"
+        ON "ag"."del_flag"           = 0
+       AND "ag"."available_flag"     = 1
+       AND "ag"."business_corp_id"   = "b"."business_corp_id"
+     WHERE "a"."del_flag"            = 0
+     <if test="rosenId != null">
+       AND "a"."rosen_id"            = #{rosenId}
+     </if>
+     <if test="businessCorpId != null">
+       AND "ag"."business_corp_id"   = #{businessCorpId}
+     </if>
+     <choose>
+       <when test="serviceStartDate != null and serviceStartDate != ''">
+       AND CAST(#{serviceStartDate} AS date) &lt;= "a"."service_end_date"
+       </when>
+       <when test="serviceEndDate != null and serviceEndDate != ''">
+       AND CAST(#{serviceEndDate}   AS date) &gt;= "a"."service_start_date"
+       </when>
+     </choose>
+    </sql>
+    <!--路線選択時 便ダイヤ変更日取得ajax -->
+    <select id="getServiceStartDates" resultType="maint.dto.selectBox.DaiyaRevisionDto">
+        SELECT "l"."rosen_id"
+             , "d"."service_start_date"
+             , "d"."daiya_revision_id"
+          FROM "lines" "l"
+    INNER JOIN "daiya_revisions" "d"
+            ON "d"."del_flag"           = 0
+           AND "l"."rosen_id"           = "d"."rosen_id"
+    INNER JOIN "agencies" "a"
+            ON "a"."del_flag"           = 0
+           AND "a"."available_flag"     = 1
+           AND "l"."business_corp_id"   = "a"."business_corp_id"
+         WHERE "l"."del_flag"           = 0
+           AND "l"."available_flag"     = 1
+        <if test="businessCorpId != null">
+           AND "a"."business_corp_id"   = #{businessCorpId}
+        </if>
+         ORDER BY "d"."service_start_date" DESC
+    </select>
+
+    <select id="countRevisionActiveAfterDateByBusinessCorpId" parameterType="map" resultType="int">
+        SELECT COUNT(1)
+          FROM "daiya_revisions" "d"
+    INNER JOIN "lines" "l"
+            ON "l"."del_flag"              = 0
+           AND "l"."available_flag"        = 1
+           AND "l"."rosen_id"              = "d"."rosen_id"
+         WHERE "d"."del_flag"              = 0
+           AND "d"."daiya_revision_id"     = CAST(#{daiyaRevisionId} AS BIGINT)
+           AND "d"."service_start_date" &gt; CAST(#{baseDate} AS DATE)
+           AND "l"."business_corp_id"      = CAST(#{businessCorpId} AS BIGINT)
+    </select>
+</mapper>

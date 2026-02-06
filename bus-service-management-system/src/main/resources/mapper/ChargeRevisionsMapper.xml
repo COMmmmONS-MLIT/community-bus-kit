@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.ChargeRevisionsMapper">
+
+    <select id="countChargeRevisionsBySearch" resultType="java.lang.Long">
+        SELECT COUNT("cr"."charge_revision_id")
+        <include refid="fromWhereBySearch" />
+    </select>
+
+    <select id="getChargeRevisionsBySearch" resultType="ChargeRevisionDto">
+        SELECT "cr"."charge_revision_id"
+             , "cr"."revision_reason"
+             , "cr"."service_start_date"
+             , "l"."rosen_name"
+        <include refid="fromWhereBySearch" />
+      ORDER BY "cr"."service_start_date" desc
+             , "cr"."charge_revision_id"
+         LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <sql id="fromWhereBySearch">
+          FROM "charge_revisions" "cr"
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "cr"."rosen_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+         WHERE "cr"."del_flag"               = 0
+           AND "l"."business_corp_id"        = #{businessCorpId}
+        <if test="revisionReason != null and revisionReason != ''">
+           AND "cr"."revision_reason"     LIKE #{likeSearchRevisionReason}
+        </if>
+        <if test="rosenId != null and rosenId != ''">
+           AND "l"."rosen_id"                = #{rosenId}
+        </if>
+        <if test="serviceStartDate != null and serviceStartDate != ''">
+           AND "cr"."service_start_date" &gt;= CAST(#{serviceStartDate} AS date)
+        </if>
+        <if test="serviceEndDate != null and serviceEndDate != ''">
+          AND "cr"."service_end_date"    &lt;= CAST(#{serviceEndDate} AS date)
+        </if>
+    </sql>
+
+    <select id="getChargeRevisionsByRosenId" resultType="ChargeRevisionDto">
+        SELECT "cr"."charge_revision_id"
+             , "cr"."service_start_date"
+          FROM "charge_revisions" "cr"
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "cr"."rosen_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+         WHERE "cr"."del_flag"               = 0
+           AND "cr"."service_start_date" &lt;= CAST(#{serviceStartDate} AS date)
+           AND "cr"."service_end_date"   &gt;= CAST(#{serviceStartDate} AS date)
+           AND "l"."business_corp_id"        = #{businessCorpId}
+           AND "l"."rosen_id"                = #{rosenId}
+    </select>
+
+    <select id="countChargeRevisionsForLine" resultType="java.lang.Long">
+        SELECT COUNT("charge_revision_id")
+          FROM "charge_revisions"
+         WHERE "del_flag" = 0
+           AND "rosen_id" = #{rosenId}
+    </select>
+
+    <select id="getFareInfoList" resultType="maint.dto.integrate.gtfsReport.GtfsFareInfoDto">
+        SELECT "l"."rosen_code"                                     AS "rosenCode"
+             , "ag"."operation_company_no"                          AS "operationCompanyNo"
+             , "bs_from"."bus_stop_code"                            AS "busStopCodeFrom"
+             , "bs_to"."bus_stop_code"                              AS "busStopCodeTo"
+             , "lcd"."line_charge_detail_id"                        AS "lineChargeDetailId"
+             , COALESCE("lcd"."ic_price",  "lc"."uniform_ic_price") AS "icPrice"
+             , COALESCE("lcd"."line_charge","lc"."uniform_charge")  AS "lineCharge"
+             , "lc"."line_charge_division"                          AS "lineChargeDivision"
+             , "lc"."line_charge_id"                                AS "lineChargeId"
+             , "lc"."payment_method"                                AS "paymentMethod"
+             , "lc"."uniform_charge"                                AS "uniformCharge"
+             , "lc"."uniform_ic_price"                              AS "uniformIcPrice"
+             , "lc"."uniform_transfer_type"                         AS "uniformTransferType"
+             , "lr_from"."line_route_id"                            AS "lineRouteId"
+             , "lr_from"."line_route_code"                          AS "lineRouteCode"
+             , "rbs_from"."ride_alight_division"                    AS "rideAlightDivision"
+             , "sp_from"."signpost_branch_number"                   AS "signpostBranchNumberFrom"
+             , "sp_to"."signpost_branch_number"                     AS "signpostBranchNumberTo"
+             , "sp_from"."signpost_id"                              AS "signpostId"
+          FROM "charge_revisions"                                   AS "cr"
+    INNER JOIN "lines"                                              AS "l"
+            ON "l"."del_flag"                                        = 0
+           AND "l"."rosen_id"                                        = "cr"."rosen_id"
+    INNER JOIN "line_charges"                                       AS "lc"
+            ON "lc"."del_flag"                                       = 0
+           AND "lc"."charge_revision_id"                             = "cr"."charge_revision_id"
+    INNER JOIN "line_route_bus_stops"                               AS "lrbs_from"
+            ON "lrbs_from"."del_flag"                                = 0
+    INNER JOIN "line_routes"                                        AS "lr_from"
+            ON "lr_from"."del_flag"                                  = 0
+           AND "lr_from"."line_route_id"                             = "lrbs_from"."line_route_id"
+           AND "lr_from"."rosen_id"                                  = "l"."rosen_id"
+    INNER JOIN "line_bus_stops"                                     AS "rbs_from"
+            ON "rbs_from"."del_flag"                                 = 0
+           AND "rbs_from"."rosen_bus_stop_id"                        = "lrbs_from"."rosen_bus_stop_id"
+           AND "rbs_from"."rosen_id"                                 = "l"."rosen_id"
+    INNER JOIN "line_route_bus_stops"                               AS "lrbs_to"
+            ON "lrbs_to"."del_flag"                                  = 0
+           AND "lrbs_to"."line_route_id"                             = "lrbs_from"."line_route_id"
+           AND "lrbs_to"."stop_sequence"                          &gt; "lrbs_from"."stop_sequence"
+    INNER JOIN "line_bus_stops"                                     AS "rbs_to"
+            ON "rbs_to"."del_flag"                                   = 0
+           AND "rbs_to"."rosen_bus_stop_id"                          = "lrbs_to"."rosen_bus_stop_id"
+           AND "rbs_to"."rosen_id"                                   = "l"."rosen_id"
+     LEFT JOIN LATERAL (
+        SELECT "d".*
+          FROM "line_charge_details" "d"
+         WHERE "d"."del_flag"                                        = 0
+           AND "d"."line_charge_id"                                  = "lc"."line_charge_id"
+           AND (("d"."rosen_bus_stop_id_from"                        = "rbs_from"."rosen_bus_stop_id"
+               AND "d"."rosen_bus_stop_id_to"                        = "rbs_to"."rosen_bus_stop_id")
+                OR ("d"."rosen_bus_stop_id_from"                     = "rbs_to"."rosen_bus_stop_id"
+               AND "d"."rosen_bus_stop_id_to"                        = "rbs_from"."rosen_bus_stop_id"))
+         ORDER BY
+          CASE
+          WHEN "d"."rosen_bus_stop_id_from"                          = "rbs_from"."rosen_bus_stop_id"
+           AND "d"."rosen_bus_stop_id_to"                            = "rbs_to"."rosen_bus_stop_id"
+          THEN 0 ELSE 1
+           END LIMIT 1 ) AS "lcd" ON TRUE
+    INNER JOIN "signposts"                                          AS "sp_from"
+            ON "sp_from"."del_flag"                                  = 0
+           AND "sp_from"."signpost_id"                               = "lrbs_from"."signpost_id"
+    INNER JOIN "signposts"                                          AS "sp_to"
+            ON "sp_to"."del_flag"                                    = 0
+           AND "sp_to"."signpost_id"                                 = "lrbs_to"."signpost_id"
+    INNER JOIN "bus_stops"                                          AS "bs_from"
+            ON "bs_from"."del_flag"                                  = 0
+           AND "bs_from"."bus_stop_id"                               = "sp_from"."bus_stop_id"
+    INNER JOIN "bus_stops"                                          AS "bs_to"
+            ON "bs_to"."del_flag"                                    = 0
+           AND "bs_to"."bus_stop_id"                                 = "sp_to"."bus_stop_id"
+    INNER JOIN "agencies"                                           AS "ag"
+            ON "ag"."del_flag"                                       = 0
+           AND "ag"."available_flag"                                 = 1
+           AND "ag"."business_corp_id"                               = "l"."business_corp_id"
+         WHERE "cr"."del_flag"                                       = 0
+           AND "cr"."rosen_id" IN
+        <foreach collection="rosenIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+           AND "cr"."service_start_date"                         &lt;= CAST(#{targetDate} AS DATE)
+           AND "cr"."service_end_date"                           &gt;= CAST(#{targetDate} AS DATE)
+           AND (
+               "lcd"."line_charge_detail_id" IS NOT NULL
+            OR NOT EXISTS (
+                          SELECT 1
+                            FROM "line_charge_details"              AS "d"
+                           WHERE d."del_flag"                        = 0
+                             AND d."line_charge_id"                  = "lc"."line_charge_id"
+                          )
+               )
+      ORDER BY "lr_from"."line_route_id" ASC
+             , "lrbs_from"."stop_sequence" ASC
+             , "lrbs_to"."stop_sequence" ASC
+    </select>
+
+    <insert id="registerChargeRevision" useGeneratedKeys="true" keyProperty="rosenId">
+        INSERT INTO "charge_revisions" (
+               "rosen_id"
+             , "service_start_date"
+             , "service_end_date"
+             , "revision_reason"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{rosenId}
+             , CAST(#{serviceStartDate} AS date)
+             , CAST(#{serviceEndDate} AS date)
+             , #{revisionReason}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateServiceEndDate">
+        UPDATE "charge_revisions"
+           SET "service_end_date" = CAST(#{serviceStartDate} AS date)
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+      WHERE "del_flag"            = 0
+        AND "charge_revision_id"  = #{chargeRevisionId}
+    </update>
+
+    <update id="deleteChargeRevision">
+        UPDATE "charge_revisions"
+           SET "del_flag"           = #{chargeRevisionId}
+         <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"           = 0
+           AND "charge_revision_id" = #{chargeRevisionId}
+    </update>
+
+    <select id="existsValidRevisionWithLine" resultType="boolean">
+        SELECT CASE WHEN COUNT(*)         &gt; 0 THEN TRUE ELSE FALSE END
+          FROM "charge_revisions"           AS "rc"
+    INNER JOIN "lines"                      AS "l"
+            ON "l"."del_flag"               = 0
+           AND "l"."available_flag"         = 1
+           AND "l"."business_corp_id"       = CAST(#{businessCorpId} AS INTEGER)
+           AND "l"."rosen_id"               = "rc"."rosen_id"
+         WHERE "rc"."del_flag"              = 0
+           AND "rc"."service_start_date" &gt; CURRENT_DATE
+           AND "rc"."charge_revision_id"    = CAST(#{chargeRevisionId} AS INTEGER)
+    </select>
+
+</mapper>

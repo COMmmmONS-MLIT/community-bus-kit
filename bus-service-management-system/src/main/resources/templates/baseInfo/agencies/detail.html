@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{common/layout}" th:with="title='事業者管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${displayForm}">
+	<!-- PAGE CONTENT WRAPPER -->
+	<div class="page-content-wrap">
+		<div class="row">
+			<div class="col-md-12">
+				<form method="post" class="form-horizontal" th:action="@{/baseInfo/agencies/detail/confirm/}">
+					<input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+					<input type="hidden" name="businessCorpId" th:value="*{businessCorpId}">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">
+								<strong th:text="事業者__*{dispMode.text}__">事業者登録</strong>
+							</h3>
+						</div>
+						<!-- START メッセージ表示部 -->
+						<div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+						<div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+						<div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+						<!-- END メッセージ表示部 -->
+						<div class="panel-body">
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">事業者名・<br>自治体名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{name}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('name')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">事業者名・<br>自治体表示名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{dispName}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('dispName')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('dispName-help', this)" style="margin-left: 6px;">GTFSデータに出力... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('dispName')}" th:errors="*{dispName}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="dispName-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											GTFSデータに出力されます。株式会社・都道府県名は不要。
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">事業者名・<br>自治体名 かな</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{kanaName}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('kanaName')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('kanaName')}" th:errors="*{kanaName}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">事業者名・<br>自治体名 英語</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{enName}" maxlength="200" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('enName')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('enName-help', this)" style="margin-left: 6px;">自治体の場合Tozai... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('enName')}" th:errors="*{enName}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="enName-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											自治体の場合Tozai City のように入力。
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">部署名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{departmentName}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('departmentName')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('departmentName')}" th:errors="*{departmentName}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">担当者名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{user}" maxlength="50" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('user')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('user')}" th:errors="*{user}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">電話番号</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{phoneNumber}" maxlength="15" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('phoneNumber')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('phoneNumber-help', this)" style="margin-left: 6px;">Googleマップに表示さ... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="phoneNumber-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											Googleマップに表示されます。問い合わせ先の電話番号。自治体の場合は、自治体の交通担当部署。
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">連絡先メール</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{mailAddress}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('mailAddress')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('mailAddress')}" th:errors="*{mailAddress}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">路線図、<br>時刻表URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{timeTableUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('timeTableUrl')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('timeTableUrl-help', this)" style="margin-left: 6px;">路線図や時刻表を調べ... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('timeTableUrl')}" th:errors="*{timeTableUrl}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="timeTableUrl-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											路線図や時刻表を調べることができるページ。事業者の場合、乗合バスのページ。自治体の場合、コミュニティバスの情報が掲載されたページ。リンク切れが生じにくいページを指定。
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">運賃情報URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{fareUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('fareUrl')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('fareUrl-help', this)" style="margin-left: 6px;">運賃表や乗車券制度が... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('fareUrl')}" th:errors="*{fareUrl}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="fareUrl-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											運賃表や乗車券制度が掲載されているページ。		</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">法人番号</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:value="*{operationCompanyNo}" name="operationCompanyNo" maxlength="13" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('operationCompanyNo')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('operationCompanyNo-help', this)" style="margin-left: 6px;">13桁の番号。法人番号... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('operationCompanyNo')}" th:errors="*{operationCompanyNo}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="operationCompanyNo-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											13桁の番号。法人番号公表サイト  <a
+												href="https://www.houjin-bangou.nta.go.jp/" target="_blank">https://www.houjin-bangou.nta.go.jp/</a>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">交通種別</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{transportationType}" maxlength="4" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('transportationType')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('transportationType')}" th:errors="*{transportationType}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">提供組織名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationName}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationName')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('providerOrganizationName-help', this)" style="margin-left: 6px;">データを公開責任を持... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationName')}" th:errors="*{providerOrganizationName}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="providerOrganizationName-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											データを公開責任を持つ組織（基本的には事業者・自治体となる）		</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">提供組織URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationUrl')} ? 'error' : ''" />
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('providerOrganizationUrl-help', this)" style="margin-left: 6px;">組織のトップページ（... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationUrl')}" th:errors="*{providerOrganizationUrl}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="providerOrganizationUrl-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											組織のトップページ（基本的には事業者・自治体のトップページ）		</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">提供組織連絡先メール</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationContactEmail}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationContactEmail')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationContactEmail')}" th:errors="*{providerOrganizationContactEmail}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">提供組織連絡先URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationContactUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationContactUrl')} ? 'error' : ''" />
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationContactUrl')}" th:errors="*{providerOrganizationContactUrl}" style="color:red" ></p>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">利用区分</span></label>
+								<div class="col-md-9">
+									<div class="col-md-12 radio">
+										<input type="radio" id="r-dsp1" name="availableFlag" th:checked="*{availableFlag} eq null or *{availableFlag} eq 1" value="1" />
+										<label class="inner-title" for="r-dsp1">利用中</label>
+										<input type="radio" id="r-dsp2" name="availableFlag" th:checked="*{availableFlag} eq 0" value="0" />
+										<label class="inner-title" for="r-dsp2">利用不可</label>
+										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('availableFlag-help', this)">この事業者を利用でき... ＞ </button>
+									</div>
+									<p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}" style="color:red" ></p>
+									<div class="form-group">
+										<div class="alert alert-info" id="availableFlag-help"
+											 style="display:none; margin:10px 0 0 15px; max-width:600px;">
+											この事業者を利用できるかどうかの区分
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group" th:if="${displayForm.dispMode} == ${T(maint.enums.DispMode).UPDATE_MODE} or ${displayForm.dispMode} == ${T(maint.enums.DispMode).CONTENT_MODE}">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">アクセスキー</span></label>
+								<div class="input-group col-md-10 div-flex" style="align-items: flex-end;">
+									[[*{accessKey}]]
+								</div>
+								<input type="hidden" name="accessKey" th:value="*{accessKey}">
+							</div>
+						</div>
+						<div class="panel-footer">
+							<input type="hidden" th:field="*{page}" />
+							<div class="pull-right">
+								<input type="button" value="戻る" class="btn btn-default"
+									   th:onclick="'location.href = \'/baseInfo/agencies/' + *{page} + '/\';'" />
+								<input type="submit" value="確認" class="btn btn-primary pull-right double-click" />
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- END PAGE CONTENT WRAPPER -->
+	<th:block th:insert="~{common/script :: common_script}"></th:block>
+	<script th:src="@{/js/operation/calendars/detail.js}"></script>
+</div>
+<!-- end: contents -->
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<div th:fragment="customDialog">
+    <div class="modal fade" id="info-modal">
+        <div class="modal-dialog" style="width: 50%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <strong id="alertTitle">タイトル</strong>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body ">
+                        <div style="text-align: center;">
+                            <span id="alertMessage" style="font-size: 12px; font-weight: bold;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div style="text-align: center" class="btn-set">
+                        <button id="modalConfirm" type="button" class="btn btn-danger double-click" data-dismiss="modal">YES</button>
+                        <button id="modalCancel" type="button" class="btn btn-primary" data-dismiss="modal">NO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="passChangeDialog">
+    <div class="modal fade" id="password-change-modal" data-backdrop="static">
+        <div class="modal-dialog" style="width: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <strong id="alertTitle">パスワード変更</strong>
+                    </h4>
+                    <div th:insert="~{common/message :: common_modal_message_form_success}" th:remove="tag"></div>
+                    <div th:insert="~{common/message :: common_modal_message_form_error}" th:remove="tag"></div>
+                </div>
+                <div class="modal-body">
+                    <div class="panel-body ">
+                        <div class="form-group">
+                            <span id="alertMessage" style="font-size: 12px; font-weight: bold;"></span>
+                        </div>
+                        <table class="table info-table">
+                            <tr style="height: 95px;">
+                                <th class="passInput">
+                                    <span class="absolute-mark">必須</span>
+                                    <span style="margin-left: 50px;">現パスワード</span>
+                                </th>
+                                <td><input type="password" name="currentPass" id="currentPass" class="form-control"
+                                    pattern="^[a-zA-Z0-9]*" maxlength="29" autocomplete="new-password"/>
+                                    <p style="display: block;" class="help-block text-danger">※英数字8文字以上30文字未満</p>
+                                </td>
+                            </tr>
+                            <tr style="height: 95px;">
+                                <th class="passInput">
+                                    <span class="absolute-mark">必須</span>
+                                    <span style="margin-left: 50px;">新パスワード</span>
+                                </th>
+                                <td><input type="password" name="newPass" id="newPass" class="form-control" pattern="^[a-zA-Z0-9]*" maxlength="29"
+                                    autocomplete="new-password" />
+                                <p style="display: block;" class="help-block text-danger">※英数字8文字以上30文字未満</p>
+                                </td>
+                            </tr>
+                            <tr style="height: 95px;">
+                                <th class="passInput">
+                                    <span class="absolute-mark">必須</span>
+                                    <span style="margin-left: 50px;">再確認パスワード</span>
+                                </th>
+                                <td><input type="password" name="confPass" id="confPass" class="form-control"
+                                    pattern="^[a-zA-Z0-9]*" maxlength="29" autocomplete="new-password" />
+                                <p style="display: block;" class="help-block text-danger">※英数字8文字以上30文字未満</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div style="text-align: center" class="btn-set">
+                        <a onclick="javascript:onChangePass();return false;" id="modalConfirm" class="btn btn-danger double-click">YES</a>
+                        <a onclick="javascript:onNoChangePass();return false;" id="modalCancel" class="btn btn-primary">NO</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="passReissueDialog">
+    <div class="modal fade" id="password-reissue-modal">
+        <div class="modal-dialog" style="width: 500px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <strong>パスワード再発行</strong>
+                    </h4>
+                </div>
+                <div th:insert="~{common/message :: common_modal_message_form_success}" th:remove="tag"></div>
+                <div th:insert="~{common/message :: common_modal_message_form_error}" th:remove="tag"></div>
+                <div class="modal-body">
+                    <div class="panel-body ">
+                        <div class="form-group">
+                            <span style="font-size: 12px; font-weight: bold;">
+                                パスワードを再発行し、メールにて送信します。<br />宜しいでしょうか。
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div style="text-align: center" class="btn-set">
+                        <button id="passwordReissueModalConfirm" type="button" class="btn btn-danger double-click"
+                                data-dismiss="modal">YES</button>
+                        <button id="passwordReissueModalCancel" type="button" class="btn btn-primary" data-dismiss="modal">NO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div th:fragment="construction">
+    <div class="modal fade" id="construction-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body" style="text-align: center; vertical-align: middle;">
+                    <h3>🚧仕様未確定 or 作業中🚧</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

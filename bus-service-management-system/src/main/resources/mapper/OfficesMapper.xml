@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.OfficesMapper">
+
+    <select id="getOfficesBySearch" resultType="OfficesDetailDto">
+   SELECT "o"."office_id"
+        , "o"."operating_company_id"
+        , "b"."operating_name"
+        , "o"."name"
+        , "o"."office_url"
+        , "o"."phone_number"
+        , "o"."available_flag"
+        <include refid="fromWhereBySearch"/>
+ ORDER BY "o"."office_id"
+    LIMIT #{displayNum}
+   OFFSET #{startRowNum}
+    </select>
+
+    <select id="getOfficesByPk" resultType="OfficesDetailDto">
+    SELECT "o"."office_id"
+         , "o"."operating_company_id"
+         , "b"."operating_name"
+         , "o"."name"
+         , "o"."office_url"
+         , "o"."phone_number"
+         , "o"."available_flag"
+      FROM "offices" "o"
+INNER JOIN "operating_companies" "b"
+        ON "b"."del_flag"             = 0
+       AND "b"."available_flag"       = 1
+       AND "b"."operating_company_id" = "o"."operating_company_id"
+INNER JOIN "agencies" "a"
+        ON "a"."del_flag"             = 0
+       AND "a"."available_flag"       = 1
+       AND "a"."business_corp_id"     = "b"."business_corp_id"
+     WHERE "o"."del_flag"             = 0
+       AND "a"."business_corp_id"     = #{businessCorpId}
+       AND "o"."office_id"            = #{officeId}
+  ORDER BY "o"."office_id"
+</select>
+
+    <select id="countOffices" resultType="java.lang.Long">
+        SELECT COUNT("o"."office_id")
+        <include refid="fromWhereBySearch"/>
+    </select>
+
+    <select id="countOfficeActiveWithCompany" resultType="int">
+        SELECT COUNT(1)
+          FROM "offices"                  AS "o"
+          JOIN "operating_companies"      AS "c"
+            ON "c"."operating_company_id" = "o"."operating_company_id"
+         WHERE "o"."del_flag"             = 0
+           AND "o"."available_flag"       = 1
+           AND "c"."del_flag"             = 0
+           AND "c"."available_flag"       = 1
+           AND "c"."business_corp_id"     = CAST(#{businessCorpId} AS INTEGER)
+           AND "o"."office_id"            = CAST(#{officeId} AS INTEGER)
+    </select>
+
+    <insert id="registerOffices" useGeneratedKeys="true" keyProperty="officeId">
+INSERT INTO "offices" (
+            "operating_company_id"
+           , "name"
+           , "office_url"
+           , "phone_number"
+           , "available_flag"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+VALUES (    #{operatingCompanyId}
+            , #{name}
+            , #{officeUrl}
+            , #{phoneNumber}
+            , #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateOffices">
+   UPDATE "offices"
+      SET "operating_company_id"   = #{operatingCompanyId}
+        , "name"                   = #{name}
+        , "office_url"             = #{officeUrl}
+        , "phone_number"           = #{phoneNumber}
+        , "available_flag"         = #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+   WHERE "del_flag"                = 0
+     AND "office_id"               = #{officeId}
+    </update>
+
+    <sql id="fromWhereBySearch">
+       FROM "offices" "o"
+ INNER JOIN "operating_companies" "b"
+         ON "b"."del_flag"                 = 0
+        AND "b"."available_flag"           = 1
+        AND "b"."operating_company_id"     = "o"."operating_company_id"
+ INNER JOIN "agencies" "a"
+         ON "a"."business_corp_id"         = "b"."business_corp_id"
+        AND "a"."del_flag"                 = 0
+        AND "a"."available_flag"           = 1
+      WHERE "o"."del_flag"                 = 0
+        AND "a"."business_corp_id"         = #{businessCorpId}
+        <if test="operatingCompanyId != null and operatingCompanyId != ''">
+        AND "o"."operating_company_id"     = #{operatingCompanyId}
+        </if>
+        <if test="name != null and name != ''">
+        AND "o"."name" LIKE #{likeName}
+        </if>
+        <if test="availableFlag != null">
+        AND "o"."available_flag"           = #{availableFlag}
+        </if>
+    </sql>
+</mapper>

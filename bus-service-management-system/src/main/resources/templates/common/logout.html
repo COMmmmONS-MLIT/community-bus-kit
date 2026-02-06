@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<div th:fragment="common_logout">
+	<div class="message-box animated fadeIn" id="mb-signout">
+		<div class="mb-container">
+			<div class="mb-middle">
+				<div class="mb-title">
+					<span class="fa fa-sign-out"> ログアウトしますか?</span>
+				</div>
+				<div class="mb-content"></div>
+				<div class="mb-footer">
+					<div class="pull-right">
+						<a href="/auth/logout" class="btn btn-success btn-lg">Yes</a>
+						<button class="btn btn-default btn-lg mb-control-close">No</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</html>

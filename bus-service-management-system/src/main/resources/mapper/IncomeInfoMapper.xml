@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.IncomeInfoMapper">
+
+    <select id="getImportIncomesBySearch" resultType="ImportIncomesDto">
+        SELECT "dbd"."daily_bus_daiya_id"
+             , "i"."income_info_id"
+             , "i"."passengers_count"
+             , "i"."cash_income"
+             , "i"."ic_amount"
+             , "i"."coupon_ticket"
+          FROM "daily_bus_daiyas" "dbd"
+          JOIN "bus_services" "bs"
+            ON "bs"."del_flag"               = 0
+           AND "bs"."bus_service_id"         = "dbd"."bus_service_id"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"               = 0
+           AND "dr"."daiya_revision_id"      = "bs"."daiya_revision_id"
+           AND "dr"."service_start_date" &lt;= CAST(#{serviceDate} AS DATE)
+           AND "dr"."service_end_date"   &gt;= CAST(#{serviceDate} AS DATE)
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "dr"."rosen_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+     LEFT JOIN "income_info" "i"
+            ON "i"."del_flag"                = 0
+           AND "i"."daily_bus_daiya_id"      = "dbd"."daily_bus_daiya_id"
+         WHERE "dbd"."del_flag"              = 0
+           AND "dbd"."sales_cancel_flg"      = 0
+           AND "dbd"."operation_cancel_flg"  = 0
+           AND "dbd"."service_date"          = CAST(#{serviceDate} AS DATE)
+           AND "bs"."bus_service_id"         = #{busServiceId}
+           AND "l"."business_corp_id"        = #{businessCorpId}
+           AND "l"."rosen_id"                = #{rosenId}
+    </select>
+
+    <insert id="registerIncomeInfo" useGeneratedKeys="true" keyProperty="incomeInfoId">
+        INSERT INTO "income_info" (
+               "daily_bus_daiya_id"
+             , "passengers_count"
+             , "regular_count"
+             , "cash_income"
+             , "coupon_ticket"
+             , "ic_amount"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{dailyBusDaiyaId}
+             , #{passengersCount}
+             , #{regularCount}
+             , #{cashIncome}
+             , #{couponTicket}
+             , #{icAmount}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateIncomeInfo">
+        UPDATE "income_info"
+           SET "daily_bus_daiya_id" = #{dailyBusDaiyaId}
+             , "passengers_count"   = #{passengersCount}
+             , "regular_count"      = #{regularCount}
+             , "cash_income"        = #{cashIncome}
+             , "coupon_ticket"      = #{couponTicket}
+             , "ic_amount"          = #{icAmount}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"           = 0
+           AND "income_info_id"     = #{incomeInfoId}
+    </update>
+
+</mapper>

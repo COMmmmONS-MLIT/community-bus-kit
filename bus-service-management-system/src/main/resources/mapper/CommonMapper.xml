@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.CommonMapper">
+
+    <sql id="insertCommonItemColumns">
+        , "created_user"
+        , "created_at"
+        , "updated_user"
+        , "updated_at"
+    </sql>
+
+    <sql id="insertCommonValues">
+        , #{session.userId}
+        , CURRENT_TIMESTAMP
+        , #{session.userId}
+        , CURRENT_TIMESTAMP
+    </sql>
+
+    <sql id="insertCommonItemValues">
+        , #{item.session.userId}
+        , CURRENT_TIMESTAMP
+        , #{item.session.userId}
+        , CURRENT_TIMESTAMP
+    </sql>
+
+    <sql id="updateCommonItemColumns">
+        , "updated_user" = #{entity.session.userId}
+        , "updated_at"   = CURRENT_TIMESTAMP
+    </sql>
+    
+    <sql id="updateCommon">
+        , "updated_user" = #{session.userId}
+        , "updated_at"   = CURRENT_TIMESTAMP
+    </sql>
+
+    <sql id="deleteCommon">
+        , "updated_user" = #{session.userId}
+        , "updated_at"   = CURRENT_TIMESTAMP
+    </sql>
+    <sql id="insertCommon">
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+    </sql>
+
+    <update id="commit">
+        COMMIT
+    </update>
+
+</mapper>

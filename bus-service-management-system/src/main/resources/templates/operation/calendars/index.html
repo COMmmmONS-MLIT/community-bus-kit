@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='運行カレンダー管理'">
+<body>
+    <!-- start: contents -->
+    <div layout:fragment="main_contents" th:object="${calendarsSearchForm}">
+        <!-- PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrap">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <form method="post" th:action="@{#}" class="form-horizontal">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <strong>運行カレンダー一覧</strong>
+                                </h3>
+                            </div>
+                            <!-- START メッセージ表示部 -->
+                            <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                            <!-- END メッセージ表示部 -->
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label" style="width: 200px;"><span class="badge badge-danger"></span><span class="form-item-name">運行カレンダー区分</span></label>
+                                    <div class="col-md-9">
+                                        <div class="input-group col-md-12 div-flex">
+                                            <input type="text" th:field="*{calendarType}" class="form-control" maxlength="60" style="width: 300px;"
+                                                   th:classappend="${#fields.hasErrors('calendarType')} ? 'error' : ''" />
+                                            <div><span class="help-block text-danger" style="width: 100px;">※部分一致</span></div>
+                                        </div>
+                                        <span th:if="${#fields.hasErrors('calendarType')}" th:errors="*{calendarType}" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label" style="width: 200px;"><span class="badge badge-danger"></span><span class="form-item-name">利用区分</span></label>
+                                    <div class="col-md-9">
+                                        <div class="radio col-md-12">
+                                            <th:block th:each="availableFlag : ${T(maint.enums.UsageDivision).values()}">
+                                                <input type="radio" name="availableFlag" th:id="availableFlag__${availableFlag.value}__"
+                                                       th:value="${availableFlag.value}" th:checked="${availableFlag.value} eq *{availableFlag}" />
+                                                <label class="inner-title" th:for="availableFlag__${availableFlag.value}__" th:text="${availableFlag.text}"></label>
+                                            </th:block>
+                                        </div>
+                                        <span th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label" style="width: 200px; margin-top: -5px;"><span class="badge badge-danger"></span><span class="form-item-name">曜日区分</span></label>
+                                    <div class="col-md-9">
+                                        <div class="weekday-row col-md-12"
+                                             style="display:flex; flex-wrap:wrap; gap:14px; align-items:center; line-height:1;">
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="sunday" th:field="*{sunday}" style="margin:0; vertical-align:middle;" />
+                                                <label for="sunday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">日曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="monday" th:field="*{monday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="monday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">月曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="tuesday" th:field="*{tuesday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="tuesday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">火曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="wednesday" th:field="*{wednesday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="wednesday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">水曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="thursday" th:field="*{thursday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="thursday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">木曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="friday" th:field="*{friday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="friday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">金曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="saturday" th:field="*{saturday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="saturday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">土曜</label>
+                                            </span>
+                                            <span style="display:inline-flex; align-items:center; gap:6px; height:28px;">
+                                                <input type="checkbox" id="holiday" th:field="*{holiday}" style="margin:0; vertical-align:middle;"/>
+                                                <label for="holiday" style="margin:0; line-height:1.2; font-weight:400; vertical-align:middle;">祝日</label>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-footer">
+                                <button th:if="${writeFlag}" type="button" class="btn btn-success btn-default btn-submit" onclick="location.href='/operation/calendars/detail/'">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>新規登録
+                                </button>
+                                <div style="display: flex;" class="pull-right">                                    
+                                    <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/operation/calendars/}">
+                                        <i class="fa fa-search" aria-hidden="true"></i>検索
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr role="row">
+                                        <th style="width: 60px;">ID</th>
+                                        <th>運行カレンダー区分</th>
+                                        <th>運行曜日（月～日、祝日）</th>
+                                        <th>利用区分</th>
+                                        <th style="width: 80px;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody th:if="${pager} neq null" style="word-break: break-all;">
+                                    <tr role="row" class="odd" th:each="calendar : ${pager.list}">
+                                        <td th:text="${calendar.calendarId}">1</td>
+                                        <td th:text="${calendar.calendarType}">calendarType</td>
+                                        <td th:text="${
+                                            calendar.weekDesignatableFlag == 1 ?
+                                              '日曜：' + ((calendar.sunday  == true or calendar.sunday  == 1) ? '〇　' : '×　')
+                                            + ' 月曜：' + ((calendar.monday  == true or calendar.monday  == 1) ? '〇　' : '×　')
+                                            + ' 火曜：' + ((calendar.tuesday == true or calendar.tuesday == 1) ? '〇　' : '×　')
+                                            + ' 水曜：' + ((calendar.wednesday== true or calendar.wednesday== 1) ? '〇　' : '×　')
+                                            + ' 木曜：' + ((calendar.thursday== true or calendar.thursday== 1) ? '〇　' : '×　')
+                                            + ' 金曜：' + ((calendar.friday  == true or calendar.friday  == 1) ? '〇　' : '×　')
+                                            + ' 土曜：' + ((calendar.saturday== true or calendar.saturday== 1) ? '〇　' : '×　')
+                                            + ' 祝日：' + ((calendar.holiday == true or calendar.holiday == 1) ? '〇'   : '×')
+                                            : '指定なし'
+                                          }">
+                                        </td>
+                                        <td th:text="${calendar.availableFlag}? '利用中':'利用不可'">利用中</td>
+                                        <td>
+                                            <form th:if="${writeFlag}" method="post" th:action="@{/operation/calendars/detail/}">
+                                                <input type="hidden" name="calendarId" th:value="${calendar.calendarId}" />
+                                                <input type="hidden" name="page" th:value="*{page}" />
+                                                <button type="submit" class="btn btn-info btn-sm double-click">変更</button>
+                                            </form>
+                                            <form th:if="${!writeFlag}" method="post" th:action="@{/operation/calendars/detail/content/}">
+                                                <input type="hidden" name="calendarId" th:value="${calendar.calendarId}" />
+                                                <input type="hidden" name="page" th:value="*{page}" />
+                                                <button type="submit" class="btn btn-info btn-sm double-click">確認</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div th:replace="~{common/paginate :: pagination('/operation/calendars/',${pager})}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

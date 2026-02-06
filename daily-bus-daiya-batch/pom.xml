@@ -1,0 +1,207 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>jp.co.bus.batch</groupId>
+    <artifactId>create-daily-bus-daiya-batch</artifactId>
+    <version>1.0.0</version>
+
+    <repositories>
+        <repository>
+            <id>in.house</id>
+            <url>https://nexus.willsmart.co.jp/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <slf4j.version>1.7.30</slf4j.version>
+        <logback.version>1.2.3</logback.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>LOCAL</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <project.name>${project.artifactId}</project.name>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <!-- Log settings -->
+                <sql.log.out>true</sql.log.out>
+                <log.base.dir>/tmp</log.base.dir>
+                <log.max.history>1</log.max.history>
+                <log.level>debug</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="STDOUT" />]]></log.appender.ref>
+            </properties>
+        </profile>
+        <profile>
+            <id>MOCK</id>
+            <properties>
+                <project.name>${project.artifactId}</project.name>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <!-- Log settings -->
+                <sql.log.out>true</sql.log.out>
+                <log.base.dir>/opt/batch/${project.artifactId}/log</log.base.dir>
+                <log.max.history>60</log.max.history>
+                <log.level>debug</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="FILE" /><appender-ref ref="ERROR_FILE" />]]></log.appender.ref>
+            </properties>
+        </profile>
+        <profile>
+            <id>STG</id>
+            <properties>
+                <project.name>${project.artifactId}</project.name>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <!-- Log settings -->
+                <sql.log.out>true</sql.log.out>
+                <log.base.dir>/opt/batch/${project.artifactId}/log</log.base.dir>
+                <log.max.history>60</log.max.history>
+                <log.level>debug</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="FILE" /><appender-ref ref="ERROR_FILE" />]]></log.appender.ref>
+            </properties>
+        </profile>
+        <profile>
+            <id>PROD</id>
+            <properties>
+                <project.name>${project.artifactId}</project.name>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <!-- Log settings -->
+                <sql.log.out>true</sql.log.out>
+                <log.base.dir>/opt/batch/${project.artifactId}/log</log.base.dir>
+                <log.max.history>90</log.max.history>
+                <log.level>info</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="FILE" /><appender-ref ref="ERROR_FILE" />]]></log.appender.ref>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.30</version>
+        </dependency>
+        <!-- Log -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <!-- /Log -->
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ses</artifactId>
+            <version>1.12.80</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <resources>
+            <!-- 「src/main/resources」の設定ファイルを「src/build/config」のファイルで置換するので順番を変えないでください -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/build/config</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>jp.co.bus.batch.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

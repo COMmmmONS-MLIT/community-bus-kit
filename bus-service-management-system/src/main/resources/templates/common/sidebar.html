@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<th:block th:fragment="common_side_bar">
+	<th:block th:each="topMenu : ${T(maint.enums.Menu).getTopMenuValues(#authentication.principal.userPermList)}">
+		<li th:if="${#authentication.principal.hasSubMenuPerm(topMenu)}" class="xn-openable" th:classappend="${T(maint.enums.Menu).isActiveTopMenu(topMenu, servletPath)} ? 'active' : ''">
+			<a href="#">
+				<i th:class="${topMenu.function}" aria-hidden="true"></i>
+				<span class="xn-text" th:text="${topMenu.name}">Main Menu</span>
+			</a>
+			<ul>
+				<li th:each="subMenu : ${T(maint.enums.Menu).getSubMenu(topMenu, #authentication.principal.userPermList)}" th:if="${#authentication.principal.hasPerm(subMenu)}" th:classappend="${T(maint.enums.Menu).isActiveSubMenu(subMenu, servletPath)} ? 'active' : ''">
+					<a th:href="${subMenu.uri}">
+						<span class="fa fa-pencil-square-o"></span>
+						<span th:text="${subMenu.name}">Sub Menu</span>
+					</a>
+				</li>
+			</ul>
+		</li>
+	</th:block>
+</th:block>
+
+</html>

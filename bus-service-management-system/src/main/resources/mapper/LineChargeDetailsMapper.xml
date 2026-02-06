@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.LineChargeDetailsMapper">
+
+    <select id="getLineChargeDetailsByRevisionId" resultType="LineChargeDetailDto">
+        SELECT "l"."rosen_id"
+             , "l"."rosen_name"
+             , "lc"."line_charge_id"
+             , "lc"."payment_method"
+             , "lc"."line_charge_division"
+             , "lc"."uniform_charge"
+             , "lc"."uniform_ic_price"
+             , "lc"."uniform_transfer_type"
+             , "lbs_board"."rosen_bus_stop_id"     AS "rosen_bus_stop_id_from"
+             , "lbs_alight"."rosen_bus_stop_id"    AS "rosen_bus_stop_id_to"
+             , "bs_board"."bus_stop_name"          AS "rosen_bus_stop_name_from"
+             , "bs_alight"."bus_stop_name"         AS "rosen_bus_stop_name_to"
+             , "lcd"."line_charge_detail_id"
+             , "lcd"."line_charge"
+             , "lcd"."ic_price"
+             , "cr"."charge_revision_id"
+             , "cr"."service_start_date"
+             , "cr"."service_end_date"
+             , "cr"."revision_reason"
+          FROM "charge_revisions" "cr"
+          JOIN "lines" "l"
+            ON "l"."del_flag"                      = 0
+           AND "l"."available_flag"                = 1
+           AND "l"."rosen_id"                      = "cr"."rosen_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                      = 0
+           AND "a"."available_flag"                = 1
+           AND "a"."business_corp_id"              = "l"."business_corp_id"
+          JOIN "line_bus_stops" "lbs_board"
+            ON "lbs_board"."del_flag"              = 0
+           AND "lbs_board"."ride_alight_division"  != 1
+           AND "lbs_board"."rosen_id"              = "l"."rosen_id"
+          JOIN "line_bus_stops" "lbs_alight"
+            ON "lbs_alight"."del_flag"             = 0
+           AND "lbs_alight"."ride_alight_division" != 0
+           AND "lbs_alight"."rosen_id"             = "l"."rosen_id"
+           AND "lbs_alight"."sequence_no"          > "lbs_board"."sequence_no"
+          JOIN "bus_stops" "bs_board"
+            ON "bs_board"."del_flag"               = 0
+           AND "bs_board"."available_flag"         = 1
+           AND "bs_board"."bus_stop_id"            = "lbs_board"."bus_stop_id"
+          JOIN "bus_stops" "bs_alight"
+            ON "bs_alight"."del_flag"              = 0
+           AND "bs_alight"."available_flag"        = 1
+           AND "bs_alight"."bus_stop_id"           = "lbs_alight"."bus_stop_id"
+     LEFT JOIN "line_charges" "lc"
+            ON "lc"."del_flag"                     = 0
+           AND "lc"."charge_revision_id"           = "cr"."charge_revision_id"
+     LEFT JOIN "line_charge_details" "lcd"
+            ON "lcd"."del_flag"                    = 0
+           AND "lcd"."line_charge_id"              = "lc"."line_charge_id"
+           AND "lcd"."rosen_bus_stop_id_from"      = "lbs_board"."rosen_bus_stop_id"
+           AND "lcd"."rosen_bus_stop_id_to"        = "lbs_alight"."rosen_bus_stop_id"
+         WHERE "cr"."del_flag"                     = 0
+           AND "cr"."charge_revision_id"           = #{chargeRevisionId}
+         ORDER BY "lbs_board"."sequence_no"
+             , "lbs_alight"."sequence_no"
+    </select>
+
+    <select id="findDetailId" resultType="long">
+        SELECT "line_charge_detail_id"
+          FROM "line_charge_details"
+         WHERE "line_charge_id"         = #{lineChargeId}
+           AND "rosen_bus_stop_id_from" = #{fromId}
+           AND "rosen_bus_stop_id_to"   = #{toId}
+           AND "del_flag"             = 0
+    </select>
+
+    <update id="deleteChargeDetails">
+        UPDATE "line_charge_details"
+           SET "del_flag"              = "line_charge_detail_id"
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"              = 0
+           AND "line_charge_id"        = #{lineChargeId}
+    </update>
+
+    <insert id="registerLineChargeDetail" useGeneratedKeys="true" keyProperty="lineChargeDetailId">
+        INSERT INTO "line_charge_details" (
+        "line_charge_id"
+        , "rosen_bus_stop_id_from"
+        , "rosen_bus_stop_id_to"
+        , "line_charge"
+        , "ic_price"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+        #{lineChargeId}
+        , #{rosenBusStopIdFrom}
+        , #{rosenBusStopIdTo}
+        , #{lineCharge}
+        , #{icPrice}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateLineChargeDetail">
+        UPDATE "line_charge_details"
+           SET "line_charge"           = #{entity.lineCharge}
+             , "ic_price"              = #{entity.icPrice}
+             , "updated_user"          = #{session.userId}
+             , "updated_at"            = CURRENT_TIMESTAMP
+        WHERE "del_flag" = 0
+          AND "line_charge_id"         = #{entity.lineChargeId}
+          AND "rosen_bus_stop_id_from" = #{entity.rosenBusStopIdFrom}
+          AND "rosen_bus_stop_id_to"   = #{entity.rosenBusStopIdTo}
+    </update>
+
+    <insert id="insertLineChargeDetail" parameterType="LineChargeDetailsInsertEntity" useGeneratedKeys="true" keyProperty="lineChargeDetailId">
+        INSERT INTO "line_charge_details" (
+               "ic_price"
+             , "line_charge"
+             , "line_charge_id"
+             , "rosen_bus_stop_id_from"
+             , "rosen_bus_stop_id_to"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{icPrice}
+             , #{lineCharge}
+             , #{lineChargeId}
+             , #{rosenBusStopIdFrom}
+             , #{rosenBusStopIdTo}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+</mapper>

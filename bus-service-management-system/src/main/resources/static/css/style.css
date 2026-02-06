@@ -1,0 +1,460 @@
+.form-control[disabled], .form-control[readonly] {
+	color: #333;
+}
+
+.form-control {
+	width: auto;
+}
+
+.bus-layout-table {
+	width: 97%;
+}
+
+.select2-selection__rendered {
+    line-height: 30px !important;
+    color: #555;
+}
+
+.select2-container--default .select2-selection--single{
+    border: 1px solid #E3E3E3 !important;
+}
+
+.select2-container .select2-results__option.invisible {
+	display: none;
+}
+
+.bus-layout-header {
+	background: #F5F5F5;
+	font-size: 10px;
+	text-transform: uppercase;
+	line-height: 20px;
+	padding: 5px;
+	border-color: #ddd;
+	border-style: solid;
+	border-width: 1px;
+	vertical-align: top;
+	text-align: center;
+}
+
+.bus-layout-column {
+	background: #FFF;
+	padding: 5px;
+	border-color: #ddd;
+	border-style: solid;
+	border-width: 1px;
+	vertical-align: top;
+	text-align: right;
+	height: 60px;
+	min-width: 60px;
+}
+
+.bus-transfer-layout-column {
+	background: #FFF;
+	padding: 5px;
+	border-color: #ddd;
+	border-style: solid;
+	border-width: 1px;
+	vertical-align: top;
+	text-align: right;
+	height: 100px;
+	min-width: 85px;
+}
+
+.column-num {
+	vertical-align: middle;
+	text-align: center;
+	min-width: 30px;
+}
+
+.back-green {
+	background-color: #73d216;
+}
+
+.back-gray {
+	background-color: #babdb6;
+}
+
+.back-dark-gray {
+	background-color: #888a85;
+}
+
+.seat-num {
+	font-weight: 600;
+	height: 8px;
+}
+
+.panel-footer .pull-right {
+	margin-bottom: 10px;
+}
+
+.form-horizontal {
+	text-align: left;
+}
+
+.row {
+	padding-bottom: 15px;
+}
+
+td.back-green .error{
+	background: #e25151 !important;
+}
+
+.back-male{
+	background: #4169e1 !important;
+	color: #fff;
+}
+
+.back-female{
+	background: #d8bfd8 !important;
+	color: #000;
+}
+
+.back-other{
+	background: #fff !important;
+	border-color: #000;
+	border-width: 1px;
+	border-bottom-style: solid;
+	color: #000;
+}
+
+
+div.list-error {
+	width: 87%;
+    height: 100px;
+    overflow: hidden;
+    overflow-y: scroll;
+    background: #f5d5d5 !important;
+    border: 1px solid red;
+    margin-bottom: 10px;
+}
+
+.form-control {
+	display: unset;
+}
+
+.list-tags li {
+	display: block;
+	float: left;
+	background: #F5F5F5;
+	border: 1px solid #D5D5D5;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	line-height: 23px;
+	font-size: 11px;
+	margin: 0px 5px 5px 0px;
+	padding: 0px 8px;
+	color: #22262e;
+}
+
+.fa-right {
+	padding-left: 10px;
+}
+
+.radio label, .checkbox label {
+   padding-left: 5px;
+}
+
+.radio input[type=radio], .radio-inline input[type=radio], .checkbox input[type=checkbox], .checkbox-inline input[type=checkbox] {
+    position: static;
+    margin-left: 0px;
+}
+
+.modalMsg {
+    list-style: none;
+    margin-top: 20px;
+}
+
+.successPass{
+    pointer-events: none;
+    background-color: #a43f3e;
+    border-color: #a43f3e;
+}
+
+.passInput {
+    position: relative;
+    height: 60px;
+    line-height: 60px;
+    padding-left: 70px;
+}
+
+.childgrid td {
+    cursor: pointer !important;
+}
+
+.selectedCell, .selectedCell:active, .childgrid td:active {
+    opacity: 0.5 !important;
+    cursor: move !important;
+}
+
+.ui-draggable-dragging {
+    z-index: 99 !important;
+}
+
+/** インジケーター実装 */
+.balls-wrapper {
+	position: relative;
+	height: 115px;
+}
+.balls-indicator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  background-color: #fff;
+}
+.ball {
+  width: 50%;
+  height: 20px;
+  position: absolute;
+  top: calc(50% - 10px);
+  transform-origin: 100% 50%;
+  left: 0;
+}
+.ball::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #333;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.ball-1::before {
+  animation: ball-indicator 1s linear 0s infinite;
+}
+.ball-2 {
+  transform: rotate(45deg);
+}
+.ball-2::before {
+  animation: ball-indicator 1s linear -0.125s infinite;
+}
+.ball-3 {
+  transform: rotate(90deg);
+}
+.ball-3::before {
+  animation: ball-indicator 1s linear -0.25s infinite;
+}
+.ball-4 {
+  transform: rotate(135deg);
+}
+.ball-4::before {
+  animation: ball-indicator 1s linear -0.375s infinite;
+}
+.ball-5 {
+  transform: rotate(180deg);
+}
+.ball-5::before {
+  animation: ball-indicator 1s linear -0.5s infinite;
+}
+.ball-6 {
+  transform: rotate(225deg);
+}
+.ball-6::before {
+  animation: ball-indicator 1s linear -0.625s infinite;
+}
+.ball-7 {
+  transform: rotate(270deg);
+}
+.ball-7::before {
+  animation: ball-indicator 1s linear -0.75s infinite;
+}
+.ball-8 {
+  transform: rotate(315deg);
+}
+.ball-8::before {
+  animation: ball-indicator 1s linear -0.875s infinite;
+}
+@keyframes ball-indicator {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+  }
+  100% {
+    width: 6px;
+    height: 6px;
+    opacity: .2;
+    margin-left: 7px;
+  }
+}
+.notes {
+    color: #555753;
+    font-size: 11px;
+    display: unset;
+    min-width: 60px;
+}
+
+/* 車両登録・変更確認、便号車登録・変更確認での車両座席チェックボックスCSS */
+.bus-seat-confirm input[type="checkbox"] {
+    -webkit-appearance: none;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: relative;
+    width: 14px;
+    height: 14px;
+    outline: none !important;
+    border-radius: 2.5px;
+}
+
+.bus-seat-confirm input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+    text-align: center;
+}
+
+.bus-seat-confirm input[type="checkbox"]::before {
+    content: "\2713";
+    font-weight: 1000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    overflow: hidden;
+    transform: scale(0) translate(-50%, -50%);
+    line-height: 1;
+}
+
+.bus-seat-confirm input[type="checkbox"]:checked::before {
+    border-radius: 4px;
+    transform: scale(1.042) translate(-50%, -50%)
+}
+
+.bus-seat-confirm input[type="checkbox"]:not(:checked)[disabled] {
+    background-color: #9999;
+}
+/* 車両登録・変更確認、便号車登録・変更確認での車両座席チェックボックスCSS ここまで */
+
+/* お知らせ管理でのquillCSS */
+.ql-tooltip.ql-editing[data-mode="link"] {
+    margin-left: 110px;
+}
+.ql-toolbar.ql-snow {
+    width: 860px;
+}
+.ql-container.ql-snow#editor {
+    width: 860px;
+    min-height: 23vh;
+}
+.ql-editor img {
+    max-width: 100%;
+}
+  
+/* お知らせ管理でのquillCSS ここまで */
+
+.absolute-mark {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #cc0000;
+    border-radius: 3px;
+    padding: 2px 6px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+/* 便ダイヤ登録で使用するCSS ここから*/
+.btn-add-busDaiya {
+    float: right;
+    margin-right: 7px;
+}
+.btn-busdaiya-opt {
+    margin-left: 10px;
+    float: left;
+}
+.busDaiyaDetailHeaderCol {
+    margin-right:10px;
+    font-weight: 600;
+    width: 390px;
+}
+.busDaiyaDetailHeaderRow {
+    font-weight: 600;
+    height: 30px;
+    width:100%;
+    line-height: 30px;
+    padding-left: 200px;
+    margin-bottom: 15px;
+}
+.busDaiyaDetailHeaderRowRequired {
+    font-weight: 600;
+    height: 30px;
+    width:100%;
+    padding-left: 75px;
+    margin-bottom: 15px;
+}
+.control-label_busDaiyas {
+    padding-top: 7px;
+    margin-bottom:0;
+}
+.busDaiyaDetailHeaderRequiredSpan {
+    margin-left:90px;
+}
+.busDaiyaDetailCol {
+    margin-right: 10px;
+    max-width: 180px;
+}
+.busDaiyaDetailRow {
+    height: 30px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+.busDaiyaDetailRow input {
+    width: 180px;
+}
+/* 路線運行順テーブルのヘッダ高さを固定する */
+.busDaiyaDetailHeaderCol div table {
+    table-layout: fixed;
+}
+.busDaiyaDetailHeaderCol div table thead {
+    height: 40px;
+}
+.busDaiyaDetailHeaderCol div table td {
+    overflow-x: hidden;
+    white-space: nowrap;
+    height: 65px;
+}
+.busDaiyaInputDivArrDep {
+    width: 180px;
+    height: 65px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+.busDaiyaInputDivArr {
+    height:30px;
+    width: 180px;
+}
+.busDaiyaInputDivDep {
+    height:30px;
+    width: 180px;
+}
+.busDaiyaInputLabelArrDep {
+    line-height: 30px;
+    width: 100px;
+    margin-bottom: 0px;
+    text-align: center;
+}
+.busDaiyaInputArrDep {
+    width: 80px;
+}
+.busDaiyaDetailOpt+.busDaiyaDetailOptDispNone {
+    display: none;
+}
+.busDaiyaDetailOpt {
+    display: block;
+}
+.busDaiyaDetailSkipBusStop {
+    width: 100%;
+    text-align: center;
+    line-height: 61px;
+}
+.busDaiyaDispColNumber {
+    line-height: 30px;
+}
+/* 便ダイヤ登録で使用するCSS ここまで*/

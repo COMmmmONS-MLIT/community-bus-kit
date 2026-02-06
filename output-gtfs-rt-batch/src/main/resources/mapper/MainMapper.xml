@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="MainMapper">
+
+    <sql id="updateFunctionInfo">
+        , "updated_user" = 'BATCH'
+        , "updated_at"   = CURRENT_TIMESTAMP
+    </sql>
+
+    <sql id="insertFunctionInfo">
+        , 'BATCH'
+        , CURRENT_TIMESTAMP
+        , 'BATCH'
+        , CURRENT_TIMESTAMP
+    </sql>
+
+    <select id="getBusinessDataByConditions" resultType="jp.co.bus.batch.dto.BusServiceInfoDto">
+        SELECT "business_corp_id"
+          FROM "agencies"
+         WHERE "del_flag"       = 0
+           AND "available_flag" = 1
+      ORDER BY "business_corp_id" ASC
+    </select>
+
+    <select id="getVehicleDataByConditions" resultType="jp.co.bus.batch.dto.VehicleInfoDto">
+        SELECT "v"."created_at"            AS "createdAt"
+             , "v"."created_user"          AS "createdUser"
+             , "v"."operating_company_id"  AS "operatingCompanyId"
+             , "v"."updated_at"            AS "updatedAt"
+             , "v"."updated_user"          AS "updatedUser"
+             , "v"."vehicle_id"            AS "vehicleId"
+             , "v"."vehicle_name"          AS "vehicleName"
+             , "v"."gps_serial"
+          FROM "vehicles"                  AS "v"
+    INNER JOIN "operating_companies"       AS "o"
+            ON "o"."del_flag"              = 0
+           AND "o"."available_flag"        = 1
+           AND "o"."operating_company_id"  = "v"."operating_company_id"
+         WHERE "v"."del_flag"              = 0
+           AND "v"."available_flag"        = 1
+           AND "o"."business_corp_id"      = #{businessCorpId}
+      ORDER BY "v"."vehicle_id" ASC
+    </select>
+
+    <select id="getTripDataByVehicle" resultType="jp.co.bus.batch.dto.TripDataDto">
+    (
+        SELECT "d"."bus_service_id"                                             AS "busServiceId"
+              ,("l"."rosen_code" || '_' || "bs"."bus_service_trip_id")          AS "busServiceTripId"
+              ,"bs2"."bus_stop_code"                                            AS "busStopCode"
+              ,"sp"."signpost_branch_number"                                    AS "signpostBranchNumber"
+              ,"lrbs"."stop_sequence"                                           AS "stopSequence"
+              ,"lrbs"."signpost_id"                                             AS "signpostId"
+              ,"a"."bus_stop_arrival_time"                                      AS "scheduledArrivalTime"
+              ,"a"."bus_stop_departure_time"                                    AS "scheduledDepartureTime"
+              ,"vs_arr"."created_datetime"                                      AS "actualArrivalTime"
+              ,"vs_dep"."created_datetime"                                      AS "actualDepartureTime"
+              ,"vs_arr"."delay"                                                 AS "arrivalDelay"
+              ,"vs_dep"."delay"                                                 AS "departureDelay"
+              ,"bs"."wheelchair_accessible_type"                                AS "wheelchairAccessibleType"
+              ,CAST(SPLIT_PART("vs_arr"."latitude_longitude", ',', 1) AS FLOAT) AS "latitude"
+              ,CAST(SPLIT_PART("vs_arr"."latitude_longitude", ',', 2) AS FLOAT) AS "longitude"
+          FROM "daily_bus_daiyas"                                               AS "d"
+    INNER JOIN "bus_services"                                                   AS "bs"
+            ON "bs"."del_flag"                                                   = 0
+           AND "bs"."bus_service_id"                                             = "d"."bus_service_id"
+    INNER JOIN "daiya_revisions"                                                AS "dr"
+            ON "dr"."del_flag"                                                   = 0
+           AND "dr"."daiya_revision_id"                                          = "bs"."daiya_revision_id"
+    INNER JOIN "lines"                                                          AS "l"
+            ON "l"."del_flag"                                                    = 0
+           AND "l"."available_flag"                                              = 1
+           AND "l"."rosen_id"                                                    = "dr"."rosen_id"
+    INNER JOIN (
+                SELECT "bus_service_id"
+                     , MIN("bus_stop_arrival_time")                             AS "arrival_time"
+                     , MAX("bus_stop_departure_time")                           AS "departure_time"
+                  FROM "bus_daiyas"
+                 WHERE "del_flag"                                                = 0
+                 GROUP BY "bus_service_id"
+              )                                                                 AS "a_grp"
+            ON "a_grp".bus_service_id                                            = "bs"."bus_service_id"
+           AND "a_grp"."arrival_time"                                        &lt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+           AND "a_grp"."departure_time"                                      &gt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+    INNER JOIN "bus_daiyas"                                                     AS "a"
+            ON "a"."del_flag"                                                    = 0
+           AND "a"."bus_service_id"                                              = "bs"."bus_service_id"
+    INNER JOIN "line_route_bus_stops"                                           AS "lrbs"
+            ON "lrbs"."del_flag"                                                 = 0
+           AND "lrbs"."line_route_bus_stop_id"                                   = "a"."line_route_bus_stop_id"
+    INNER JOIN "signposts"                                                      AS "sp"
+            ON "sp"."del_flag"                                                   = 0
+           AND "sp"."available_flag"                                             = 1
+           AND "sp"."signpost_id"                                                = "lrbs"."signpost_id"
+    INNER JOIN "bus_stops"                                                      AS "bs2"
+            ON "bs2"."del_flag"                                                  = 0
+           AND "bs2"."available_flag"                                            = 1
+           AND "bs2"."bus_stop_id"                                               = "sp"."bus_stop_id"
+    LEFT JOIN "vehicle_tracking"                                                AS "vs_arr"
+           ON "vs_arr"."bus_service_id"                                          = "bs"."bus_service_id"
+          AND "vs_arr"."signpost_id"                                             = "sp"."signpost_id"
+          AND "vs_arr"."arrival_division"                                        = 1
+          AND "vs_arr"."gps_serial"                                              = CAST(#{gpsSerial} AS varchar)
+          AND DATE("vs_arr"."created_datetime")                                  = CURRENT_DATE
+    LEFT JOIN "vehicle_tracking"                                                AS "vs_dep"
+           ON "vs_dep"."bus_service_id"                                          = "bs"."bus_service_id"
+          AND "vs_dep"."signpost_id"                                             = "sp"."signpost_id"
+          AND "vs_dep"."arrival_division"                                        = 2
+          AND "vs_dep"."gps_serial"                                              = CAST(#{gpsSerial} AS varchar)
+          AND DATE("vs_dep"."created_datetime")                                  = CURRENT_DATE
+         WHERE "d"."del_flag"                                                    = 0
+           AND "d"."service_date"                                                = CURRENT_DATE
+           AND "d"."sales_cancel_flg"                                            = 0
+           AND "d"."operation_cancel_flg"                                        = 0
+           AND "d"."vehicle_id"                                                  = CAST(#{vehicleId} AS int)
+    )
+    UNION ALL
+    (
+      SELECT "d"."bus_service_id"                                               AS "busServiceId"
+            ,("l"."rosen_code" || '_' || "bs"."bus_service_trip_id")            AS "busServiceTripId"
+            ,"bs2"."bus_stop_code"                                              AS "busStopCode"
+            ,"sp"."signpost_branch_number"                                      AS "signpostBranchNumber"
+            ,"lrbs"."stop_sequence"                                             AS "stopSequence"
+            ,"lrbs"."signpost_id"                                               AS "signpostId"
+            ,"a"."bus_stop_arrival_time"                                        AS "scheduledArrivalTime"
+            ,"a"."bus_stop_departure_time"                                      AS "scheduledDepartureTime"
+            ,"vs_arr"."created_datetime"                                        AS "actualArrivalTime"
+            ,"vs_dep"."created_datetime"                                        AS "actualArrivalTime"
+            ,"vs_arr"."delay"                                                   AS "arrivalDelay"
+            ,"vs_dep"."delay"                                                   AS "departureDelay"
+            ,"bs"."wheelchair_accessible_type"                                  AS "wheelchairAccessibleType"
+            ,CAST(SPLIT_PART("vs_arr"."latitude_longitude", ',', 1) AS FLOAT)   AS "latitude"
+            ,CAST(SPLIT_PART("vs_arr"."latitude_longitude", ',', 2) AS FLOAT)   AS "longitude"
+          FROM "bus_services"                                                   AS "bs"
+    INNER JOIN "daiya_revisions"                                                AS "dr"
+            ON "dr"."del_flag"                                                   = 0
+           AND "dr"."daiya_revision_id"                                          = "bs"."daiya_revision_id"
+    INNER JOIN "lines"                                                          AS "l"
+            ON "l"."del_flag"                                                    = 0
+           AND "l"."available_flag"                                              = 1
+           AND "l"."rosen_id"                                                    = "dr"."rosen_id"
+    INNER JOIN "daily_bus_daiyas"                                               AS "d"
+            ON "d"."del_flag"                                                    = 0
+           AND "d"."bus_service_id"                                              = "bs"."bus_service_id"
+           AND "d"."service_date"                                                = CURRENT_DATE
+           AND "d"."sales_cancel_flg"                                            = 0
+           AND "d"."operation_cancel_flg"                                        = 0
+           AND (
+                "d"."vehicle_id" &lt;&gt; CAST (#{vehicleId} AS int)
+                OR "d"."vehicle_id" IS NULL
+               )
+    INNER JOIN (
+        SELECT "bus_service_id"
+             , MIN("bus_stop_arrival_time")   AS "arrival_time"
+             , MAX("bus_stop_departure_time") AS "departure_time"
+          FROM "bus_daiyas"
+         WHERE "del_flag"       = 0
+      GROUP BY "bus_service_id"
+             ) AS "a_grp"
+            ON "a_grp".bus_service_id                                            = "bs"."bus_service_id"
+           AND "a_grp"."arrival_time"                                        &lt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+           AND "a_grp"."departure_time"                                      &gt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+    INNER JOIN "bus_daiyas"                                                     AS "a"
+            ON "a"."del_flag"                                                    = 0
+           AND "a"."bus_service_id"                                              = "bs"."bus_service_id"
+    INNER JOIN "line_route_bus_stops"                                           AS "lrbs"
+            ON "lrbs"."del_flag"                                                 = 0
+           AND "lrbs"."line_route_bus_stop_id"                                   = "a"."line_route_bus_stop_id"
+    INNER JOIN "signposts"                                                      AS "sp"
+            ON "sp"."del_flag"                                                   = 0
+           AND "sp"."available_flag"                                             = 1
+           AND "sp"."signpost_id"                                                = "lrbs"."signpost_id"
+    INNER JOIN "bus_stops"                                                      AS "bs2"
+            ON "bs2"."del_flag"                                                  = 0
+           AND "bs2"."available_flag"                                            = 1
+           AND "bs2"."bus_stop_id"                                               = "sp"."bus_stop_id"
+    LEFT JOIN "vehicle_tracking"                                                AS "vs_arr"
+           ON "vs_arr"."bus_service_id"                                          = "bs"."bus_service_id"
+          AND "vs_arr"."signpost_id"                                             = "sp"."signpost_id"
+          AND "vs_arr"."arrival_division"                                        = 1
+          AND "vs_arr"."gps_serial"                                              = CAST(#{gpsSerial} AS varchar)
+          AND DATE("vs_arr"."created_datetime")                                  = CURRENT_DATE
+    LEFT JOIN "vehicle_tracking"                                                AS "vs_dep"
+           ON "vs_dep"."bus_service_id"                                          = "bs"."bus_service_id"
+          AND "vs_dep"."signpost_id"                                             = "sp"."signpost_id"
+          AND "vs_dep"."arrival_division"                                        = 2
+          AND "vs_dep"."gps_serial"                                              = CAST(#{gpsSerial} AS varchar)
+          AND DATE("vs_dep"."created_datetime")                                  = CURRENT_DATE
+         WHERE "bs"."del_flag"                                                   = 0
+           AND "bs"."vehicle_id"                                                 = CAST(#{vehicleId} AS int)
+    )
+    ORDER BY "busServiceId" ASC
+           , "stopSequence" ASC
+    </select>
+
+    <select id="selectVehicleTrackingData" resultType="jp.co.bus.batch.dto.VehicleTrackingDto">
+    (
+        SELECT "d"."bus_service_id"                                           AS "busServiceId"
+             , ("l"."rosen_code" || '_' || "bs"."bus_service_trip_id")        AS "busServiceTripId"
+             , CAST(SPLIT_PART("vt"."latitude_longitude", ',', 1) AS FLOAT)   AS "latitude"
+             , CAST(SPLIT_PART("vt"."latitude_longitude", ',', 2) AS FLOAT)   AS "longitude"
+             , "bs"."wheelchair_accessible_type"                              AS "wheelchairAccessibleType"
+             , "d"."service_date"                                             AS "serviceDate"
+          FROM "daily_bus_daiyas"                                             AS "d"
+    INNER JOIN "bus_services"                                                 AS "bs"
+            ON "bs"."del_flag"                                                 = 0
+           AND "bs"."bus_service_id"                                           = "d"."bus_service_id"
+    INNER JOIN "daiya_revisions"                                              AS "dr"
+            ON "dr"."del_flag"                                                 = 0
+           AND "dr"."daiya_revision_id"                                        = "bs"."daiya_revision_id"
+    INNER JOIN "lines"                                                        AS "l"
+            ON "l"."del_flag"                                                  = 0
+           AND "l"."available_flag"                                            = 1
+           AND "l"."rosen_id"                                                  = "dr"."rosen_id"
+    INNER JOIN (
+              SELECT "bus_service_id"
+                   , MIN("bus_stop_arrival_time")                             AS "arrival_time"
+                   , MAX("bus_stop_departure_time")                           AS "departure_time"
+                FROM "bus_daiyas"
+               WHERE "del_flag"                                                = 0
+            GROUP BY "bus_service_id"
+          ) AS "a_grp"
+            ON "a_grp".bus_service_id                                          = "bs"."bus_service_id"
+           AND "a_grp"."arrival_time"                                      &lt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+           AND "a_grp"."departure_time"                                    &gt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+   INNER JOIN "vehicle_tracking"                                              AS "vt"
+           ON "vt"."del_flag"                                                  = 0
+          AND "vt"."bus_service_id"                                            = "bs"."bus_service_id"
+          AND "vt"."gps_serial"                                                = CAST(#{gpsSerial} AS varchar)
+          AND DATE("vt"."created_datetime")                                    = CURRENT_DATE
+         WHERE "d"."del_flag"                                                  = 0
+           AND "d"."service_date"                                              = CURRENT_DATE
+           AND "d"."sales_cancel_flg"                                          = 0
+           AND "d"."operation_cancel_flg"                                      = 0
+           AND "d"."vehicle_id"                                                = CAST(#{vehicleId} AS int)
+    )
+    UNION ALL
+    (
+        SELECT "d"."bus_service_id"                                         AS "busServiceId"
+             , ("l"."rosen_code" || '_' || "bs"."bus_service_trip_id")      AS "busServiceTripId"
+             , CAST(SPLIT_PART("vt"."latitude_longitude", ',', 1) AS FLOAT) AS "latitude"
+             , CAST(SPLIT_PART("vt"."latitude_longitude", ',', 2) AS FLOAT) AS "longitude"
+             , "bs"."wheelchair_accessible_type"                            AS "wheelchairAccessibleType"
+             , "d"."service_date"                                           AS "serviceDate"
+          FROM "bus_services"                                               AS "bs"
+    INNER JOIN "daiya_revisions"                                            AS "dr"
+            ON "dr"."del_flag"                                               = 0
+           AND "dr"."daiya_revision_id"                                      = "bs"."daiya_revision_id"
+    INNER JOIN "lines"                                                      AS "l"
+            ON "l"."del_flag"                                                = 0
+           AND "l"."available_flag"                                          = 1
+           AND "l"."rosen_id"                                                = "dr"."rosen_id"
+    INNER JOIN "daily_bus_daiyas"                                           AS "d"
+            ON "d"."del_flag"                                                = 0
+           AND "d"."bus_service_id"                                          = "bs"."bus_service_id"
+           AND "d"."service_date"                                            = CURRENT_DATE
+           AND "d"."sales_cancel_flg"                                        = 0
+           AND "d"."operation_cancel_flg"                                    = 0
+           AND (
+                "d"."vehicle_id"                                      &lt;&gt; CAST (#{vehicleId} AS int)
+                OR "d"."vehicle_id" IS NULL
+               )
+        INNER JOIN (
+        SELECT "bus_service_id"
+             , MIN("bus_stop_arrival_time")                                 AS "arrival_time"
+             , MAX("bus_stop_departure_time")                               AS "departure_time"
+          FROM "bus_daiyas"
+         WHERE "del_flag"                                                    = 0
+      GROUP BY "bus_service_id"
+             ) AS "a_grp"
+            ON "a_grp".bus_service_id                                        = "bs"."bus_service_id"
+           AND "a_grp"."arrival_time"                                    &lt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+           AND "a_grp"."departure_time"                                  &gt;= TO_CHAR(CURRENT_TIMESTAMP, 'HH24MI')
+   INNER JOIN "vehicle_tracking"                                            AS "vt"
+           ON "vt"."del_flag"                                                = 0
+          AND "vt"."bus_service_id"                                          = "bs"."bus_service_id"
+          AND "vt"."gps_serial"                                              = CAST(#{gpsSerial} AS varchar)
+          AND DATE("vt"."created_datetime")                                  = CURRENT_DATE
+        WHERE "bs"."del_flag"                                                = 0
+          AND "bs"."vehicle_id"                                              = CAST(#{vehicleId} AS int)
+    )
+    ORDER BY "busServiceId" ASC
+           , "serviceDate" DESC
+    </select>
+
+    <select id="selectDailyBusDaiyaWithAlerts" resultType="jp.co.bus.batch.dto.VehicleTrackingDto">
+SELECT DISTINCT TO_CHAR("d"."service_date" + INTERVAL '23:59:59', 'YYYY-MM-DD HH24:MI:SS') AS "serviceDate"
+             , "d"."notification"
+             , ("l"."rosen_code" || '_' || "b"."bus_service_trip_id") AS busServiceTripId
+             , "b"."bus_service_trip_id"                              AS "busServiceTripIdSort"
+          FROM "daily_bus_daiyas"                                     AS "d"
+    INNER JOIN "bus_services"                                         AS "b"
+            ON "b"."del_flag"                                          = 0
+           AND "b"."bus_service_id"                                    = "d"."bus_service_id"
+    INNER JOIN "daiya_revisions"                                      AS "dr"
+            ON "dr"."del_flag"                                         = 0
+           AND "dr"."daiya_revision_id"                                = "b"."daiya_revision_id"
+           AND "dr"."service_start_date"                           &lt;= CURRENT_DATE
+           AND "dr"."service_end_date"                             &gt;= CURRENT_DATE
+    INNER JOIN "lines"                                                AS "l"
+            ON "l"."del_flag"                                          = 0
+           AND "l"."available_flag"                                    = 1
+           AND "l"."rosen_id"                                          = "dr"."rosen_id"
+    INNER JOIN "agencies"                                             AS "ag"
+            ON "ag"."del_flag"                                         = 0
+           AND "ag"."available_flag"                                   = 1
+           AND "ag"."business_corp_id"                                 = "l"."business_corp_id"
+           AND "ag"."business_corp_id"                                 = #{businessCorpId}
+         WHERE "d"."del_flag"                                          = 0
+           AND "d"."notification"                                     IS NOT NULL
+           AND "d"."service_date"                                  &gt;= CURRENT_DATE
+      ORDER BY "serviceDate"             ASC,
+               "b"."bus_service_trip_id" ASC
+    </select>
+    
+</mapper>

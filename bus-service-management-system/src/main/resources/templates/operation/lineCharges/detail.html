@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout}"
+      th:with="title='運賃管理'"
+      class="line-charge">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents"
+     th:object="${lineChargeDetailForm}"
+     class="line-charge">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post"
+                      class="form-horizontal"
+                      id="confirmForm"
+                      th:action="@{/operation/lineCharges/detail/confirm/}">
+                    <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                    <input type="hidden" th:field="*{chargeRevisionId}">
+                    <input type="hidden" th:field="*{dispMode}">
+                    <input type="hidden" th:field="*{page}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong th:text="運賃__*{dispMode.text}__">運賃登録</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <table class="table table-bordered info-table">
+                                <tr>
+                                    <th class="active" style="width: 170px;">路線名</th>
+                                    <td>
+                                        <p class="form-control-static text-left" th:text="*{rosenName}"></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="active" style="width: 170px;">適用期間</th>
+                                    <td>
+                                        <p class="form-control-static text-left"
+                                           th:text="*{#strings.replace(serviceStartDate, '-', '/') + ' ～ ' + #strings.replace(serviceEndDate, '-', '/')}"></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="active" style="width: 170px;">運賃改定理由</th>
+                                    <td>
+                                        <p class="form-control-static text-left" th:text="*{revisionReason}"></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="active" style="width: 170px;">
+                                        <span class="badge badge-danger require-txt">必須</span>
+                                        支払タイミング
+                                    </th>
+                                    <td class="text-left" style="text-align: left !important;">
+                                        <th:block th:each="pm : ${T(maint.enums.PaymentMethod).values()}">
+                                            <label class="radio-inline" style="margin-right: 12px; margin-left: 0;">
+                                                <input type="radio"
+                                                       th:field="*{paymentMethod}"
+                                                       th:value="${pm.value}"
+                                                       th:disabled="${!writeFlag}"/>
+                                                <span th:text="${pm.text}"></span>
+                                            </label>
+                                        </th:block>
+                                        <div th:if="${#fields.hasErrors('paymentMethod')}"
+                                             th:errors="*{paymentMethod}" class="text-danger"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="active" style="width: 170px;">
+                                        <span class="badge badge-danger require-txt">必須</span>
+                                        運賃区分
+                                    </th>
+                                    <td class="text-left" style="text-align: left !important;">
+                                        <th:block th:each="lcd : ${T(maint.enums.LineChargeDivision).values()}">
+                                            <label class="radio-inline" style="margin-right: 12px; margin-left: 0;">
+                                                <input type="radio"
+                                                       th:field="*{lineChargeDivision}"
+                                                       th:value="${lcd.value}"
+                                                       th:disabled="${!writeFlag}"/>
+                                                <span th:text="${lcd.text}"></span>
+                                            </label>
+                                        </th:block>
+                                        <div th:if="${#fields.hasErrors('lineChargeDivision')}"
+                                             th:errors="*{lineChargeDivision}" class="text-danger"></div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="uniform-wrap" style="padding:0;">
+                                <div class="uniform-label">
+                                    <div class="uniform-label-inner">均一運賃</div>
+                                </div>
+                                <div class="uniform-body">
+                                    <!-- 運賃 -->
+                                    <div class="u-row">
+                                        <div class="u-key">
+                                            <span class="badge badge-danger require-txt req-badge" data-req-group="uniform">必須</span>
+                                            <span class="require-spacer req-spacer" data-req-group="uniform"></span>
+                                            <span class="u-name">運賃</span>
+                                        </div>
+
+                                        <div class="u-val">
+                                            <input type="text"
+                                                   class="form-control input-sm"
+                                                   maxlength="11"
+                                                   th:field="*{uniformCharge}"
+                                                   th:disabled="${!writeFlag}"
+                                                   data-group="uniform"
+                                                   th:classappend="${#fields.hasErrors('uniformCharge')} ? ' error' : ''"/>
+                                            <div th:if="${#fields.hasErrors('uniformCharge')}"
+                                                 th:errors="*{uniformCharge}"
+                                                 class="text-danger">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- ICカード運賃（もともと必須なし） -->
+                                    <div class="u-row">
+                                        <div class="u-key">
+                                            <span class="require-spacer"></span>
+                                            <span class="u-name">ICカード運賃</span>
+                                        </div>
+
+                                        <div class="u-val">
+                                            <input type="text"
+                                                   class="form-control input-sm"
+                                                   maxlength="11"
+                                                   th:field="*{uniformIcPrice}"
+                                                   th:disabled="${!writeFlag}"
+                                                   data-group="uniform"
+                                                   th:classappend="${#fields.hasErrors('uniformIcPrice')} ? ' error' : ''"/>
+                                            <div th:if="${#fields.hasErrors('uniformIcPrice')}"
+                                                 th:errors="*{uniformIcPrice}"
+                                                 class="text-danger">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 乗換可否 -->
+                                    <div class="u-row">
+                                        <div class="u-key">
+                                            <span class="badge badge-danger require-txt req-badge" data-req-group="uniform">必須</span>
+                                            <span class="require-spacer req-spacer" data-req-group="uniform"></span>
+                                            <span class="u-name">乗換可否</span>
+                                        </div>
+                                        <div class="u-val"
+                                             th:classappend="${#fields.hasErrors('uniformTransferType')} ? ' error' : ''">
+
+                                            <label class="radio-inline" style="margin-right:14px; margin-left:0;">
+                                                <input type="radio"
+                                                       th:field="*{uniformTransferType}"
+                                                       th:value="0"
+                                                       th:disabled="${!writeFlag}"
+                                                       data-group="uniform"/>
+                                                乗換不可
+                                            </label>
+
+                                            <label class="radio-inline" style="margin-right:14px; margin-left:0;">
+                                                <input type="radio"
+                                                       th:field="*{uniformTransferType}"
+                                                       th:value="1"
+                                                       th:disabled="${!writeFlag}"
+                                                       data-group="uniform"/>
+                                                1度可能
+                                            </label>
+
+                                            <label class="radio-inline" style="margin-right:14px; margin-left:0;">
+                                                <input type="radio"
+                                                       th:field="*{uniformTransferType}"
+                                                       th:value="2"
+                                                       th:disabled="${!writeFlag}"
+                                                       data-group="uniform"/>
+                                                2度可能
+                                            </label>
+
+                                            <label class="radio-inline" style="margin-right:14px; margin-left:0;">
+                                                <input type="radio"
+                                                       th:field="*{uniformTransferType}"
+                                                       th:value="9"
+                                                       th:disabled="${!writeFlag}"
+                                                       data-group="uniform"/>
+                                                乗換制限なし可能
+                                            </label>
+
+                                            <!-- ★ エラーはここで1回だけ -->
+                                            <div th:if="${#fields.hasErrors('uniformTransferType')}"
+                                                 th:errors="*{uniformTransferType}"
+                                                 class="text-danger">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <th:block th:if="*{chargeRevisionId} != null">
+                                <div class="triangle-wrap triangle-wrap-joined">
+                                    <div class="triangle-label">三角運賃</div>
+                                    <div class="triangle-body">
+                                        <table class="table table-bordered table-condensed triangle-table">
+                                            <colgroup>
+                                                <col class="col-from">
+                                                <col th:each="toStop : ${colStops}">
+                                            </colgroup>
+
+                                            <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th th:each="toStop : ${colStops}" th:text="${toStop}"></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="fromStop, rowStat : ${rowStops}"
+                                                    th:with="
+                                                          n=${#lists.size(busStopNames)},
+                                                          r=${rowStat.index},
+                                                          prefix=${r * (2*n - r - 1) / 2}
+                                                        ">
+
+                                                    <th th:text="${fromStop}"></th>
+
+                                                    <td th:each="toStop, colStat : ${colStops}"
+                                                        th:with="
+                                                          toIndex=${colStat.index + 1},
+                                                          isUpper=${toIndex > r},
+                                                          idx=${prefix + (toIndex - r - 1)}
+                                                        ">
+
+                                                        <!-- 下三角（空欄） -->
+                                                        <div th:if="${!isUpper}">&nbsp;</div>
+
+                                                        <!-- 上三角（入力欄） -->
+                                                        <div th:if="${isUpper}">
+                                                            <input type="hidden"
+                                                                   th:name="|triangle[${idx}].rosenBusStopIdFrom|"
+                                                                   th:value="${rowStopIds[r]}" />
+
+                                                            <input type="hidden"
+                                                                   th:name="|triangle[${idx}].rosenBusStopIdTo|"
+                                                                   th:value="${colStopIds[toIndex - 1]}" />
+
+                                                            <input type="hidden"
+                                                                   th:name="|triangle[${idx}].rosenBusStopNameFrom|"
+                                                                   th:value="${fromStop}" />
+
+                                                            <input type="hidden"
+                                                                   th:name="|triangle[${idx}].rosenBusStopNameTo|"
+                                                                   th:value="${toStop}" />
+
+                                                            <!-- 運賃（必須） -->
+                                                            <div class="tri-row">
+                                                                <span class="badge badge-danger require-txt req-badge" data-req-group="triangle">必須</span>
+                                                                <span class="tri-label">運賃</span>
+
+                                                                <input type="text" maxlength="11"
+                                                                       class="form-control input-sm tri-input"
+                                                                       th:name="|triangle[${idx}].lineCharge|"
+                                                                       th:value="*{triangle[__${idx}__].lineCharge}"
+                                                                       th:disabled="${!writeFlag}"
+                                                                       data-group="triangle"
+                                                                       th:classappend="${#fields.hasErrors('triangle[' + idx + '].lineCharge')} ? ' error' : ''"/>
+                                                            </div>
+                                                            <div th:if="${#fields.hasErrors('triangle[' + idx + '].lineCharge')}"
+                                                                 th:errors="*{triangle[__${idx}__].lineCharge}"
+                                                                 class="text-danger"></div>
+                                                            <!-- IC運賃（必須なし） -->
+                                                            <div class="tri-row no-required">
+                                                                <span class="req-spacer"></span>
+                                                                <span class="tri-label">IC運賃</span>
+
+                                                                <input type="text" maxlength="11"
+                                                                       class="form-control input-sm tri-input"
+                                                                       th:name="|triangle[${idx}].icPrice|"
+                                                                       th:value="*{triangle[__${idx}__].icPrice}"
+                                                                       th:disabled="${!writeFlag}"
+                                                                       data-group="triangle"
+                                                                       th:classappend="${#fields.hasErrors('triangle[' + idx + '].icPrice')} ? ' error' : ''"/>
+                                                            </div>
+                                                            <div th:if="${#fields.hasErrors('triangle[' + idx + '].icPrice')}"
+                                                                 th:errors="*{triangle[__${idx}__].icPrice}"
+                                                                 class="text-danger"></div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+                        <div class="panel-footer" style="text-align: right;">
+                            <a th:href="'/operation/lineCharges/' + *{page} + '/'"
+                               class=" btn btn-default">戻る</a>
+                            <button type="submit"
+                                    id="confirm"
+                                    class="btn btn-primary pull-right double-click"
+                                    style="margin-left: 5px">確認</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <th:block th:insert="~{common/script :: common_script}"></th:block>
+            <script src="/js/operation/lineCharges/detail.js"></script>
+        </div>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+    <style>
+        /* radio群は form-control じゃないので囲いを赤枠にする */
+        .u-val.error{
+            border: 1px solid #E04B4A;
+            padding: 6px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</div>
+<!-- end: contents -->
+</body>
+</html>

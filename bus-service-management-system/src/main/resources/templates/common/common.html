@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head th:fragment="common_head(title)" th:remove="tag">
+<!--<link rel="shortcut icon" href="/img/favicon.ico?" type="image/x-icon"/>-->
+<meta th:replace="~{common/meta :: common_meta}" />
+<link th:replace="~{common/style :: common_style}" />
+<title th:text="${title}">TITLE</title>
+</head>
+
+<th:block th:fragment="pager_tag">
+	<div class="pagination-set" th:if="${pager} neq null and ${pager.totalListSize} neq null">
+		<p>
+			検索結果 全
+			<span th:text="${pager.totalListSize}">XXX</span>
+			件
+		</p>
+		<ul class="pagination">
+			<li class="first" th:classappend="${pager.currentPageNo gt 1} ? '' : 'disabled'"><a th:href="@{1}"><span>First</span></a></li>
+			<li class="previous" th:classappend="${pager.currentPageNo gt 1} ? '' : 'disabled'"><a th:href="@{${pager.currentPageNo - 1}}"><span>Previous</span></a></li>
+			<li th:each="page : ${#numbers.sequence(pager.displayMinPage, pager.displayMaxPage)}" th:classappend="${page eq pager.currentPageNo} ? current : ''"><a th:href="@{${page}}"
+				th:classappend="${page eq pager.currentPageNo} ? '' : inactive" th:text="${page}"></a></li>
+			<li class="next" th:classappend="${pager.maxPage gt pager.currentPageNo} ? '' : 'disabled'"><a th:href="@{${pager.currentPageNo + 1}}"><span>Next</span></a></li>
+			<li class="last" th:classappend="${pager.maxPage gt pager.currentPageNo} ? '' : 'disabled'"><a th:href="@{${pager.maxPage}}"><span>Last</span></a></li>
+		</ul>
+	</div>
+</th:block>
+
+</html>

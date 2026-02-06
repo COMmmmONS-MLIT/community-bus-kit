@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout}"
+      th:with="title='運賃確認'"
+      class="line-charge is-confirm">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents"
+     th:object="${lineChargeDetailForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12 form-horizontal">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong th:text="運賃__*{dispMode.text}__確認">運賃確認</strong>
+                        </h3>
+                    </div>
+
+                    <!-- START メッセージ表示部 -->
+                    <div th:insert="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                    <div th:insert="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                    <div th:insert="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                    <!-- END メッセージ表示部 -->
+                    <div class="panel-body">
+                        <table class="table table-bordered info-table">
+                            <tr>
+                                <th class="active" style="width:170px;">路線名</th>
+                                <td><p class="form-control-static text-left" th:text="*{rosenName}"></p></td>
+                            </tr>
+                            <tr>
+                                <th class="active" style="width:170px;">適用期間</th>
+                                <td>
+                                    <p class="form-control-static text-left"
+                                       th:text="*{#strings.replace(serviceStartDate, '-', '/') + ' ～ ' + #strings.replace(serviceEndDate, '-', '/')}"></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="active" style="width:170px;">運賃改定理由</th>
+                                <td><p class="form-control-static text-left" th:text="*{revisionReason}"></p></td>
+                            </tr>
+                            <tr>
+                                <th class="active" style="width: 170px;">支払タイミング</th>
+                                <td class="text-left" style="text-align:left !important;">
+                                    <th:block th:each="pm : ${T(maint.enums.PaymentMethod).values()}">
+                                        <label class="radio-inline" style="margin-right: 12px; margin-left: 0;">
+                                            <input type="radio"
+                                                   th:checked="*{paymentMethod} == ${pm.value}"
+                                                   disabled />
+                                            <span th:text="${pm.text}"></span>
+                                        </label>
+                                    </th:block>
+
+                                    <!-- 送信用（registerに渡す用） -->
+                                    <input type="hidden" th:field="*{paymentMethod}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="active" style="width: 170px;">運賃区分</th>
+                                <td class="text-left" style="text-align:left !important;">
+                                    <th:block th:each="lcd : ${T(maint.enums.LineChargeDivision).values()}">
+                                        <label class="radio-inline" style="margin-right: 12px; margin-left: 0;">
+                                            <input type="radio"
+                                                   th:checked="*{lineChargeDivision} == ${lcd.value}"
+                                                   disabled />
+                                            <span th:text="${lcd.text}"></span>
+                                        </label>
+                                    </th:block>
+                                    <!-- 送信用 -->
+                                    <input type="hidden" th:field="*{lineChargeDivision}" />
+                                </td>
+                            </tr>
+                        </table>
+                        <th:block th:if="*{lineChargeDivision} == 1">
+                        <div class="uniform-wrap" style="padding:0;">
+                                <div class="uniform-label">
+                                    <div class="uniform-label-inner">均一運賃</div>
+                                </div>
+
+                                <div class="uniform-body">
+                                    <!-- 運賃 -->
+                                    <div class="u-row">
+                                        <div class="u-key">
+                                            <span class="require-spacer"></span>
+                                            <span class="u-name">運賃</span>
+                                        </div>
+                                        <div class="u-val">
+                                            <input type="text"
+                                                   class="form-control input-sm"
+                                                   th:value="*{uniformCharge}"
+                                                   disabled />
+                                            <input type="hidden" th:field="*{uniformCharge}" />
+                                        </div>
+                                    </div>
+
+                                    <!-- ICカード運賃 -->
+                                    <div class="u-row">
+                                        <div class="u-key">
+                                            <span class="require-spacer"></span>
+                                            <span class="u-name">ICカード運賃</span>
+                                        </div>
+                                        <div class="u-val">
+                                            <input type="text"
+                                                   class="form-control input-sm"
+                                                   th:value="*{uniformIcPrice}"
+                                                   disabled />
+                                            <input type="hidden" th:field="*{uniformIcPrice}" />
+                                        </div>
+                                    </div>
+
+                                    <!-- 乗換可否 -->
+                                    <div class="u-row">
+                                        <div class="u-key">
+                                            <span class="require-spacer"></span>
+                                            <span class="u-name">乗換可否</span>
+                                        </div>
+                                        <div class="u-val">
+                                            <th:block th:each="utt : ${T(maint.enums.UniformTranceferType).values()}">
+                                                <label class="radio-inline" style="margin-right: 14px; margin-left:0;">
+                                                    <input type="radio" th:checked="*{uniformTransferType} == ${utt.value}" disabled />
+                                                    <span th:text="${utt.text}"></span>
+                                                </label>
+                                            </th:block>
+                                            <!-- 送信用 -->
+                                            <input type="hidden" th:field="*{uniformTransferType}" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                        <th:block th:if="*{lineChargeDivision} == 2 and *{chargeRevisionId} != null">
+                            <div class="triangle-wrap triangle-wrap-joined">
+                                <div class="triangle-label">三角運賃</div>
+
+                                <div class="triangle-body">
+                                    <table class="table table-bordered table-condensed triangle-table">
+                                        <colgroup>
+                                            <col class="col-from">
+                                            <col th:each="toStop : ${colStops}">
+                                        </colgroup>
+
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th th:each="toStop : ${colStops}" th:text="${toStop}"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="fromStop, rowStat : ${rowStops}"
+                                                th:with="
+                                                    n=${#lists.size(busStopNames)},
+                                                    r=${rowStat.index},
+                                                    prefix=${r * (2*n - r - 1) / 2}
+                                                ">
+                                                <th th:text="${fromStop}"></th>
+
+                                                <td th:each="toStop, colStat : ${colStops}"
+                                                    th:with="
+                                                        toIndex=${colStat.index + 1},
+                                                        isUpper=${toIndex > r},
+                                                        idx=${prefix + (toIndex - r - 1)}
+                                                    ">
+
+                                                    <div class="tri-cell" th:classappend="${isUpper} ? ' is-upper' : ' is-empty'">
+                                                        <!-- 上三角（入力欄） -->
+                                                        <th:block th:if="${isUpper}">
+                                                            <input type="hidden" .../>
+                                                            <input type="hidden" .../>
+
+                                                            <div class="tri-row">
+                                                                <span class="req-spacer"></span>
+                                                                <span class="tri-label">運賃</span>
+                                                                <input type="text"
+                                                                       class="form-control input-sm tri-input"
+                                                                       th:value="*{triangle[__${idx}__].lineCharge}"
+                                                                       disabled />
+                                                                <input type="hidden"
+                                                                       th:field="*{triangle[__${idx}__].lineCharge}" />
+                                                            </div>
+
+                                                            <div class="tri-row no-required">
+                                                                <span class="req-spacer"></span>
+                                                                <span class="tri-label">IC運賃</span>
+                                                                <input type="text" class="form-control input-sm tri-input"
+                                                                       th:value="*{triangle[__${idx}__].icPrice}" disabled />
+                                                                <input type="hidden" th:field="*{triangle[__${idx}__].icPrice}" />
+                                                            </div>
+                                                        </th:block>
+                                                        <!-- 空セルは高さ確保だけ。文字は不要 -->
+                                                        <th:block th:if="${!isUpper}">
+                                                            <div class="tri-row" style="visibility:hidden;">
+                                                                <span class="req-spacer"></span><span class="tri-label">運賃</span>
+                                                                <input class="form-control input-sm tri-input" disabled />
+                                                            </div>
+                                                            <div class="tri-row" style="visibility:hidden;">
+                                                                <span class="req-spacer"></span><span class="tri-label">IC運賃</span>
+                                                                <input class="form-control input-sm tri-input" disabled />
+                                                            </div>
+                                                        </th:block>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                    <!-- /panel-body -->
+
+                    <div class="panel-footer">
+                        <form class="form-horizontal" method="post" th:action="@{#}" style="text-align: right;">
+                            <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                            <input type="hidden" th:field="*{chargeRevisionId}">
+                            <input type="hidden" th:field="*{dispMode}">
+                            <input type="hidden" th:field="*{page}">
+                            <input type="hidden" th:field="*{paymentMethod}">
+                            <input type="hidden" th:field="*{lineChargeDivision}">
+                            <input type="hidden" th:field="*{insertFlag}">
+                            <a th:if="*{dispMode.value} eq '3'"
+                               th:href="'/operation/lineCharges/' + *{page} + '/'"
+                               class="btn btn-default">戻る</a>
+
+                            <button th:if="*{dispMode.value} neq '3'"
+                                    th:formaction="@{/operation/lineCharges/detail/back/}"
+                                    class="btn btn-default double-click"
+                                    style="margin-right: 5px">戻る</button>
+
+                            <button th:if="*{dispMode.value} neq '3'"
+                                    class="btn btn-primary pull-right double-click"
+                                    th:formaction="@{/operation/lineCharges/detail/register/}"
+                                    th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <!-- END PAGE CONTENT WRAPPER -->
+    <script src="/js/operation/lineCharges/detail.js"></script>
+
+    <style>
+        /* =========================================================
+               confirm：必須バッジを消して「幅だけ」残す（ズレ防止）
+        ========================================================= */
+
+        /* =========================
+           均一運賃（u-key）
+        ========================= */
+
+        /* 必須テキストは非表示 */
+        .line-charge.is-confirm .u-key .require-txt{
+            display: none !important;
+        }
+
+        /* confirm では必須列を潰さず 2列構成を維持 */
+        .line-charge.is-confirm .u-key{
+            grid-template-columns: var(--req-col-w) 1fr !important;
+        }
+
+        /* バッジの代わりに空スペーサーを表示 */
+        .line-charge.is-confirm .u-key .require-spacer{
+            display: inline-block !important;
+            width: var(--req-col-w);
+            height: 1px;
+        }
+
+
+        /* =========================
+             三角運賃（tri-row）
+        ========================= */
+
+        /* 必須バッジは非表示 */
+        .line-charge.is-confirm .triangle-table .tri-row .require-txt,
+        .line-charge.is-confirm .triangle-table .tri-row .req-badge{
+            display: none !important;
+        }
+
+        /* バッジの代わりにスペーサーを表示して幅をキープ */
+        .line-charge.is-confirm .triangle-table .tri-row .req-spacer,
+        .line-charge.is-confirm .triangle-table .tri-row .require-spacer,
+        .line-charge.is-confirm .triangle-table .tri-row .req-badge-placeholder{
+            display: inline-block !important;
+            width: var(--req-badge-w);
+            height: 1px;
+        }
+
+        /* tri-row の詰め具合（px で指定） */
+        .line-charge.is-confirm .triangle-table .tri-row{
+            gap: 6px;
+        }
+
+        /* =========================================
+          confirm：三角セルの配置を揃える（中央寄せを無効化）
+         ========================================= */
+
+        /* td の中身を上揃えにする */
+        .line-charge.is-confirm .triangle-table td{
+            vertical-align: top;
+        }
+
+        /* 共通CSSの td > div (center) を confirm だけ上書き */
+        .line-charge.is-confirm .triangle-table td > div{
+            display: block !important;         /* flex を殺す */
+        }
+
+        /* tri-cell を左上基準で積む */
+        .line-charge.is-confirm .triangle-table .tri-cell{
+            display: grid;
+            align-content: start;
+            justify-items: start;
+            row-gap: 6px;
+        }
+
+        /* 1行（運賃/IC運賃）の列幅を固定して揃える */
+        .line-charge.is-confirm .triangle-table .tri-row{
+            display: grid !important;
+            grid-template-columns: var(--req-badge-w) var(--tri-label-w) var(--tri-input-w);
+            column-gap: 6px;
+            align-items: center;
+            justify-content: start;
+        }
+    </style>
+</div>
+<!-- end: contents -->
+</body>
+</html>

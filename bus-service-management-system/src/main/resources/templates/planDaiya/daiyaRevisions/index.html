@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='便ダイヤ改正管理'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${daiyaRevisionsSearchForm}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>便ダイヤ改正一覧</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"> <span class="badge badge-danger"></span>
+                                    <span class="form-item-name">路線</span>
+                                </label>
+                                <div class="col-md-9">
+                                    <select class="form-control select2" th:field="*{searchRosenId}">
+                                        <option value="">-------</option>
+                                        <option th:each="item : ${linesList}" th:value="${item.rosenId}" th:text="${item.rosenName}">
+                                        </option>
+                                    </select>
+                                    <p th:if="${#fields.hasErrors('searchRosenId')}" th:errors="*{searchRosenId}" class="text-danger"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">運行期間</span></label>
+                                    <div class="col-md-9">
+                                        <div class="d-flex align-items-center">
+                                            <input class="form-control w-auto" type="date" th:field="*{searchServiceStartDate}" max="9999-12-31"
+                                                   th:classappend="${#fields.hasErrors('searchServiceStartDate')} ? 'error' : ''" />
+                                            <span class="mx-2"> ～ </span>
+                                            <input class="form-control w-auto" type="date" th:field="*{searchServiceEndDate}" max="9999-12-31"
+                                                   th:classappend="${#fields.hasErrors('searchServiceEndDate')} ? 'error' : ''" />
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                        </div>
+                    <div class="panel-footer">
+                        <a th:if="${writeFlag}" th:href="@{/planDaiya/daiyaRevisions/detail/}" class="btn btn-success btn-default btn-submit">
+                            <i class="fa fa-pencil-square-o"  aria-hidden="true"></i>新規登録
+                        </a>
+                        <div style="display: flex;" class="pull-right">
+                            <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/planDaiya/daiyaRevisions/}">
+                                <i class="fa fa-search" aria-hidden="true"></i>検索
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                            <tr role="row">
+                                <th style="width: 120px;">ID</th>
+                                <th style="width: 300px;">路線名</th>
+                                <th style="width: 500px;">便ダイヤ改正名</th>
+                                <th style="width: 200px;">運行期間</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody th:if="${pager} neq null">
+                            <tr th:each="daiyaRevisions : ${pager.list}" role="row" class="odd">
+                                <td th:text="${daiyaRevisions.daiyaRevisionId}"></td>
+                                <td th:text="${daiyaRevisions.rosenName}"></td>
+                                <td th:text="${daiyaRevisions.daiyaRevisionName}"></td>
+                                <td th:text="${daiyaRevisions.serviceStartDate + ' ～ ' + daiyaRevisions.serviceEndDate}"></td>
+                                <td>
+                                    <form method="post" th:action="@{/planDaiya/daiyaRevisions/detail/}">
+                                        <input type="hidden" name="daiyaRevisionId" th:value="${daiyaRevisions.daiyaRevisionId}" />
+                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <button type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/planDaiya/daiyaRevisions/detail/content/}">確認</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div th:replace="~{common/paginate :: pagination('/planDaiya/daiyaRevisions/',${pager})}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:insert="~{common/modal :: customDialog}"></div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+
+</html>

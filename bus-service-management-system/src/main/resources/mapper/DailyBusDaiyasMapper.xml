@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.DailyBusDaiyasMapper">
+
+    <select id="getDailyBusDaiyasBySearch" resultType="DailyBusDaiyasDetailDto">
+        SELECT "d"."daily_bus_daiya_id"            AS "dailyBusDaiyaId"
+             , "l"."rosen_name"                    AS "rosenName"
+             , "lr"."line_detail_service_division" AS "lineDetailServiceDivision"
+             , "lr"."line_route_name"              AS "lineRouteName"
+             , "d"."service_date"                  AS "serviceDate"
+             <include refid="fromWhereBySearch"/>
+    ORDER BY   "l"."rosen_name"                    ASC
+             , "lr"."line_route_name"              ASC
+             , "lr"."line_detail_service_division" ASC
+             , "d"."service_date"                  DESC
+        LIMIT  #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <select id="getDailyBusDaiyasByPk" parameterType="maint.entity.DailyBusDaiyasEntity" resultType="maint.dto.planDaiya.dailyBusDaiyas.DailyBusDaiyasDetailDto">
+             SELECT "bd"."bus_stop_departure_time"      AS "busStopDepartureTime"
+                  , "d"."operation_cancel_flg"          AS "operationCancelFlg"
+                  , "d"."sales_cancel_flg"              AS "salesCancelFlg"
+                  , "d"."service_date"                  AS "serviceDate"
+                  , "d"."vehicle_id"                    AS "vehicleId"
+                  , "d"."vehicle_id"                    AS "VehicleName"
+                  , "d"."notification"                  AS "notification"
+                  , "l"."rosen_name"                    AS "rosenName"
+                  , "lr"."line_detail_service_division" AS "lineDetailServiceDivision"
+                  , "lr"."line_route_name"              AS "lineRouteName"
+                  , "oc"."operating_name"               AS "operatingCompanyName"
+                  , EXTRACT(EPOCH FROM (service_date::timestamp + time '00:00:00'))::bigint AS service_start_time
+                  , EXTRACT(EPOCH FROM (service_date::timestamp + time '23:59:59'))::bigint AS service_end_time
+                  , "bs".bus_service_trip_id            AS "busServiceTripid"
+               FROM "daily_bus_daiyas" "d"
+         INNER JOIN "bus_services" "bs"
+                 ON "bs"."del_flag"                     = 0
+                AND "bs"."bus_service_id"               = "d"."bus_service_id"
+         INNER JOIN "bus_daiyas" "bd"
+                 ON "bd"."del_flag"                     = 0
+                AND "bd"."bus_service_id"               = "d"."bus_service_id"
+         INNER JOIN "line_route_bus_stops" "lrb"
+                 ON "lrb"."del_flag"                    = 0
+                AND "lrb"."line_route_bus_stop_id"      = "bd"."line_route_bus_stop_id"
+         INNER JOIN "signposts" "sp"
+                 ON "sp"."del_flag"                     = 0
+                AND "sp"."available_flag"               = 1
+                AND "sp"."signpost_id"                  = "lrb"."signpost_id"
+         INNER JOIN "line_routes" "lr"
+                 ON "lr"."del_flag"                     = 0
+                AND "lr"."available_flag"               = 1
+                AND "lr"."line_route_id"                = "lrb"."line_route_id"
+         INNER JOIN "lines" "l"
+                 ON "l"."del_flag"                      = 0
+                AND "l"."available_flag"                = 1
+                AND "l"."rosen_id"                      = "lr"."rosen_id"
+         INNER JOIN "agencies" "ag"
+                 ON "ag"."del_flag"                     = 0
+                AND "ag"."available_flag"               = 1
+                AND "ag"."business_corp_id"             = "l"."business_corp_id"
+          LEFT JOIN "offices" "o"
+                 ON "o"."del_flag"                      = 0
+                AND "o"."available_flag"                = 1
+                AND "o"."office_id"                     = "bs"."office_id"
+          LEFT JOIN "operating_companies" "oc"
+                 ON "oc"."del_flag"                     = 0
+                AND "oc"."available_flag"               = 1
+                AND "oc"."operating_company_id"         = "o"."operating_company_id"
+              WHERE "d"."del_flag"                      = 0
+                AND "d"."daily_bus_daiya_id"            = #{dailyBusDaiyaId}
+                AND "l"."business_corp_id"              = #{businessCorpId}
+        <if test="operatingCompanyId != null">
+                AND "oc"."operating_company_id"          = #{operatingCompanyId}
+        </if>
+        <if test="lineDetailServiceDivision != null">
+                AND "lr"."line_detail_service_division"  = #{lineDetailServiceDivision}
+        </if>
+        <if test="rosenId != null">
+                AND "l"."rosen_id"                       = #{rosenId}
+        </if>
+           ORDER BY "lrb"."stop_sequence" ASC
+           LIMIT 1
+    </select>
+
+    <select id="getlineRouteBusStopsList" parameterType="maint.entity.DailyBusDaiyasEntity" resultType="maint.dto.planDaiya.dailyBusDaiyas.DailyBusDaiyasDetailDto">
+             SELECT "bd"."bus_stop_departure_time"
+                  , "lrb"."ride_alight_division"
+                  , "lrb"."drop_off_division"
+                  , "lrb"."stop_sequence"
+                  , "sp"."signpost_name"
+               FROM "daily_bus_daiyas" "d"
+         INNER JOIN "bus_services" "bs"
+                 ON "bs"."bus_service_id"               = "d"."bus_service_id"
+                AND "bs"."del_flag"                     = 0
+         INNER JOIN "bus_daiyas" "bd"
+                 ON "bd"."bus_service_id"               = "d"."bus_service_id"
+                AND "bd"."del_flag"                     = 0
+         INNER JOIN "line_route_bus_stops" "lrb"
+                 ON "lrb"."line_route_bus_stop_id"      = "bd"."line_route_bus_stop_id"
+                AND "lrb"."del_flag"                    = 0
+         INNER JOIN "signposts" "sp"
+                 ON "sp"."signpost_id"                  = "lrb"."signpost_id"
+                AND "sp"."available_flag"               = 1
+                AND "sp"."del_flag"                     = 0
+         INNER JOIN "line_routes" "lr"
+                 ON "lr"."line_route_id"                = "lrb"."line_route_id"
+                AND "lr"."available_flag"               = 1
+                AND "lr"."del_flag"                     = 0
+         INNER JOIN "lines" "l"
+                 ON "l"."rosen_id"                      = "lr"."rosen_id"
+                AND "l"."available_flag"                = 1
+                AND "l"."del_flag"                      = 0
+         INNER JOIN "agencies" "ag"
+                 ON "ag"."business_corp_id"             = "l"."business_corp_id"
+                AND "ag"."available_flag"               = 1
+                AND "ag"."del_flag"                     = 0
+          LEFT JOIN "offices" "o"
+                 ON "o"."office_id"                     = "bs"."office_id"
+                AND "o"."available_flag"                = 1
+                AND "o"."del_flag"                      = 0
+          LEFT JOIN "operating_companies" "oc"
+                 ON "oc"."operating_company_id"         = "o"."operating_company_id"
+                AND "oc"."available_flag"               = 1
+                AND "oc"."del_flag"                     = 0
+              WHERE "d"."del_flag"                      = 0
+                AND "d"."daily_bus_daiya_id"            = #{dailyBusDaiyaId}
+                AND "l"."business_corp_id"              = #{businessCorpId}
+        <if test="operatingCompanyId != null">
+                AND "oc"."operating_company_id"         = #{operatingCompanyId}
+        </if>
+        <if test="lineDetailServiceDivision != null">
+                AND "lr"."line_detail_service_division" = #{lineDetailServiceDivision}
+        </if>
+        <if test="rosenId != null">
+                AND "l"."rosen_id"                      = #{rosenId}
+        </if>
+        <if test="busStopDepartureTime != null and busStopDepartureTime != ''">
+                AND "bd"."bus_stop_departure_time"      = to_char(CAST(#{busStopDepartureTime} AS time), 'HH24:MI:SS')
+        </if>
+    </select>
+
+    <select id="getDailyDaiyaOperationHistories" resultType="maint.dto.planDaiya.dailyBusDaiyas.DailyDaiyaOperationHistoryDto">
+        SELECT "after"
+             , "before"
+             , "created_at"
+             , "created_user"
+             , "daily_daiya_operation_history_id"
+             , "operation"
+          FROM "daily_daiya_operation_histories"
+         WHERE "del_flag"           = 0
+           AND "daily_bus_daiya_id" = #{dailyBusDaiyaId}
+      ORDER BY "updated_at"         DESC
+    </select>
+
+    <update id="updateDailyBusDaiya">
+        UPDATE "daily_bus_daiyas"
+           SET "sales_cancel_flg"     = #{salesCancelFlg}
+             , "vehicle_id"           = #{vehicleId}
+             , "notification"         = #{notification}
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "del_flag"             = 0
+          AND "daily_bus_daiya_id"   = #{dailyBusDaiyaId}
+    </update>
+
+    <insert id="insertDailyDaiyaOperationHistory"
+            parameterType="maint.dto.planDaiya.dailyBusDaiyas.DailyDaiyaOperationHistoryDto"
+            useGeneratedKeys="true"
+            keyProperty="dailyDaiyaOperationHistoryId">
+    INSERT INTO "daily_daiya_operation_histories"
+               ( "after"
+               , "before"
+               , "daily_bus_daiya_id"
+               , "operation"
+               , "created_user"
+               , "created_at"
+               , "updated_user"
+               , "updated_at" )
+         VALUES ( #{after}
+                , #{before}
+                , #{dailyBusDaiyaId}
+                , #{operation}
+                , #{createdUser}
+                , CURRENT_TIMESTAMP
+                , #{updatedUser}
+                , CURRENT_TIMESTAMP )
+    </insert>
+
+    <select id="existsDailyBusDaiyasByPk"
+            parameterType="maint.entity.DailyBusDaiyasEntity"
+            resultType="java.lang.Long">
+         SELECT COUNT(1)
+           FROM "daily_bus_daiyas" "d"
+     INNER JOIN "bus_services" "bs"
+             ON "bs"."del_flag"                    = 0
+            AND "bs"."bus_service_id"              = "d"."bus_service_id"
+     INNER JOIN "bus_daiyas" "bd"
+             ON "bd"."del_flag"                    = 0
+            AND "bd"."bus_service_id"              = "d"."bus_service_id"
+     INNER JOIN "line_route_bus_stops" "lrb"
+             ON "lrb"."del_flag"                   = 0
+            AND "lrb"."line_route_bus_stop_id"     = "bd"."line_route_bus_stop_id"
+     INNER JOIN "signposts" "sp"
+             ON "sp"."del_flag"                    = 0
+            AND "sp"."available_flag"              = 1
+            AND "sp"."signpost_id"                 = "lrb"."signpost_id"
+     INNER JOIN "line_routes" "lr"
+             ON "lr"."del_flag"                    = 0
+            AND "lr"."available_flag"              = 1
+            AND "lr"."line_route_id"               = "lrb"."line_route_id"
+     INNER JOIN "lines" "l"
+             ON "l"."del_flag"                     = 0
+            AND "l"."available_flag"               = 1
+            AND "l"."rosen_id"                     = "lr"."rosen_id"
+     INNER JOIN "agencies" "ag"
+             ON "ag"."del_flag"                    = 0
+            AND "ag"."available_flag"              = 1
+            AND "ag"."business_corp_id"            = "l"."business_corp_id"
+      LEFT JOIN "offices" "o"
+             ON "o"."del_flag"                     = 0
+            AND "o"."available_flag"               = 1
+            AND "o"."office_id"                    = "bs"."office_id"
+      LEFT JOIN "operating_companies" "oc"
+             ON "oc"."del_flag"                    = 0
+            AND "oc"."available_flag"              = 1
+            AND "oc"."operating_company_id"        = "o"."operating_company_id"
+          WHERE "d"."del_flag"                     = 0
+            AND "d"."daily_bus_daiya_id"           = #{dailyBusDaiyaId}
+            AND "l"."business_corp_id"             = #{businessCorpId}
+    <if test="operatingCompanyId != null">
+           AND "oc"."operating_company_id"         = #{operatingCompanyId}
+    </if>
+    <if test="lineDetailServiceDivision != null">
+           AND "lr"."line_detail_service_division" = #{lineDetailServiceDivision}
+    </if>
+    <if test="rosenId != null">
+           AND "l"."rosen_id"                      = #{rosenId}
+    </if>
+    </select>
+
+    <select id="countDailyBusDaiyas" resultType="java.lang.Long">
+        SELECT COUNT("dr"."daiya_revision_id")
+        <include refid="fromWhereBySearch"/>
+    </select>
+
+    <sql id="fromWhereBySearch">
+              FROM "lines" "l"
+        INNER JOIN "agencies" "ag"
+                ON "ag"."del_flag"                = 0
+               AND "ag"."available_flag"          = 1
+               AND "ag"."business_corp_id"        = "l"."business_corp_id"
+        INNER JOIN "daiya_revisions" "dr"
+                ON "dr"."del_flag"                = 0
+               AND "dr"."rosen_id"                = "l"."rosen_id"
+        INNER JOIN "bus_services" "bs"
+                ON "bs"."del_flag"                = 0
+               AND "bs"."daiya_revision_id"       = "dr"."daiya_revision_id"
+         LEFT JOIN "daily_bus_daiyas" "d"
+                ON "d"."del_flag"                 = 0
+               AND "d"."bus_service_id"           = "bs"."bus_service_id"
+        INNER JOIN "bus_daiyas" "bd"
+                ON "bd"."del_flag"                = 0
+               AND "bd"."bus_service_id"          = "bs"."bus_service_id"
+        INNER JOIN "line_routes" "lr"
+                ON "lr"."del_flag"                = 0
+               AND "lr"."line_route_id"           = "bs"."line_route_id"
+        <if test="operatingCompanyId != null">
+        INNER JOIN "offices" "o"
+                ON "o"."del_flag"                 = 0
+               AND "o"."available_flag"           = 1
+               AND "o"."operating_company_id"     = #{operatingCompanyId}
+               AND "o"."office_id"                = "bs"."office_id"
+        INNER JOIN "operating_companies" "oc"
+                ON "oc"."del_flag"                = 0
+               AND "oc"."available_flag"          = 1
+               AND "oc"."operating_company_id"    = "o"."operating_company_id"
+        </if>
+           WHERE "l"."del_flag"                   = 0
+             AND "l"."available_flag"             = 1
+             AND "ag"."business_corp_id"          = #{businessCorpId}
+        <if test="rosenId != null">
+             AND "l"."rosen_id"                   = #{rosenId}
+        </if>
+        <if test="lineRouteId != null">
+             AND "lr"."line_route_id"             = #{lineRouteId}
+        </if>
+        <if test="serviceStartDate != null and serviceStartDate != ''">
+             AND "d"."service_date"           &gt;= CAST(#{serviceStartDate} AS date)
+        </if>
+        <if test="serviceEndDate != null and serviceEndDate != ''">
+             AND "d"."service_date"           &lt;= CAST(#{serviceEndDate} AS date)
+        </if>
+        <if test="salesCancelFlg != null">
+             AND "d"."sales_cancel_flg"           = #{salesCancelFlg}
+        </if>
+             AND "bd"."bus_stop_departure_time"   = (
+               SELECT MIN("bd2"."bus_stop_departure_time")
+                 FROM "bus_daiyas" "bd2"
+                WHERE "bd2"."bus_service_id" = "bs"."bus_service_id"
+                  AND "bd2"."del_flag"       = 0
+            )
+        <if test="busStopDepartureTimeStart != null and busStopDepartureTimeStart != ''">
+             AND "bd"."bus_stop_departure_time" &gt;= #{busStopDepartureTimeStart}
+        </if>
+        <if test="busStopDepartureTimeEnd != null and busStopDepartureTimeEnd != ''">
+             AND "bd"."bus_stop_departure_time" &lt;= #{busStopDepartureTimeEnd}
+        </if>
+        <if test="busServiceId != null and busServiceId != ''">
+            AND "bs"."bus_service_id" = #{busServiceId}
+        </if>
+    </sql>
+
+    <select id="getDailyBusDaiyasByBusServiceId" resultType="DailyBusDaiyaDto">
+        SELECT "daily_bus_daiya_id"
+             , "bus_service_id"
+             , "service_date"
+             , "sales_cancel_flg"
+             , "operation_cancel_flg"
+             , "vehicle_id"
+        FROM "daily_bus_daiyas"
+       WHERE "del_flag" = 0
+         AND "bus_service_id"   = #{busServiceId}
+         AND "service_date" &gt;= CAST(#{startDate} AS date)
+         AND "service_date" &lt;= CAST(#{endDate} AS date)
+    </select>
+
+    <select id="getDailyBusDaiyasByServiceIdAndDateList" resultType="DailyBusDaiyaDto">
+        SELECT "daily_bus_daiya_id"
+             , "bus_service_id"
+             , "service_date"
+             , "sales_cancel_flg"
+             , "operation_cancel_flg"
+             , "vehicle_id"
+          FROM "daily_bus_daiyas"
+         WHERE "del_flag"       = 0
+           AND "bus_service_id" = #{busServiceId}
+           AND "service_date" IN
+        <foreach collection="targetDates" item="d" open="(" close=")" separator=",">
+            CAST(#{d} AS date)
+        </foreach>
+    </select>
+
+    <select id="getDailyBusDaiyasByServiceIdAndDateListNotIn" resultType="java.lang.Long">
+        SELECT "daily_bus_daiya_id"
+          FROM "daily_bus_daiyas"
+         WHERE "del_flag" = 0
+           AND "bus_service_id"   = #{busServiceId}
+           AND "service_date"  &gt; CURRENT_DATE
+           AND "service_date" NOT IN
+        <foreach collection="targetDates" item="d" open="(" close=")" separator=",">
+            CAST(#{d} AS date)
+        </foreach>
+    </select>
+
+    <insert id="registerDailyBusDaiya" useGeneratedKeys="true" keyProperty="dailyBusDaiyaId">
+        INSERT INTO "daily_bus_daiyas" (
+               "bus_service_id"
+             , "service_date"
+             , "sales_cancel_flg"
+             , "operation_cancel_flg"
+             , "vehicle_id"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{busServiceId}
+             , CAST(#{serviceDate} AS date)
+             , #{salesCancelFlg}
+             , #{operationCancelFlg}
+             , #{vehicleId}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateDailyBusDaiyaForRebuild">
+        UPDATE "daily_bus_daiyas"
+           SET "operation_cancel_flg" = #{operationCancelFlg}
+             , "vehicle_id"           = #{vehicleId}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"             = 0
+           AND "daily_bus_daiya_id"   = #{dailyBusDaiyaId}
+    </update>
+
+    <update id="deleteDailyBusDaiya">
+        UPDATE "daily_bus_daiyas"
+           SET "del_flag"           = #{dailyBusDaiyaId}
+        <include refid="maint.mapper.CommonMapper.deleteCommon"/>
+         WHERE "daily_bus_daiya_id" = #{dailyBusDaiyaId}
+    </update>
+
+</mapper>

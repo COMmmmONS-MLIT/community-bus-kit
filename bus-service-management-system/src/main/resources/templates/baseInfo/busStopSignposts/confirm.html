@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='停留所・標柱管理'">
+<head>
+    <style>
+        .tcontents-must {
+            width: 40px;
+            margin: 0px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+        .tcontents-title {
+            width: 130px;
+            padding-right: 15px;
+            margin: 0px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+        .tcontents-input {
+            width: 310px;
+            margin: 0px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+        .tcontents-space {
+            width: 40px;
+            margin: 0px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
+        .input-box {
+            width: 305px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="main_contents" th:object="${busStopSignpostsDetailForm}">
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong th:text="停留所・標柱__*{dispMode.text}__">停留所・標柱登録確認</strong>
+                        </h3>
+                    </div>
+                    <!-- START メッセージ表示部 -->
+                    <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                    <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                    <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                    <!-- END メッセージ表示部 -->
+                    <div class="panel-body">
+                        <!-- 停留所オブジェクト -->
+                        <div class="panel" style="border: 2px solid #808080;" th:each="busStop, stat : *{busStopLinkDetailDtoList}">
+                            <details open>
+                                <summary style="cursor: pointer; ">
+                                    <h3 th:text="'●　停留所' + ${busStop.busStopListNo}" style="margin-top:10px; "></h3>
+                                </summary>
+                                <div class="panel" style="margin-left: 1%; width:98%;">
+                                    <input type="hidden" th:id="'signpostsSize' + ${busStop.busStopListNo}" th:value="${busStop.signpostsSize}">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label" style="width: 150px;"><span class="form-item-name" style="font-size: 20px;">停留所情報</span></label>
+                                    </div>
+                                    <div class="form-group">
+                                        <table style="width:1000px; border-width: 0px; margin-left: 35px; margin-bottom: 20px; padding: 0px;">
+                                            <tr>
+                                                <td class="tcontents-must">
+                                                    <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                </td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">停留所コード</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="text" name="busStopCode" maxlength="10" th:value="${busStop.busStopCode}" class="form-control input-box"
+                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].busStopCode}" disabled />
+                                                </td>
+                                                <td class="tcontents-space"></td>
+                                                <td class="tcontents-must">
+                                                    <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                </td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">停留所名称</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="text" name="busStopName" maxlength="100" th:value="${busStop.busStopName}" class="form-control input-box"
+                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].busStopName}" disabled />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="tcontents-must interval-values">
+                                                    <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                </td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name" >停留所名称かな</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="text" name="busStopKana" maxlength="100" th:value="${busStop.busStopKanaName}" class="form-control input-box"
+                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].busStopKanaName}" disabled />
+                                                </td>
+                                                <td class="tcontents-space"></td>
+                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">停留所名称英語</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="text" name="busStopEng" maxlength="200" th:value="${busStop.busStopEnName}" class="form-control input-box"
+                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].busStopEnName}" disabled />
+                                                </td>
+                                            </tr>
+                                            <th:block th:if="*{dispMode.name == 'UPDATE_MODE'}">
+                                                <tr>
+                                                    <td colspan="4"></td>
+                                                    <td class="tcontents-must">
+                                                        <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                    </td>
+                                                    <td align="right" class="tcontents-title">
+                                                        <label class="form-item-name">利用期間</label>
+                                                    </td>
+                                                    <td class="tcontents-input">
+                                                        ～ <input class="form-control w-auto" type="date" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].serviceEndDate}" max="9999-12-31" style="margin-right: 15px; width:200px;" disabled />
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                            <tr>
+                                                <td class="tcontents-must">
+                                                    <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                </td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">屋内フラグ</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].indoorBusTerminalFlag}" th:value="0" th:id="'indoorBusTerminalFlag_[' + ${stat.index} + ']_0'" th:checked="${busStop.indoorBusTerminalFlag eq 0}" disabled />
+                                                    <label class="inner-title" th:for="'indoorBusTerminalFlag_[' + ${stat.index} + ']_0'" th:text="屋外" style="width:90px;" disabled ></label>
+                                                    <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].indoorBusTerminalFlag}" th:value="1" th:id="'indoorBusTerminalFlag_[' + ${stat.index} + ']_1'" th:checked="${busStop.indoorBusTerminalFlag eq 1}" disabled />
+                                                    <label class="inner-title" th:for="'indoorBusTerminalFlag_[' + ${stat.index} + ']_1'" th:text="屋内" style="width:90px;" disabled ></label>
+                                                </td>
+                                                <td class="tcontents-space"></td>
+                                                <td class="tcontents-must">
+                                                    <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                </td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">利用区分</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].availableFlag}" th:value="1" th:id="'availableFlag_[' + ${stat.index} + ']_1'" th:checked="${busStop.availableFlag eq 1}" disabled />
+                                                    <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + ']_1'" th:text="利用中" style="width:90px;" disabled ></label>
+                                                    <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].availableFlag}" th:value="0" th:id="'availableFlag_[' + ${stat.index} + ']_0'" th:checked="${busStop.availableFlag eq 0}" disabled />
+                                                    <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + ']_0'" th:text="利用不可" style="width:90px;" disabled ></label>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">緯度,経度</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="text" th:id="'latitudeLongitude' + ${busStop.busStopListNo}" th:name="'latitudeLongitude' + ${busStop.busStopListNo}" maxlength="34"
+                                                           th:value="${busStop.latitudeLongitude}" class="form-control input-box"
+                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].latitudeLongitude}" disabled />
+                                                </td>
+                                                <td class="tcontents-space"></td>
+                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                <td align="right" class="tcontents-title">
+                                                    <label class="form-item-name">停留所URL</label>
+                                                </td>
+                                                <td class="tcontents-input">
+                                                    <input type="text" th:name="'busStopURL' + ${busStop.busStopListNo}" maxlength="256" th:value="${busStop.busStopUrl}" class="form-control input-box"
+                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].busStopUrl}" disabled />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <!-- 標柱オブジェクト -->
+                                    <div class="panel" th:each="signpost, stats : ${busStop.signpostsLinkDetailDtoList}" style="margin-left: 1%; width:98%; border: 2px solid #808080;">
+                                        <details open>
+                                            <summary style="cursor: pointer;">
+                                                <h3 th:text="'●　標柱情報' + ${signpost.pageListNo}" style="margin-top:10px; "></h3>
+                                            </summary>
+                                            <div class="form-group">
+                                                <table style="width:1000px; border-width: 0px; margin-left: 30px; margin-bottom: 20px; padding: 0px;">
+                                                    <tr>
+                                                        <td class="tcontents-must">
+                                                            <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                        </td>
+                                                        <td align="right" class="tcontents-title">
+                                                            <label class="form-item-name">標柱枝番</label>
+                                                        </td>
+                                                        <td class="tcontents-input">
+                                                            <input type="text" name="signpostBranchNumber" maxlength="100" th:value="${signpost.signpostBranchNumber}" class="form-control input-box"
+                                                                   th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostBranchNumber}" disabled />
+                                                        </td>
+                                                        <td class="tcontents-space"></td>
+                                                        <td class="tcontents-must"><!-- null可 --></td>
+                                                        <td align="right" class="tcontents-title">
+                                                            <label class="form-item-name">標柱番号</label>
+                                                        </td>
+                                                        <td class="tcontents-input">
+                                                            <input type="text" name="signpostBranchCode" maxlength="100" th:value="${signpost.signpostCode}" class="form-control input-box"
+                                                                   th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostCode}" disabled />
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="tcontents-must">
+                                                            <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                        </td>
+                                                        <td align="right" class="tcontents-title">
+                                                            <label class="form-item-name">標柱名称</label>
+                                                        </td>
+                                                        <td class="tcontents-input">
+                                                            <input type="text" name="signpostName" maxlength="100" th:value="${signpost.signpostName}" class="form-control input-box"
+                                                                   th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostName}" disabled />
+                                                        </td>
+                                                        <td class="tcontents-space"></td>
+                                                        <td class="tcontents-must">
+                                                            <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                        </td>
+                                                        <td align="right" class="tcontents-title">
+                                                            <label class="form-item-name">標柱名称かな</label>
+                                                        </td>
+                                                        <td class="tcontents-input">
+                                                            <input type="text" name="signpostNameKana" maxlength="100" th:value="${signpost.signpostKanaName}" class="form-control input-box"
+                                                                   th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostKanaName}" disabled />
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="tcontents-must"><!-- null可 --></td>
+                                                        <td align="right" class="tcontents-title">
+                                                            <label class="form-item-name">標柱名称英語</label>
+                                                        </td>
+                                                        <td class="tcontents-input">
+                                                            <input type="text" name="signpostEng" maxlength="200" th:value="${signpost.signpostEnName}" class="form-control input-box"
+                                                                   th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostEnName}" disabled />
+                                                        </td>
+                                                        <td class="tcontents-space"></td>
+                                                        <td colspan="3"></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div class="panel" style="margin-left: 1%; width:98%; padding-top: 1%;">
+                                                <details open>
+                                                    <summary style="cursor: pointer;">
+                                                        <h5>標柱付加情報入力　▼</h5>
+                                                    </summary>
+                                                    <div class="form-group">
+                                                        <table style="width:960px; border-width: 0px; margin-left: 30px; margin-bottom: 20px; padding: 0px;">
+                                                            <tr>
+                                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                                <td align="right" class="tcontents-title">
+                                                                    <label class="form-item-name">標柱副名称</label>
+                                                                </td>
+                                                                <td class="tcontents-input">
+                                                                    <input type="text" name="signpostSubName" maxlength="100" th:value="${signpost.signpostSubName}" class="form-control input-box"
+                                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostSubName}" disabled />
+                                                                </td>
+                                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                                <td align="right" class="tcontents-title">
+                                                                    <label class="form-item-name">標柱住所</label>
+                                                                </td>
+                                                                <td class="tcontents-input">
+                                                                    <input type="text" name="signpostAddress" maxlength="100" th:value="${signpost.address}" class="form-control input-box"
+                                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].address}" disabled />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                                <td align="right" class="tcontents-title">
+                                                                    <label class="form-item-name">標柱地先名</label>
+                                                                </td>
+                                                                <td class="tcontents-input">
+                                                                    <input type="text" name="placeName" maxlength="100" th:value="${signpost.placeName}" class="form-control input-box"
+                                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].placeName}" disabled />
+                                                                </td>
+                                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                                <td align="right" class="tcontents-title">
+                                                                    <label class="form-item-name">標柱付加情報</label>
+                                                                </td>
+                                                                <td class="tcontents-input">
+                                                                    <input type="text" name="signpostDesc" maxlength="100" th:value="${signpost.signpostDesc}" class="form-control input-box"
+                                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostDesc}" disabled />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                                <td align="right" class="tcontents-title">
+                                                                    <label class="form-item-name">標柱URL</label>
+                                                                </td>
+                                                                <td class="tcontents-input">
+                                                                    <input type="text" name="signpostURL" maxlength="256" th:value="${signpost.signpostUrl}" class="form-control input-box"
+                                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].signpostUrl}" disabled />
+                                                                </td>
+                                                                <td class="tcontents-must"><!-- null可 --></td>
+                                                                <td align="right" class="tcontents-title">
+                                                                    <label class="form-item-name">のりば情報</label>
+                                                                </td>
+                                                                <td class="tcontents-input">
+                                                                    <input type="text" name="platformCode" maxlength="20" th:value="${signpost.platformCode}" class="form-control input-box"
+                                                                           th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].platformCode}" disabled />
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </details>
+                                            </div>
+                                            <div class="panel" style="border-top: 10px; margin-bottom: 0px;">
+                                                <div class="form-group">
+                                                    <table style="width:1000px; border-width: 0px; margin-left: 30px; margin-bottom: 20px; padding: 0px;">
+                                                        <tr>
+                                                            <td class="tcontents-must">
+                                                                <label class="badge badge-danger require-txt">必須</label>
+                                                            </td>
+                                                            <td align="right" class="tcontents-title">
+                                                                <label class="form-item-name">車いす利用区分</label>
+                                                            </td>
+                                                            <td class="tcontents-input">
+                                                                <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].wheelchairAccessibleType}"
+                                                                       th:id="'wheelchairAccessibleType_[' + ${stat.index} + '][' + ${stats.index} + ']_0'" th:value="0" th:checked="${signpost.wheelchairAccessibleType eq 0}" disabled />
+                                                                <label class="inner-title" th:for="'wheelchairAccessibleType_[' + ${stat.index} + '][' + ${stats.index} + ']_0'" th:text="情報なし" disabled ></label>
+                                                                <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].wheelchairAccessibleType}"
+                                                                       th:id="'wheelchairAccessibleType_[' + ${stat.index} + '][' + ${stats.index} + ']_1'" th:value="1" th:checked="${signpost.wheelchairAccessibleType eq 1}" disabled />
+                                                                <label class="inner-title" th:for="'wheelchairAccessibleType_[' + ${stat.index} + '][' + ${stats.index} + ']_1'" th:text="1台は乗車可能" disabled ></label>
+                                                                <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].wheelchairAccessibleType}"
+                                                                       th:id="'wheelchairAccessibleType_[' + ${stat.index} + '][' + ${stats.index} + ']_2'" th:value="2" th:checked="${signpost.wheelchairAccessibleType eq 2}" disabled />
+                                                                <label class="inner-title" th:for="'wheelchairAccessibleType_[' + ${stat.index} + '][' + ${stats.index} + ']_2'" th:text="利用不可" disabled ></label>
+                                                            </td>
+                                                            <td class="tcontents-space"></td>
+                                                            <td class="tcontents-must">
+                                                                <label class="badge badge-danger require-txt">必須</label>
+                                                            </td>
+                                                            <td align="right" class="tcontents-title">
+                                                                <label class="form-item-name">利用区分</label>
+                                                            </td>
+                                                            <td class="tcontents-input">
+                                                                <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag}"
+                                                                       th:id="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_0'" th:value="1" th:checked="${signpost.availableFlag eq 1}" disabled />
+                                                                <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_0'" th:text="利用中" style="width:90px;" disabled ></label>
+                                                                <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag}"
+                                                                       th:id="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_1'" th:value="0" th:checked="${signpost.availableFlag eq 0}" disabled />
+                                                                <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_1'" th:text="利用不可" style="width:90px;" disabled ></label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="tcontents-must">
+                                                                <label class="badge badge-danger require-txt" style="margin-right: 0px; margin-left: auto;">必須</label>
+                                                            </td>
+                                                            <td align="right" class="tcontents-title">
+                                                                <label class="form-item-name">緯度,経度</label>
+                                                            </td>
+                                                            <td class="tcontents-input">
+                                                                <input type="text" th:id="'latitudeLongitude' + ${busStop.busStopListNo} + ${signpost.pageListNo}" th:name="'latitudeLongitude' + ${busStop.busStopListNo} + ${signpost.pageListNo}" maxlength="34"
+                                                                       th:value="${signpost.latitudeLongitude}" class="form-control input-box"
+                                                                       th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].latitudeLongitude}" disabled />
+                                                            </td>
+                                                            <td class="tcontents-space"></td>
+                                                            <td colspan="4"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="tcontents-must"><!-- null可 --></td>
+                                                            <td align="right" class="tcontents-title">
+                                                                <label class="form-item-name">判定用緯度経度</label>
+                                                            </td>
+                                                            <td class="tcontents-input">
+                                                                <input type="text" name="latitudeLongitudeJg" maxlength="34" th:value="${signpost.arrivalPoint}" class="form-control input-box"
+                                                                       th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].arrivalPoint}" disabled />
+                                                            </td>
+                                                            <td class="tcontents-space"></td>
+                                                            <td class="tcontents-must"><!-- null可 --></td>
+                                                            <td align="right" class="tcontents-title">
+                                                                <label class="form-item-name" style="white-space: nowrap;">到着判定距離(半径)</label>
+                                                            </td>
+                                                            <td class="tcontents-input">
+                                                                <input type="text" name="arrivalJudgeRadius" maxlength="5" th:value="${signpost.arrivalPointRadiusStr}" class="form-control input-box"
+                                                                       th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].arrivalPointRadiusStr}" disabled />
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="pull-right">
+                            <form class="form-horizontal" method="post" th:action="@{#}">
+                                <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                                <input type="hidden" th:field="*{page}">
+                                <a th:if="*{dispMode.value} eq '3'" th:href="'/baseInfo/busStopSignposts/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
+                                <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/baseInfo/busStopSignposts/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
+                                <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/baseInfo/busStopSignposts/detail/register/}"
+                                        th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+    </div>
+    <!-- end: contents -->
+</div>
+</body>
+</html>

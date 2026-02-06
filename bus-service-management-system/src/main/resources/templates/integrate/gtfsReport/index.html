@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='GTFS-Schedule'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${gtfsReportListsExcelForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <form method="post" th:action="@{#}" class="form-horizontal">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>GTFS-Schedule</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="form-group">
+                                        <label style="width: 150px" class="col-md-1 control-label ichiran-label"> <span class="badge badge-danger require-txt">必須</span>
+                                            <span class="form-item-name">対象日</span>
+                                        </label>
+                                        <div class="col-md-9">
+                                            <input type="date" max="9999-12" th:field="*{targetDate}" class="form-control" style="width: 120px;"
+                                                   th:classappend="${#fields.hasErrors('targetDate')} ? 'error' : ''"/>
+                                            <span th:if="${#fields.hasErrors('targetDate')}" th:errors="*{targetDate}" class="text-danger" ></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-footer">
+                            <div style="display: flex;" class="pull-right">
+                                <button th:if="${downloadFlag}" type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
+                                        th:formaction="@{/integrate/gtfsReport/downloadExcel}">
+                                    抽出する
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var allDaiyaDateList = /*[[${daiyaDateList}]]*/ [];
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/export/lists/lists.js}"></script>
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

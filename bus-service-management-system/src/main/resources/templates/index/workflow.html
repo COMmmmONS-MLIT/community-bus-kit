@@ -1,0 +1,229 @@
+<!-- src/main/resources/templates/index/workflow.html -->
+<!-- スタイル用フラグメント -->
+<th:block th:fragment="workflow_style">
+    <style>
+        :root { --fg:#1f2937; --muted:#6b7280; --accent:#1CAF9A; --bg:#ffffff; --card:#f8fafc; }
+        html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;}
+        .wrap{max-width:1100px;margin:24px auto;padding:0 16px 48px;}
+        h1{font-size:24px;margin:8px 0 16px;}
+        .lead{color:var(--muted);margin:0 0 24px;}
+        .grid{display:grid;gap:16px;}
+        @media(min-width:900px){ .grid{grid-template-columns:1fr 1fr;} }
+        .card{background:var(--card);border:1px solid #e5e7eb;border-radius:10px;padding:18px;}
+        .card h2{font-size:18px;margin:0 0 12px;}
+        .step{margin:10px 0 14px;padding:12px;border-left:4px solid var(--accent);background:#fff;border-radius:6px;}
+        .step>div.title{font-weight:600;margin-bottom:6px;}
+        ul.items{margin:0;padding-left:20px;}
+        ul.items li{margin:6px 0;}
+        ul.items li a{color:var(--accent);text-decoration:none;}
+        ul.items li a:hover{text-decoration:underline;}
+        .hint{color:var(--muted);font-size:13px;margin-top:6px;}
+    </style>
+</th:block>
+
+<!-- コンテンツ用フラグメント -->
+<th:block th:fragment="workflow_content">
+    <div class="wrap">
+        <h1>ワークフロー</h1>
+        <p class="lead"></p>
+        <div class="grid">
+            <!-- 左: 新しく使い始める場合 -->
+            <section class="card">
+                <h2>新しく使い始める場合</h2>
+                <div class="step">
+                    <div class="title">1. 基本情報を登録する</div>
+                    <ul class="items">
+                        <li>
+                            運営者（自治体・事業者）の情報を入力する —
+                            <span th:if="${permRead['BASEINFO001']}"><a th:href="@{${@commonService.uri('BASEINFO001')}}">事業者管理</a></span>
+                            <span th:if="${!permRead['BASEINFO001']}">事業者管理</span>
+                        </li>
+                        <li>
+                            バスの運行会社の情報を入力する —
+                            <span th:if="${permRead['BASEINFO002']}"><a th:href="@{${@commonService.uri('BASEINFO002')}}">運行会社管理</a></span>
+                            <span th:if="${!permRead['BASEINFO002']}">運行会社管理</span>
+                        </li>
+                        <li>
+                            運行事業者の営業所の情報を入力する —
+                            <span th:if="${permRead['BASEINFO003']}"><a th:href="@{${@commonService.uri('BASEINFO003')}}">営業所管理</a></span>
+                            <span th:if="${!permRead['BASEINFO003']}">営業所管理</span>
+                        </li>
+                        <li>
+                            運行事業者に所属する車両・トラッカー情報を入力する —
+                            <span th:if="${permRead['PLANDAIYA003']}"><a th:href="@{${@commonService.uri('PLANDAIYA003')}}">車両管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA003']}">車両管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">2. 停留所を登録する</div>
+                    <ul class="items">
+                        <li>
+                            停留所と標柱（バスのりば）の情報を入力する —
+                            <span th:if="${permRead['BASEINFO006']}"><a th:href="@{${@commonService.uri('BASEINFO006')}}">停留所・標柱管理</a></span>
+                            <span th:if="${!permRead['BASEINFO006']}">停留所・標柱管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">3. 運行日を登録する</div>
+                    <ul class="items">
+                        <li>
+                            運行日の情報を登録する —
+                            <span th:if="${permRead['OPERATION001']}"><a th:href="@{${@commonService.uri('OPERATION001')}}">運行カレンダー管理</a></span>
+                            <span th:if="${!permRead['OPERATION001']}">運行カレンダー管理</span>
+                        </li>
+                        <li>
+                            祝日の情報を登録する —
+                            <span th:if="${permRead['OPERATION002']}"><a th:href="@{${@commonService.uri('OPERATION002')}}">祝日カレンダー管理</a></span>
+                            <span th:if="${!permRead['OPERATION002']}">祝日カレンダー管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">4. 路線を登録する</div>
+                    <ul class="items">
+                        <li>
+                            路線の情報を入力する —
+                            <span th:if="${permRead['OPERATION003']}"><a th:href="@{${@commonService.uri('OPERATION003')}}">路線管理</a></span>
+                            <span th:if="${!permRead['OPERATION003']}">路線管理</span>
+                        </li>
+                        <li>
+                            系統（路線の経路パターン）の情報を入力する —
+                            <span th:if="${permRead['OPERATION004']}"><a th:href="@{${@commonService.uri('OPERATION004')}}">系統管理</a></span>
+                            <span th:if="${!permRead['OPERATION004']}">系統管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">5. 路線の時刻表を登録する</div>
+                    <ul class="items">
+                        <li>
+                            ダイヤ改正日を入力する —
+                            <span th:if="${permRead['PLANDAIYA001']}"><a th:href="@{${@commonService.uri('PLANDAIYA001')}}">便ダイヤ改正管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA001']}">便ダイヤ改正管理</span>
+                        </li>
+                        <li>
+                            ダイヤの情報を入力する —
+                            <span th:if="${permRead['OPERATION005']}"><a th:href="@{${@commonService.uri('OPERATION005')}}">便ダイヤ管理</a></span>
+                            <span th:if="${!permRead['OPERATION005']}">便ダイヤ管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">6. 路線の運賃を登録する</div>
+                    <ul class="items">
+                        <li>
+                            運賃改定日を入力する —
+                            <span th:if="${permRead['PLANDAIYA004']}"><a th:href="@{${@commonService.uri('PLANDAIYA004')}}">運賃改定管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA004']}">運賃改定管理</span>
+                        </li>
+                        <li>
+                            運賃の情報を入力する —
+                            <span th:if="${permRead['OPERATION006']}"><a th:href="@{${@commonService.uri('OPERATION006')}}">運賃管理</a></span>
+                            <span th:if="${!permRead['OPERATION006']}">運賃管理</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 右: ダイヤ改正をする場合 -->
+            <section class="card">
+                <h2>ダイヤ改正をする場合</h2>
+
+                <div class="step">
+                    <div class="title">1. 路線の時刻表のみ変更となる場合</div>
+                    <ul class="items">
+                        <li>
+                            ダイヤ改正日を入力する —
+                            <span th:if="${permRead['PLANDAIYA001']}"><a th:href="@{${@commonService.uri('PLANDAIYA001')}}">便ダイヤ改正管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA001']}">便ダイヤ改正管理</span>
+                        </li>
+                        <li>
+                            過去のダイヤ情報をもとにダイヤの情報を入力する —
+                            <span th:if="${permRead['OPERATION005']}"><a th:href="@{${@commonService.uri('OPERATION005')}}">便ダイヤ管理</a></span>
+                            <span th:if="${!permRead['OPERATION005']}">便ダイヤ管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">2. 停車する停留所が追加される場合</div>
+                    <ul class="items">
+                        <li>
+                            停留所と標柱の情報を入力する —
+                            <span th:if="${permRead['BASEINFO006']}"><a th:href="@{${@commonService.uri('BASEINFO006')}}">停留所・標柱管理</a></span>
+                            <span th:if="${!permRead['BASEINFO006']}">停留所・標柱管理</span>
+                        </li>
+                        <li>
+                            路線に停留所を追加する —
+                            <span th:if="${permRead['OPERATION003']}"><a th:href="@{${@commonService.uri('OPERATION003')}}">路線管理</a></span>
+                            <span th:if="${!permRead['OPERATION003']}">路線管理</span>
+                        </li>
+                        <li>
+                            変更後の経路で系統を登録する —
+                            <span th:if="${permRead['OPERATION004']}"><a th:href="@{${@commonService.uri('OPERATION004')}}">系統管理</a></span>
+                            <span th:if="${!permRead['OPERATION004']}">系統管理</span>
+                        </li>
+                        <li>
+                            ダイヤ改正日を入力する —
+                            <span th:if="${permRead['PLANDAIYA001']}"><a th:href="@{${@commonService.uri('PLANDAIYA001')}}">便ダイヤ改正管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA001']}">便ダイヤ改正管理</span>
+                        </li>
+                        <li>
+                            過去のダイヤ情報をもとにダイヤの情報を入力する —
+                            <span th:if="${permRead['OPERATION005']}"><a th:href="@{${@commonService.uri('OPERATION005')}}">便ダイヤ管理</a></span>
+                            <span th:if="${!permRead['OPERATION005']}">便ダイヤ管理</span>
+                        </li>
+                        <li>
+                            運賃改定日を入力する —
+                            <span th:if="${permRead['PLANDAIYA004']}"><a th:href="@{${@commonService.uri('PLANDAIYA004')}}">運賃改定管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA004']}">運賃改定管理</span>
+                        </li>
+                        <li>
+                            運賃の情報を入力する —
+                            <span th:if="${permRead['OPERATION006']}"><a th:href="@{${@commonService.uri('OPERATION006')}}">運賃管理</a></span>
+                            <span th:if="${!permRead['OPERATION006']}">運賃管理</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <div class="title">3. 停車しなくなる停留所がある場合</div>
+                    <ul class="items">
+                        <li>
+                            変更後の経路で系統を登録する —
+                            <span th:if="${permRead['OPERATION004']}"><a th:href="@{${@commonService.uri('OPERATION004')}}">系統管理</a></span>
+                            <span th:if="${!permRead['OPERATION004']}">系統管理</span>
+                        </li>
+                        <li>
+                            ダイヤ改正日を入力する —
+                            <span th:if="${permRead['PLANDAIYA001']}"><a th:href="@{${@commonService.uri('PLANDAIYA001')}}">便ダイヤ改正管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA001']}">便ダイヤ改正管理</span>
+                        </li>
+                        <li>
+                            過去のダイヤ情報をもとにダイヤの情報を入力する —
+                            <span th:if="${permRead['OPERATION005']}"><a th:href="@{${@commonService.uri('OPERATION005')}}">便ダイヤ管理</a></span>
+                            <span th:if="${!permRead['OPERATION005']}">便ダイヤ管理</span>
+                        </li>
+                        <li>
+                            運賃改定日を入力する —
+                            <span th:if="${permRead['PLANDAIYA004']}"><a th:href="@{${@commonService.uri('PLANDAIYA004')}}">運賃改定管理</a></span>
+                            <span th:if="${!permRead['PLANDAIYA004']}">運賃改定管理</span>
+                        </li>
+                        <li>
+                            運賃の情報を入力する —
+                            <span th:if="${permRead['OPERATION006']}"><a th:href="@{${@commonService.uri('OPERATION006')}}">運賃管理</a></span>
+                            <span th:if="${!permRead['OPERATION006']}">運賃管理</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+</th:block>

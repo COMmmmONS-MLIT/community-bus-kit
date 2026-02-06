@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.CalendarDetailsMapper">
+
+    <select id="isDayWeekTypePresent" resultType="boolean">
+        SELECT EXISTS (SELECT 1
+          FROM "calendar_details"
+         WHERE "del_flag"            = 0
+           AND "calendar_id"   = #{calendarId}
+           AND "day_week_type" = #{dayWeekType}
+        )
+    </select>
+
+    <select id="getCalendarDetailsByCalendarId" resultType="CalendarDetailDto">
+        SELECT "calendar_detail_id"
+             , "calendar_id"
+             , "day_week_type"
+          FROM "calendar_details"
+         WHERE "del_flag"    = 0
+           AND "calendar_id" = #{calendarId}
+    </select>
+
+    <insert id="registerCalendarDetail" useGeneratedKeys="true" keyProperty="calendarDetailId">
+        INSERT INTO "calendar_details" (
+               "calendar_id"
+             , "day_week_type"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{calendarId}
+             , #{dayWeekType}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="deleteCalendarDetail">
+        UPDATE "calendar_details"
+           SET "del_flag"           = #{calendarDetailId}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"           = 0
+           AND "calendar_detail_id" = #{calendarDetailId}
+    </update>
+
+</mapper>

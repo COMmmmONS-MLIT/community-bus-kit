@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='アカウント管理'">
+<body>
+    <!-- start: contents -->
+    <div layout:fragment="main_contents" th:object="${usersDetailForm}">
+        <!-- PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrap">
+            <div class="row">
+                <div class="col-md-12 form-horizontal">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong th:text="アカウント__*{dispMode.text}__確認">アカウント登録確認</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:insert="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:insert="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:insert="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">ログインID</span></label>
+                                <div class="col-md-10 input-group">
+                                    <input th:value="*{email}" class="form-control" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group col-md-12">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">パスワード</span></label>
+                                    <div class="col-md-9 radio">
+                                        <input type="checkbox" th:field="*{pwdChgFlag}" value="0" th:checked="*{pwdChgFlag} eq 0" disabled="disabled" />
+                                        <label class="inner-title">ログイン時変更必須</label>
+                                        <div>
+                                            <input type="text" th:field="*{password}"
+                                                class="form-control" style="width: 200px;" disabled="disabled" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span
+                                    class="form-item-name">姓</span></label>
+                                <div class="col-md-10 input-group">
+                                    <input th:value="*{lastName}" class="form-control" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span
+                                    class="form-item-name">名</span></label>
+                                <div class="col-md-10 input-group">
+                                    <input th:value="*{firstName}" class="form-control" disabled>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">アカウント区分</span></label>
+                                <div class="col-md-10">
+                                    <div class="col-md-12 radio">
+                                        <th:block th:each="account : ${T(maint.enums.AccountDivision).values()}">
+                                            <input type="radio" name="accountDivision" th:value="${account.value}"
+                                                   th:checked="${account.value} eq *{accountDivision}" disabled="disabled"/>
+                                            <label class="inner-title" th:text="${account.text}"></label>
+                                        </th:block>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">事業者</span></label>
+                                <div class="col-md-9">
+                                    <th:block th:each="agency : ${agencyList}">
+                                        <input th:if="${agency.businessCorpId} eq *{agencyId}" th:value="${agency.name}" class="form-control" disabled>
+                                    </th:block>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">運行会社</span></label>
+                                <div class="col-md-9">
+                                    <th:block th:each="company : ${operatingCompanyList}">
+                                        <input th:if="${company.operatingCompanyId} eq *{operatingCompanyId}" th:value="${company.operatingName}" class="form-control" disabled>
+                                    </th:block>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">権限</span></label>
+                                <div class="col-md-9">
+                                    <th:block th:each="permRole : ${permRoles}">
+                                        <input th:if="${permRole.permRoleId} eq *{permRoleId}" th:value="${permRole.permRoleName}" class="form-control" disabled>
+                                    </th:block>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">利用区分</span></label>
+                                <div class="col-md-10">
+                                    <div class="col-md-12 radio">
+                                        <input type="radio" name="usageDivision" id="usageDivision__0__" value="0"
+                                               th:checked="*{usageDivision eq 0}" disabled/>
+                                        <label class="inner-title" for="usageDivision__0__" >利用中</label>
+                                        <input type="radio" name="usageDivision" id="usageDivision__1__" value="1"
+                                               th:checked="*{usageDivision eq 1}" disabled/>
+                                        <label class="inner-title" for="usageDivision__1__">利用不可</label>
+                                        <p th:if="${#fields.hasErrors('usageDivision')}" th:errors="*{usageDivision}" class="text-danger" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" th:if="*{dispMode.value} eq '1' and *{accountLockAt} != null and *{accountLockAt} != ''">
+                            <label class="col-md-1 control-label" >
+                                    <span class="form-item-name">ロック時間</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="d-flex align-items-center">
+                                        <input class="form-control w-auto" type="text" th:field="*{accountLockAt}" max="9999-12-31" th:classappend="${#fields.hasErrors('accountLockAt')} ? 'error' : ''"  style="width: 170px;" disabled/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" th:if="*{dispMode.value} eq '1' and *{accountLockAt} != null and *{accountLockAt} != ''">
+                                <label class="col-md-1 control-label">
+                                    <span class="form-item-name">ロック解除</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" id="unlock" name="unlock" th:field="*{lockFlag}" th:checked="*{lockFlag}" disabled/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="pull-right">
+                            <form class="form-horizontal" method="post" th:action="@{#}">
+                                <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                                <input type="hidden" th:field="*{page}">
+                                <a th:if="*{dispMode.value} eq '3'" th:href="'/system/users/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
+                                <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/system/users/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
+                                <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/system/users/detail/register/}"
+                                        th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <!-- end: contents -->
+</body>
+</html>

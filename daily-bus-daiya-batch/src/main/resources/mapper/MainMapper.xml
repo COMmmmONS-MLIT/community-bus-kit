@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="MainMapper">
+
+    <select id="getBusServices" resultType="jp.co.bus.batch.dto.BusServiceInfoDto">
+        SELECT "bs"."bus_service_id"
+             , "bs"."calendar_id"
+             , "bs"."vehicle_id"
+             , "a"."business_corp_id"
+             , "dr"."service_start_date"
+             , "dr"."service_end_date"
+          FROM "bus_services" "bs"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"               = 0
+           AND "dr"."daiya_revision_id"      = "bs"."daiya_revision_id"
+           AND "dr"."service_start_date" &lt;= (CURRENT_DATE + INTERVAL '2 month')::date
+           AND "dr"."service_end_date"   &gt;= CURRENT_DATE
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "dr"."rosen_id"
+          JOIN "line_routes" "lr"
+            ON "lr"."del_flag"               = 0
+           AND "lr"."available_flag"         = 1
+           AND "lr"."line_route_id"          = "bs"."line_route_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+         WHERE "bs"."del_flag"               = 0
+      ORDER BY "dr"."daiya_revision_id"
+             , "dr"."rosen_id"
+             , "bs"."bus_service_id"
+    </select>
+
+    <select id="getCalendarsById" resultType="jp.co.bus.batch.dto.CalendarInfoDto">
+        SELECT "c"."calendar_id"
+             , "c"."business_corp_id"
+             , "c"."week_designatable_flag"
+             , "c"."week_designation_type"
+             , "c"."calendar_type"
+             , "c"."available_flag"
+             , "cd"."day_week_type"
+          FROM "calendars" "c"
+     LEFT JOIN "calendar_details" "cd"
+            ON "cd"."del_flag"        = 0
+           AND "cd"."calendar_id"     = "c"."calendar_id"
+         WHERE "c"."del_flag"         = 0
+           AND "c"."available_flag"   = 1
+           AND "c"."calendar_id"      = #{calendarId}
+           AND "c"."business_corp_id" = #{businessCorpId}
+    </select>
+
+    <select id="getHolidays" resultType="java.lang.String">
+      SELECT "holiday_date"
+        FROM "holidays"
+       WHERE "del_flag"           = 0
+         AND "business_corp_id"   = #{businessCorpId}
+         AND "holiday_date" BETWEEN CURRENT_DATE
+         AND CAST(#{serviceEndDate} AS date)
+    ORDER BY "holiday_date"
+    </select>
+
+    <select id="getFutureCancelDatesByCalendarId" resultType="java.lang.String">
+        SELECT "cd"."operation_cancel_date"
+          FROM "calendar_cancel_dates" "cd"
+          JOIN "calendars" "c"
+            ON "c"."del_flag"                  = 0
+           AND "c"."available_flag"            = 1
+           AND "c"."business_corp_id"          = #{businessCorpId}
+           AND "c"."calendar_id"               = "cd"."calendar_id"
+         WHERE "cd"."del_flag"                 = 0
+           AND "cd"."operation_cancel_date" &gt; CURRENT_DATE
+           AND "cd"."calendar_id"              = #{calendarId}
+    </select>
+
+    <select id="getFutureDesignatedDatesByCalendarId" resultType="java.lang.String">
+        SELECT "cd"."operation_designated_date"
+          FROM "calendar_designated_dates" "cd"
+          JOIN "calendars" "c"
+            ON "c"."del_flag"                      = 0
+           AND "c"."available_flag"                = 1
+           AND "c"."business_corp_id"              = #{businessCorpId}
+           AND "c"."calendar_id"                   = "cd"."calendar_id"
+         WHERE "cd"."del_flag"                     = 0
+           AND "cd"."operation_designated_date" &gt; CURRENT_DATE
+           AND "cd"."calendar_id"                  = #{calendarId}
+    </select>
+
+    <select id="getDailyBusDaiyasByBusServiceId" resultType="jp.co.bus.batch.dto.DailyBusDaiyaDto">
+      SELECT "daily_bus_daiya_id"
+           , "bus_service_id"
+           , "service_date"
+           , "sales_cancel_flg"
+           , "operation_cancel_flg"
+           , "vehicle_id"
+      FROM "daily_bus_daiyas"
+      WHERE "del_flag" = 0
+        AND "bus_service_id" = #{busServiceId}
+        AND "service_date" &gt;= CAST(#{serviceStartDate} AS date)
+        AND "service_date" &lt;= CAST(#{serviceEndDate} AS date)
+    </select>
+
+    <select id="getDailyBusDaiyasByServiceIdAndDateList" resultType="jp.co.bus.batch.dto.DailyBusDaiyaDto">
+        SELECT "daily_bus_daiya_id"
+             , "bus_service_id"
+             , "service_date"
+             , "sales_cancel_flg"
+             , "operation_cancel_flg"
+             , "vehicle_id"
+          FROM "daily_bus_daiyas"
+         WHERE "del_flag"       = 0
+           AND "bus_service_id" = #{busServiceId}
+           AND "service_date" IN
+        <foreach collection="targetDates" item="d" open="(" close=")" separator=",">
+            CAST(#{d} AS date)
+        </foreach>
+    </select>
+
+    <select id="getDailyBusDaiyasByServiceIdAndDateListNotIn" resultType="java.lang.Long">
+        SELECT "daily_bus_daiya_id"
+          FROM "daily_bus_daiyas"
+         WHERE "del_flag" = 0
+           AND "bus_service_id"   = #{busServiceId}
+           AND "service_date"  &gt; CURRENT_DATE
+           AND "service_date" NOT IN
+        <foreach collection="targetDates" item="d" open="(" close=")" separator=",">
+            CAST(#{d} AS date)
+        </foreach>
+    </select>
+
+    <select id="isDatePresent" resultType="java.lang.String">
+        SELECT CASE WHEN EXISTS (
+        SELECT 1
+          FROM "holidays"
+         WHERE "del_flag"         = 0
+           AND "business_corp_id" = #{businessCorpId}
+           AND "holiday_date"     = CAST(#{targetDate} AS date)
+        ) THEN '1' ELSE '0' END AS exists_flag;
+    </select>
+
+    <select id="isDayWeekTypePresent" resultType="java.lang.String">
+        SELECT CASE WHEN EXISTS (
+        SELECT 1
+        FROM "calendar_details"
+        WHERE "del_flag"      = 0
+          AND "calendar_id"   = #{calendarId}
+          AND "day_week_type" = #{dayWeekType}
+       ) THEN '1' ELSE '0' END AS exists_flag;
+    </select>
+
+    <update id="deleteDailyBusDaiya">
+        UPDATE "daily_bus_daiyas"
+           SET "del_flag"           = #{dailyBusDaiyaId}
+      <include refid="updateFunctionInfo"/>
+         WHERE "del_flag"           = 0
+           AND "daily_bus_daiya_id" = #{dailyBusDaiyaId}
+    </update>
+
+    <update id="updateDailyBusDaiya">
+        UPDATE "daily_bus_daiyas"
+           SET "operation_cancel_flg" = #{operationCancelFlg}
+      <include refid="updateFunctionInfo"/>
+         WHERE "del_flag"             = 0
+           AND "daily_bus_daiya_id"   = #{dailyBusDaiyaId}
+    </update>
+
+    <insert id="insertDailyBusDaiya">
+        INSERT INTO "daily_bus_daiyas" (
+               "bus_service_id"
+             , "service_date"
+             , "sales_cancel_flg"
+             , "operation_cancel_flg"
+             , "created_user"
+             , "created_at"
+             , "updated_user"
+             , "updated_at"
+        )
+        VALUES (
+               #{busServiceId}
+             , CAST(#{serviceDate} AS date)
+             , #{salesCancelFlg}
+             , #{operationCancelFlg}
+        <include refid="insertFunctionInfo"/>
+        )
+    </insert>
+
+    <sql id="updateFunctionInfo">
+        , "updated_user" = 'BATCH'
+        , "updated_at"   = CURRENT_TIMESTAMP
+    </sql>
+
+    <sql id="insertFunctionInfo">
+        , 'BATCH'
+        , CURRENT_TIMESTAMP
+        , 'BATCH'
+        , CURRENT_TIMESTAMP
+    </sql>
+
+</mapper>

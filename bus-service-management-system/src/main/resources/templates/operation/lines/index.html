@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='路線管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${linesSearchForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <form method="post" th:action="@{#}" class="form-horizontal">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>路線一覧</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label" style="min-width: 140px"><span class="badge badge-danger"></span> <span class="form-item-name">路線名称</span></label>
+                                        <div class="col-md-9">
+                                            <div class="input-group col-md-12 div-flex">
+                                                <input type="text" th:field="*{rosenName}" class="form-control" maxlength="100" style="width: 300px;"
+                                                       th:classappend="${#fields.hasErrors('rosenName')} ? 'error' : ''" />
+                                                <div><span class="help-block" style="width: 100px; color:red">※部分一致</span></div>
+                                            </div>
+                                            <p th:if="${#fields.hasErrors('rosenName')}" th:errors="*{rosenName}" class="text-danger" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">利用区分</span></label>
+                                        <div class="col-md-9">
+                                            <div class="radio col-md-12">
+                                                <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                                    <input type="radio" name="searchAvailableFlag" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                                                           th:checked="${flg.value} == (*{searchAvailableFlag} != null ? *{searchAvailableFlag} : '1')" th:classappend="${#fields.hasErrors('searchAvailableFlag')} ? 'error' : ''"/>
+                                                    <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}"></label>
+                                                </th:block>
+                                            </div>
+                                            <p th:if="${#fields.hasErrors('searchAvailableFlag')}" th:errors="*{searchAvailableFlag}" class="text-danger" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-footer">
+                            <button th:if="${writeFlag}" type="button" class="btn btn-success btn-default btn-submit" onclick="location.href='/operation/lines/detail/'">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>新規登録
+                            </button>
+                            <div style="display: flex;" class="pull-right">
+                                <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/operation/lines/}">
+                                    <i class="fa fa-search" aria-hidden="true"></i>検索
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                            <tr role="row">
+                                <th style="width: 60px;">ID</th>
+                                <th>事業者名</th>
+                                <th>路線名称</th>
+                                <th>利用期間</th>
+                                <th style="width: 70px;">利用可否</th>
+                                <th style="width: 80px;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody th:if="${pager} neq null" style="word-break: break-all;">
+                            <tr role="row" class="odd" th:each="line : ${pager.list}">
+                                <td th:text="${line.rosenId}">1</td>
+                                <td th:text="${line.name}">事業者名</td>
+                                <td th:text="${line.rosenName}">路線名</td>
+                                <td th:text="${line.serviceStartDate} + ' ~ ' + ${line.serviceEndDate}">利用期間</td>
+                                <td th:text="${line.availableFlag}? '利用中':'利用不可'">利用中</td>
+                                <td>
+                                    <form th:if="${writeFlag}" method="post" th:action="@{/operation/lines/detail/}">
+                                        <input type="hidden" name="rosenId" th:value="${line.rosenId}" />
+                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <button type="submit" class="btn btn-info btn-sm double-click">変更</button>
+                                    </form>
+                                    <form th:if="${!writeFlag}" method="post" th:action="@{/operation/lines/detail/content/}">
+                                        <input type="hidden" name="rosenId" th:value="${line.rosenId}" />
+                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <button type="submit" class="btn btn-info btn-sm double-click">確認</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div th:replace="~{common/paginate :: pagination('/operation/lines/',${pager})}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+    </div>
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

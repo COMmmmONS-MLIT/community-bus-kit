@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='便ダイヤ改正確認'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${daiyaRevisionsDetailForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12 form-horizontal">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong th:text="便ダイヤ改正__*{dispMode.text}__確認">便ダイヤ改正確認</strong>
+                        </h3>
+                    </div>
+                    <!-- START メッセージ表示部 -->
+                    <div th:insert="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                    <div th:insert="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                    <div th:insert="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                    <!-- END メッセージ表示部 -->
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="badge badge-danger require-txt">必須</span>
+                                <span class="form-item-name">路線名</span>
+                            </label>
+                            <div class="col-md-9">
+                                <th:block th:each="company : ${linesList}">
+                                    <input th:if="${company.rosenId} eq *{rosenId}" th:value="${company.rosenName}" class="form-control" disabled>
+                                </th:block>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="badge badge-danger require-txt">必須</span>
+                                <span class="form-item-name">運行年月開始日</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control w-auto" type="date" th:field="*{serviceStartDate}" max="9999-12-31" th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="badge badge-danger require-txt">必須</span>
+                                <span class="form-item-name" >ダイヤ改正理由</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="input-group col-md-11 div-flex">
+                                    <input type="text" name="daiyaRevisionName" th:value="*{daiyaRevisionName}" class="form-control" style="width: 300px;" th:classappend="${#fields.hasErrors('daiyaRevisionName')} ? 'error' : ''" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer" >
+                        <form class="form-horizontal" method="post" th:action="@{#}" style="text-align: right;">
+                            <input type="hidden" name="daiyaRevisionId" th:value="*{daiyaRevisionId}">
+                            <input type="hidden" th:field="*{page}">
+                            <a th:if="*{dispMode.value} eq '3'" th:href="'/planDaiya/daiyaRevisions/' + *{page} + '/'" class=" btn btn-default">戻る</a>
+                            <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/planDaiya/daiyaRevisions/detail/back/}" class="btn btn-default double-click" style="margin-right: 5px">戻る</button>
+                            <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/planDaiya/daiyaRevisions/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+</div>
+<!-- end: contents -->
+</body>
+
+</html>

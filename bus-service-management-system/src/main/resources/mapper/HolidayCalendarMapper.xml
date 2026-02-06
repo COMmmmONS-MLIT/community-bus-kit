@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.HolidayCalendarMapper">
+
+    <select id="getHolidayCalendarByTargetDate" resultType="HolidayCalendarInfoDto">
+        SELECT "h"."holiday_id"
+             , "h"."holiday_date"
+          FROM "holidays" "h"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"         = 0
+           AND "a"."available_flag"   = 1
+           AND "a"."business_corp_id" = "h"."business_corp_id"
+         WHERE "h"."del_flag"         = 0
+           AND "h"."business_corp_id" = #{businessCorpId}
+           AND "h"."holiday_date" BETWEEN
+               CAST(date_trunc('month', CAST(#{targetDate} AS date) - INTERVAL '1 month') AS date)
+           AND CAST(date_trunc('month', CAST(#{targetDate} AS date) + INTERVAL '3 months') - INTERVAL '1 day' AS date)
+      ORDER BY "h"."holiday_date"
+    </select>
+
+    <select id="isDatePresent" resultType="boolean">
+        SELECT EXISTS (SELECT 1
+          FROM "holidays"
+         WHERE "del_flag"         = 0
+           AND "business_corp_id" = #{businessCorpId}
+           AND "holiday_date"     = CAST(#{date} AS date)
+        )
+    </select>
+
+    <select id="getCalendarDatesList" resultType="java.lang.String">
+        SELECT DISTINCT TO_CHAR("holiday_date", 'YYYYMMDD') AS "holidayDate"
+          FROM "holidays"
+         WHERE "del_flag"                                    = 0
+           AND "business_corp_id"                            = #{businessCorpId}
+      ORDER BY "holidayDate" ASC
+    </select>
+
+    <insert id="registerHoliday" useGeneratedKeys="true" keyProperty="holidayId">
+        INSERT INTO "holidays" (
+                    "business_corp_id"
+                  , "holiday_date"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{session.businessCorpId}
+             , CAST(#{holidayDate} AS date)
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="deleteHoliday">
+        UPDATE "holidays"
+           SET "del_flag"         = "holiday_id"
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"         = 0
+           AND "business_corp_id" = #{session.businessCorpId}
+           AND "holiday_date"  &gt; CURRENT_DATE
+    </update>
+
+</mapper>

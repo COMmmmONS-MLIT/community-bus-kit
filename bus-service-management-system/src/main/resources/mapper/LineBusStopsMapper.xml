@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.LineBusStopsMapper">
+
+    <select id="selectValidStopsForRevision" resultType="map">
+        SELECT "lbs"."rosen_bus_stop_id"     AS "stop_id"
+             , "lbs"."ride_alight_division"  AS "boarding_type"
+             , "lbs"."rosen_id"
+             , "lbs"."sequence_no"
+          FROM "line_bus_stops"              AS "lbs"
+    INNER JOIN "lines"                       AS "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."business_corp_id"        = CAST(#{businessCorpId} AS INTEGER)
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "lbs"."rosen_id"
+    INNER JOIN "charge_revisions"            AS "rc"
+            ON "rc"."del_flag"               = 0
+           AND "rc"."charge_revision_id"     = CAST(#{chargeRevisionId} AS INTEGER)
+           AND "rc"."rosen_id"               = "l"."rosen_id"
+    INNER JOIN "bus_stops"                   AS "bs"
+            ON "bs"."del_flag"               = 0
+           AND "bs"."bus_stop_id"            = "lbs"."bus_stop_id"
+         WHERE "lbs"."del_flag"              = 0
+      ORDER BY "lbs"."rosen_id"              ASC
+             , "lbs"."sequence_no"           ASC
+    </select>
+
+    <select id="getExpectedToStops" resultType="map">
+        SELECT "lbs_to"."rosen_bus_stop_id"     AS "stop_id"
+             , "lbs_to"."sequence_no"           AS "sequence_no"
+          FROM "line_bus_stops"                 AS "lbs_from"
+    INNER JOIN "line_bus_stops"                 AS "lbs_to"
+            ON "lbs_to"."del_flag"              = 0
+           AND "lbs_to"."ride_alight_division"  &gt; 0
+           AND "lbs_to"."rosen_id"              = "lbs_from"."rosen_id"
+           AND "lbs_to"."sequence_no"           &gt; "lbs_from"."sequence_no"
+         WHERE "lbs_from"."del_flag"            = 0
+           AND "lbs_from"."ride_alight_division" &lt;&gt; 1
+           AND "lbs_from"."rosen_id"            = CAST(#{rosenId} AS INTEGER)
+           AND "lbs_from"."rosen_bus_stop_id"   = CAST(#{fromStopId} AS INTEGER)
+    </select>
+
+    <insert id="insert" parameterType="java.util.List">
+        INSERT INTO line_bus_stops (
+        rosen_id,
+        bus_stop_id,
+        ride_alight_division,
+        sequence_no,
+        created_user,
+        created_at,
+        updated_user,
+        updated_at
+        )
+        VALUES
+        <foreach collection="lineBusStopsEntity" item="item" separator=",">
+            (
+            #{item.rosenId},
+            #{item.busStopId},
+            #{item.rideAlightDivision},
+            #{item.sequenceNo},
+            #{item.session.userId},
+            CURRENT_TIMESTAMP,
+            #{item.session.userId},
+            CURRENT_TIMESTAMP
+            )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE "line_bus_stops"
+            SET "sequence_no" = #{item.sequenceNo}
+            , "updated_user" = #{item.session.userId}
+            , "updated_at" = CURRENT_TIMESTAMP
+            WHERE "rosen_bus_stop_id" = #{item.rosenBusStopId}
+        </foreach>
+    </update>
+
+</mapper>

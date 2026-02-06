@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='日毎便ダイヤ確認'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${dailyBusDaiyasDetailForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12 form-horizontal">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong th:text="日毎便ダイヤ__*{dispMode.text}__確認">日毎便ダイヤ確認</strong>
+                        </h3>
+                    </div>
+                    <!-- START メッセージ表示部 -->
+                    <div th:insert="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                    <div th:insert="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                    <div th:insert="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                    <!-- END メッセージ表示部 -->
+                    <div class="panel-body">
+
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name" >路線名</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="input-group col-md-11 div-flex">
+                                    <input type="text" name="rosenName"  th:value="*{rosenName}" class="form-control" style="width: 300px;" th:classappend="${#fields.hasErrors('rosenName')} ? 'error' : ''" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name" >往復区分</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="input-group col-md-11 div-flex">
+                                    <input type="text" name="lineDetailServiceDivision"  th:value="*{lineDetailServiceDivision == 1 ? '往路' : (lineDetailServiceDivision == 0 ? '復路' : '')}" class="form-control" style="width: 300px;" th:classappend="${#fields.hasErrors('lineDetailServiceDivision')} ? 'error' : ''" disabled/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name" >系統名</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="input-group col-md-11 div-flex">
+                                    <input type="text" name="lineRouteName"  th:value="*{lineRouteName}" class="form-control" style="width: 300px;" th:classappend="${#fields.hasErrors('lineRouteName')} ? 'error' : ''" disabled/>
+                                </div>
+                                <p th:if="${#fields.hasErrors('lineRouteName')}" th:errors="*{lineRouteName}" class="text-danger" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name">運行日</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control w-auto" type="text" th:value="*{serviceDate != null ? #strings.replace(#strings.substring(serviceDate, 0, 10), '-', '/') : ''}"  max="9999-12-31" th:classappend="${#fields.hasErrors('serviceDate')} ? 'error' : ''" disabled/>
+                                </div>
+                                <p th:if="${#fields.hasErrors('serviceDate')}" th:errors="*{serviceDate}" class="text-danger"></p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name" >始発停留所時刻</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control w-auto" type="text" th:value="*{busStopDepartureTime != null && #strings.length(busStopDepartureTime) > 0 ? (#strings.contains(busStopDepartureTime, ':') ? #strings.substring(busStopDepartureTime, 0, 5)   : (#strings.length(busStopDepartureTime) >= 4 ? #strings.substring(busStopDepartureTime, 0, 2) + ':' + #strings.substring(busStopDepartureTime, 2, 4)  : busStopDepartureTime)): ''}" th:classappend="${#fields.hasErrors('busStopDepartureTime')} ? 'error' : ''" disabled/>
+                                </div>
+                                <p th:if="${#fields.hasErrors('busStopDepartureTime')}" th:errors="*{busStopDepartureTime}" class="text-danger"></p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name">運行会社</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="d-flex align-items-center">
+                                    <input class="form-control w-auto" type="text" name="operatingCompanyName" th:value="*{operatingCompanyName}" th:classappend="${#fields.hasErrors('operatingCompanyName')} ? 'error' : ''" disabled/>
+                                </div>
+                                <p th:if="${#fields.hasErrors('operatingCompanyName')}" th:errors="*{operatingCompanyName}" class="text-danger"></p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name">車両名</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="d-flex align-items-center">
+                                    <th:block th:each="vehicle : ${vehicleList}">
+                                        <input th:if="${vehicle.vehicleId} eq *{vehicleId}" th:value="${vehicle.vehicleName}" class="form-control" disabled>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="badge badge-danger require-txt">必須</span>
+                                <span class="form-item-name" >運行状態</span>
+                            </label>
+                            <div class="col-md-9">
+                                <div class="radio col-md-12">
+                                    <input type="radio" name="salesCancelFlg" id="salesCancelFlg__0__" th:value="0" th:checked="*{salesCancelFlg eq 0}" disabled/>
+                                    <label class="inner-title" th:for="salesCancelFlg__0__" th:text="通常運行"></label>
+                                    <input type="radio" name="salesCancelFlg" id="salesCancelFlg__1__" th:value="1" th:checked="*{salesCancelFlg eq 1}" disabled/>
+                                    <label class="inner-title" th:for="salesCancelFlg__1__" th:text="運休便"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-1 control-label" style="width: 170px;">
+                                <span class="form-item-name">お知らせ</span>
+                            </label>
+                            <div class="col-md-10">
+                                <div class="input-group col-md-11 div-flex">
+                                      <textarea name="notification" th:id="notification" class="form-control" rows="7" maxlength="2000" style="width: 100%;"
+                                                th:classappend="${#fields.hasErrors('notification')} ? 'error' : ''"
+                                                th:text="*{notification}" disabled>>
+                                      </textarea>
+                                </div>
+                                <small style="color:#000;">※2000文字まで</small>
+                            </div>
+                        </div>
+                        <div class="panel panel-default" style="margin-top:20px;">
+                            <div class="panel-heading">
+                                <h4 class="panel-title"><strong>登録停留所</strong></h4>
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th style="width:120px;">系統順</th>
+                                        <th>停留所名</th>
+                                        <th style="width:120px;">乗降区分</th>
+                                        <th style="width:120px;">時刻</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody th:if="${lineRouteBusStopsList != null}">
+                                    <tr th:each="stop, iterStat : ${lineRouteBusStopsList}">
+                                        <td th:text="${stop.stopSequence}"></td>
+                                        <td th:text="${stop.signpostName}"></td>
+                                        <td th:if="${stop.rideAlightDivision == 0 && stop.dropOffDivision == 0}">乗降車</td>
+                                        <td th:if="${stop.rideAlightDivision == 0 && stop.dropOffDivision == 1}">乗車</td>
+                                        <td th:if="${stop.rideAlightDivision == 1 && stop.dropOffDivision == 0}">降車</td>
+                                        <td th:if="${stop.rideAlightDivision > 1 && stop.dropOffDivision > 1}"></td>
+                                        <td th:with="t=${stop.busStopDepartureTime}" th:text="${t != null && #strings.length(t) > 0 ? (#strings.contains(t, ':') ? #strings.substring(t, 0, 5)  : (#strings.length(t) >= 4 ? #strings.substring(t, 0, 2) + ':' + #strings.substring(t, 2, 4) : t)) : ''}"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default" style="margin-top:20px;">
+                            <div class="panel-heading">
+                                <h4 class="panel-title"><strong>操作履歴</strong></h4>
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th style="width:60px;">No</th>
+                                        <th style="width:200px;">操作内容</th>
+                                        <th>変更前</th>
+                                        <th>変更後</th>
+                                        <th style="width:140px;">更新者名</th>
+                                        <th style="width:180px;">更新日時</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody th:if="${dailyDaiyaOperationHistoriesList != null}">
+                                    <tr th:each="hist, idx : ${dailyDaiyaOperationHistoriesList}">
+                                        <td th:text="${idx.index + 1}"></td>
+                                        <td th:text="${hist.operation}"></td>
+                                        <td th:text="${hist.before == 0 ? '運行' : (hist.before == 1 ? '運休' : hist.before)}"></td>
+                                        <td th:text="${hist.after == 0 ? '運行' : (hist.after == 1 ? '運休' : hist.after)}"></td>
+                                        <td th:text="${hist.createdUser}"></td>
+                                        <td th:text="${hist.createdAt != null ? #strings.replace((#strings.length(hist.createdAt) >= 19? #strings.substring(hist.createdAt, 0, 19): hist.createdAt), '-', '/'): ''}"></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="panel-footer" >
+                        <form class="form-horizontal" method="post" th:action="@{#}" style="text-align: right;">
+                            <input type="hidden" th:field="*{page}">
+                            <input type="hidden" th:field="*{dispMode}">
+                            <input type="hidden" th:field="*{dailyBusDaiyaId}">
+                            <input type="hidden" th:field="*{rosenName}">
+                            <input type="hidden" th:field="*{lineDetailServiceDivision}">
+                            <input type="hidden" th:field="*{lineRouteName}">
+                            <input type="hidden" th:field="*{serviceDate}">
+                            <input type="hidden" th:field="*{busStopDepartureTime}">
+                            <input type="hidden" th:field="*{salesCancelFlg}">
+                            <input type="hidden" th:field="*{operationCancelFlg}">
+                            <input type="hidden" th:field="*{vehicleId}">
+                            <input type="hidden" th:field="*{vehicleName}">
+                            <a th:if="*{dispMode.value} eq '3'" th:href="'/planDaiya/dailyBusDaiyas/' + *{page} + '/'" class=" btn btn-default">戻る</a>
+                            <button th:if="*{dispMode.value} ne '3'" th:formaction="@{/planDaiya/dailyBusDaiyas/detail/back/}" class="btn btn-default double-click" style="margin-right: 5px">戻る</button>
+                            <button th:if="*{dispMode.value} ne '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/planDaiya/dailyBusDaiyas/detail/register/}" th:text="*{dispMode.value} ne '1' ? '登録' : '変更'">登録</button>
+                        </form>
+                    </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <style>
+        /* bodyを「画面高」or「内容高」で正しく伸ばす */
+        body.body-calendar-detail .page-container{
+            display: flex;
+            align-items: stretch;
+            min-height: 100vh;
+        }
+        /* sidebar を親の高さに追従させる */
+        body.body-calendar-detail .page-container .page-sidebar{
+            height: auto !important;
+            align-self: stretch;
+        }
+    </style>
+</div>
+<!-- end: contents -->
+</body>
+
+</html>

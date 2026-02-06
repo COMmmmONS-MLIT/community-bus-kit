@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='運賃改定管理'">
+<body>
+    <!-- start: contents -->
+    <div layout:fragment="main_contents" th:object="${chargeRevisionsDetailForm}">
+        <!-- PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrap">
+            <div class="row">
+                <div class="col-md-12">
+                    <form method="post" class="form-horizontal" id="confirmForm" th:action="@{/planDaiya/chargeRevisions/detail/confirm/}">
+                        <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                        <input type="hidden" th:field="*{page}">
+                        <input type="hidden" th:field="*{dispMode}">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <strong>運賃改定登録</strong>
+                                </h3>
+                            </div>
+                            <!-- START メッセージ表示部 -->
+                            <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                            <!-- END メッセージ表示部 -->
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">路線</span></label>
+                                    <div class="col-md-10">
+                                        <div class="input-group col-md-11 div-flex" style="width: 300px;">
+                                            <select id="busStopId" class="form-control select2" th:field="*{rosenId}" th:classappend="${#fields.hasErrors('rosenId')} ? 'error' : ''">
+                                                <option value="">------------</option>
+                                                <option th:each="line : ${lineList}" th:value="${line.rosenId}" th:text="${line.rosenName}"></option>
+                                            </select>
+                                        </div>
+                                        <span th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" class="text-danger" ></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">運賃適用開始日</span></label>
+                                    <div class="col-md-10">
+                                        <div class="d-flex align-items-center" style="width: 300px;">
+                                            <input class="form-control w-auto" type="date" th:field="*{serviceStartDate}" max="9999-12-31"
+                                                   th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''" />
+                                            <span class="mx-2"> ～ </span>
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">運賃改定名称</span></label>
+                                    <div class="col-md-10">
+                                        <div class="input-group col-md-11 div-flex">
+                                            <input type="text" name="revisionReason" maxlength="50" th:value="*{revisionReason}" class="form-control"
+                                                   style="width: 300px;" th:classappend="${#fields.hasErrors('revisionReason')} ? 'error' : ''" />
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('revisionReason')}" th:errors="*{revisionReason}" class="text-danger" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <div class="pull-right">
+                                    <a th:href="'/planDaiya/chargeRevisions/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
+                                    <button type="button" id="confirm" class="btn btn-primary pull-right double-click">確認</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <th:block th:insert="~{common/script :: common_script}"></th:block>
+        </div>
+        <!-- END PAGE CONTENT WRAPPER -->
+    </div>
+    <!-- end: contents -->
+</body>
+</html>

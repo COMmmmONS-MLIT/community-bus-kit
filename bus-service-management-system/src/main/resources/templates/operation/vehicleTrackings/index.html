@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='車両動態管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${vehicleTrackingsForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <form method="post" th:action="@{#}" class="form-horizontal">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>車両動態管理</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="form-group">
+                                        <label style="width: 150px" class="col-md-1 control-label ichiran-label"> <span class="badge badge-danger require-txt">必須</span>
+                                            <span class="form-item-name">車両</span>
+                                        </label>
+                                        <div class="col-md-9">
+                                            <select class="form-control select2" th:field="*{vehicleId}" th:classappend="${#fields.hasErrors('vehicleId')} ? 'error' : ''">
+                                                <option value="">------------</option>
+                                                <option th:each="vehicle : ${vehicleList}" th:value="${vehicle.vehicleId}" th:text="${vehicle.vehicleName}"></option>
+                                            </select>
+                                            <p th:if="${#fields.hasErrors('vehicleId')}" th:errors="*{vehicleId}" class="text-danger"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel-footer">
+                            <div style="display: flex;" class="pull-right">
+                                <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
+                                        th:formaction="@{/operation/vehicleTrackings/}">
+                                    地図表示
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row" th:if="${vehicleTrackingInfo != null}">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><strong>地図</strong></h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="vehicleMap"
+                             style="width:100%; height:480px;"
+                             th:data-latlng="${vehicleTrackingInfo.latitudeLongitude}"
+                             th:data-created="${vehicleTrackingInfo.createdDatetime}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:src="@{/js/operation/vehicleTrackings/index.js}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

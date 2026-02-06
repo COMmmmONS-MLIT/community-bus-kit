@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='便情報インポート'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${importBusServicesForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <form method="post" th:action="@{/operation/importBusServices/downloadExcel}" class="form-horizontal">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>便情報インポート</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div th:if="${downloadFlag}">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label" style="width: 130px;">
+                                            <span class="form-item-name">雛形ダウンロード</span>
+                                        </label>
+                                        <div class="col-md-10">
+                                            <button type="submit" class="btn btn-primary">DOWNLOAD</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div th:if="${!writeFlag}" class="col-md-10">
+                                        書込み権限がないため使用できません。
+                                    </div>
+                                    <div th:if="${writeFlag}" class="col-md-10">
+                                        <div class="input-group col-md-11 div-flex">
+                                            <div class="input-group col-md-11 div-flex">
+                                                <label for="fileInput" class="btn btn-success" style="margin-right:6px;">便選択</label>
+                                                <input type="file" id="fileInput" name="excel_file" accept=".xlsx"
+                                                       style="position:absolute; left:-9999px;"
+                                                       onchange="document.getElementById('selectedFileName').value = (this.files && this.files[0] ? this.files[0].name : (this.value ? this.value.split('\\').pop().split('/').pop() : ''))">
+                                                <input type="text" id="selectedFileName" class="form-control" style="width:300px;" readonly placeholder="選択されたファイル名を表示します">
+                                                <button type="button" id="btnUploadAjax" class="btn btn-success"
+                                                        style="margin-left: 5px; color:#000;"
+                                                        onclick='(function(){var f=document.getElementById("fileInput");var box=document.getElementById("uploadErrorBox"),list=document.getElementById("uploadErrorList");function showErr(arr){if(list){list.innerHTML="";(arr||[]).forEach(function(m){var li=document.createElement("li");li.textContent=m;list.appendChild(li);});if(box)box.style.display="";}else{alert((arr||[]).join("\n"));}try{window.scrollTo({top:0,behavior:"smooth"});}catch(e){}}if(!(f&&f.files&&f.files.length)){showErr(["ファイルを選択してください。"]);return;}var file=f.files[0];var s=document.getElementById("selectedFileName");if(s)s.value=file.name;var u=document.getElementById("uploadFileName");if(u)u.value=file.name;var fd=new FormData();fd.append("excel_file",file,file.name);fd.append("uploadFileName",file.name);var b=document.getElementById("btnUploadAjax");if(b)b.disabled=true;var token=(document.querySelector("meta[name=\"_csrf\"]")||{}).content||(document.querySelector("input[name=\"_csrf\"]")||{}).value;var header=(document.querySelector("meta[name=\"_csrf_header\"]")||{}).content||"X-CSRF-TOKEN";$.ajax({url:"/operation/importBusServices/register",type:"POST",data:fd,processData:false,contentType:false,dataType:"json",timeout:120000,beforeSend:function(x){if(token){x.setRequestHeader(header,token);}},success:function(r){if(r&&r.success){if(box){box.style.display="none";if(list)list.innerHTML="";}if(r.redirect){location.reload();return;}alert(r.message||"検証が完了しました。");}else{var errs=(r&&r.errors)||["不明なエラーが発生しました。"];showErr(errs);}},error:function(xhr){var errs=(xhr&&xhr.responseJSON&&xhr.responseJSON.errors)||["通信エラーが発生しました。しばらくしてからもう一度お試しください。"];showErr(errs);},complete:function(){if(b)b.disabled=false;}});})();'>
+                                                    UPLOAD
+                                                </button>
+                                                <input type="hidden" id="uploadFileName" name="uploadFileName">
+                                            </div>
+
+                                        </div>
+                                        <div style="flex-basis:100%; height:0;"></div>
+                                        <div id="uploadErrorBox" class="text-danger"
+                                             style="display:none; margin-top:10px; flex-basis:100%; width:100%;">
+                                            <ul id="uploadErrorList" style="margin:0;"></ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+        <script th:src="@{/js/operation/importBusServices/index.js}"></script>
+
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

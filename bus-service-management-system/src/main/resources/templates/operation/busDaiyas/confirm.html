@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='便ダイヤ管理'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${busDaiyasDetailForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" class="form-horizontal" id="confirmForm"
+                      th:action="@{/operation/busDaiyas/detail/register/}">
+                    <input type="hidden" name="originSessionKey" th:value="*{originSessionKey}">
+                    <input type="hidden" th:field="*{page}">
+                    <input type="hidden" th:field="*{rosenId}">
+                    <input type="hidden" th:field="*{lineRouteId}">
+                    <input type="hidden" th:field="*{lineRouteName}">
+                    <input type="hidden" th:field="*{lineDetailServiceDivision}">
+                    <input type="hidden" th:field="*{serviceStartDate}">
+                    <input type="hidden" th:field="*{serviceEndDate}">
+                    <input type="hidden" th:field="*{daiyaRevisionId}">
+                    <input type="hidden" th:field="*{daiyaRevisionName}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong th:text="便ダイヤ__*{dispMode.text}__確認">便ダイヤ</strong>
+                            </h3>
+                            <button type="button" class="btn btn-default btn-xs help-toggle"
+                                    onclick="toggleHelp('daiya-help', this)">①表示区分を選択す、... ＞
+                            </button>
+                            <div class="form-group">
+                                <div class="alert alert-info" id="daiya-help"
+                                     style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                    ①表示区分を選択する。※便ダイヤ情報の更新であれば「登録済みダイヤ情報」を選択。<br/>
+                                    ②新規登録であれば。<br/>
+                                    ③便ダイヤ選択ボタンをクリックし②で入力したファイルを選択。UPLOADボタンをクリック。
+                                </div>
+                            </div>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="width: 170px;">
+                                    <span class="form-item-name">路線名</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="input-group col-md-11 div-flex">
+                                        <input type="text" class="form-control" style="width: 300px;"
+                                               th:value="*{rosenName}" th:field="*{rosenName}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="width: 170px;">
+                                    <span class="form-item-name">往復区分</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="input-group col-md-11 div-flex">
+                                        <input type="text" class="form-control" style="width: 300px;"
+                                               th:value="*{lineDetailServiceDivision} eq 1 ? '往路':'復路'" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="width: 170px;">
+                                    <span class="form-item-name">運行期間</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="input-group col-md-11 div-flex">
+                                        <input type="text" class="form-control" style="width: 300px;"
+                                               th:value="${#strings.defaultString(displayForm.serviceStartDate,'') + ' ～ ' + #strings.defaultString(displayForm.serviceEndDate,'')}"
+                                               readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="width: 170px;">
+                                    <span class="form-item-name">ダイヤ改正理由</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="input-group col-md-11 div-flex">
+                                        <input type="text" class="form-control" style="width: 300px;"
+                                               th:value="*{daiyaRevisionName}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="width: 170px;">
+                                    <span class="badge badge-danger require-txt">必須</span>
+                                    <span class="form-item-name">表示区分</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="radio col-md-12">
+                                        <input disabled type="radio" th:field="*{displayDivisionFlag}" name="displayDivisionFlag"
+                                               th:id="displayDivisionFlag__0__" th:value="0"
+                                               th:checked="*{displayDivisionFlag eq 0 }"/>
+                                        <label class="inner-title" th:for="displayDivisionFlag__0__"
+                                               th:text="新規登録"></label>
+                                        <input disabled type="radio" th:field="*{displayDivisionFlag}" name="displayDivisionFlag"
+                                               th:id="displayDivisionFlag__1__" th:value="1"
+                                               th:checked="*{displayDivisionFlag eq 1}"/>
+                                        <label class="inner-title" th:for="displayDivisionFlag__1__"
+                                               th:text="登録済みダイヤ表示"></label>
+                                        <p th:if="${#fields.hasErrors('displayDivisionFlag')}"
+                                           th:errors="*{displayDivisionFlag}" class="text-danger"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="width: 170px;">
+                                    <span class="form-item-name">運行期間</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="d-flex align-items-center"
+                                         style="display: flex; align-items:center; gap:10px; flex-wrap:nowrap;">
+                                        <select disabled id="revisionSelect" class="form-control select2" name="revisionSelect">
+                                            <option value="">-------</option>
+                                            <option th:each="opt : ${busDaiyasOptionList}"
+                                                    th:value="${opt.daiyaRevisionId}"
+                                                    th:text="${opt.text}"
+                                                    th:attr="data-start=${opt.serviceStartDate},data-end=${opt.serviceEndDate}"
+                                                    th:selected="${opt.daiyaRevisionId == busDaiyasDetailForm.revisionSelect}">
+                                            </option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-submit"
+                                                th:formaction="@{/operation/busDaiyas/detail/disp/}">表示
+                                        </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('daiyaRevisionId')}" th:errors="*{daiyaRevisionId}"
+                                       class="text-danger"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><strong>ダイヤ情報</strong></h3>
+                                <button id="disp-change-button" type="button" class="btn btn-default btn-busdaiya-opt">
+                                    付加情報表示
+                                </button>
+                                <button id="add-bus-daiya" type="button"
+                                        class="btn btn-primary btn-submit btn-add-busDaiya">
+                                    便追加
+                                </button>
+                            </div>
+                            <div class="panel-body">
+                                <div id="bus-daiya-area" class="div-flex">
+                                    <div class="busDaiyaDetailHeaderCol">
+                                        <div class="busDaiyaDetailHeaderRow">No.</div>
+                                        <div class="busDaiyaDetailHeaderRowRequired">
+                                            <label class="control-label_busDaiyas">
+                                                <span class="badge badge-danger require-txt">必須</span>
+                                                <span class="busDaiyaDetailHeaderRequiredSpan">系統名</span>
+                                            </label>
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRowRequired">
+                                            <label class="control-label_busDaiyas">
+                                                <span class="badge badge-danger require-txt">必須</span>
+                                                <span class="busDaiyaDetailHeaderRequiredSpan">運行カレンダー情報</span>
+                                            </label>
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow">便結合区分</div>
+                                        <div class="busDaiyaDetailHeaderRow">仕業番号</div>
+                                        <div class="busDaiyaDetailHeaderRow">車両名</div>
+                                        <div class="busDaiyaDetailHeaderRowRequired">
+                                            <label class="control-label_busDaiyas">
+                                                <span class="badge badge-danger require-txt">必須</span>
+                                                <span class="busDaiyaDetailHeaderRequiredSpan">便番号</span>
+                                            </label>
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            便情報
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            便行先
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            便記号
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            便名称
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            営業所
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            車いす利用区分
+                                        </div>
+                                        <div class="busDaiyaDetailHeaderRow busDaiyaDetailOpt">
+                                            自転車持込区分
+                                        </div>
+                                        <div>
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                <tr>
+                                                    <th style="width: 60px;">運行順</th>
+                                                    <th style="width: 250px">停留所名称</th>
+                                                    <th style="width: 80px;">乗降区分</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr th:each="busDaiyasLineBusStop : ${busDaiyasRosenBusStopList}">
+                                                    <td th:text="${busDaiyasLineBusStop.sequenceNo}">運行順</td>
+                                                    <td th:text="${busDaiyasLineBusStop.busStopName}">停留所名</td>
+                                                    <th:block th:if="${busDaiyasLineBusStop.rideAlightDivision == 0}">
+                                                        <td th:if="*{lineDetailServiceDivision == 1}">乗車</td>
+                                                        <td th:if="*{lineDetailServiceDivision == 0}">降車</td>
+                                                    </th:block>
+                                                    <th:block th:if="${busDaiyasLineBusStop.rideAlightDivision == 1}">
+                                                        <td th:if="*{lineDetailServiceDivision == 1}">降車</td>
+                                                        <td th:if="*{lineDetailServiceDivision == 0}">乗車</td>
+                                                    </th:block>
+                                                    <th:block th:if="${busDaiyasLineBusStop.rideAlightDivision == 2}">
+                                                        <td>乗降車</td>
+                                                    </th:block>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="busDaiyaDetailCol" th:if="${busDaiyasRegistedList != null}"
+                                         th:each="registed, stat : ${busDaiyasRegistedList}">
+                                        <!-- 番号 -->
+                                        <input type="hidden" class="form-control" maxlength="20" disabled
+                                               th:name="busDaiyasRegistedList[__${stat.index}__].busServiceId"
+                                               th:value="${registed.busServiceId}">
+                                        <div class="busDaiyaDetailRow" style="text-align: center;">
+                                            <span class="busDaiyaDispColNumber"
+                                                  th:text="${registed.busDaiyaDispColNumber}"></span>
+                                        </div>
+                                        <!-- 系統 -->
+                                        <div class="busDaiyaDetailRow">
+                                            <select class="form-control select2" disabled
+                                                    th:name="busDaiyasRegistedList[__${stat.index}__].lineRouteId">
+                                                <option value="">------------</option>
+                                                <option th:each="opt : ${busDaiyasLineRouteOptionList}"
+                                                        th:value="${opt.lineRouteId}"
+                                                        th:text="${opt.lineRouteName}"
+                                                        th:selected="${registed.lineRouteId == opt.lineRouteId}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- 運行カレンダー -->
+                                        <div class="busDaiyaDetailRow">
+                                            <select class="form-control select2" disabled
+                                                    th:name="busDaiyasRegistedList[__${stat.index}__].calendarId">
+                                                <option value="">------------</option>
+                                                <option th:each="opt : ${busDaiyasCalendarOptionList}"
+                                                        th:value="${opt.calendarId}"
+                                                        th:text="${opt.calendarName}"
+                                                        th:selected="${registed.calendarId == opt.calendarId}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- 便結合区分 -->
+                                        <div class="busDaiyaDetailRow">
+                                            <input type="text" class="form-control" maxlength="20" disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].blockId"
+                                                   th:value="${registed.blockId}">
+                                        </div>
+                                        <!-- 仕業番号 -->
+                                        <div class="busDaiyaDetailRow">
+                                            <input type="text" class="form-control" maxlength="20" disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].workNumber"
+                                                   th:value="${registed.workNumber}">
+                                        </div>
+                                        <!-- 車両名 -->
+                                        <div class="busDaiyaDetailRow">
+                                            <select class="form-control select2" disabled
+                                                    th:name="busDaiyasRegistedList[__${stat.index}__].vehicleId">
+                                                <option value="">------------</option>
+                                                <option th:each="opt : ${busDaiyasVehicleOptionList}"
+                                                        th:value="${opt.vehicleId}"
+                                                        th:text="${opt.vehicleName}"
+                                                        th:selected="${registed.vehicleId == opt.vehicleId}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- 便番号 -->
+                                        <div class="busDaiyaDetailRow">
+                                            <input type="text" class="form-control" maxlength="50" minlength="1"
+                                                   disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].busServiceTripId"
+                                                   th:value="${registed.busServiceTripId}">
+                                        </div>
+                                        <!-- 便情報 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <input type="text" class="form-control" maxlength="50" disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].busServiceTripDesc"
+                                                   th:value="${registed.busServiceTripDesc}">
+                                        </div>
+                                        <!-- 便行先 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <input type="text" class="form-control" maxlength="50" disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].busServiceTripHeadsign"
+                                                   th:value="${registed.busServiceTripHeadsign}">
+                                        </div>
+                                        <!-- 便記号 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <input type="text" class="form-control" maxlength="50" disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].busServiceTripDescSymbol"
+                                                   th:value="${registed.busServiceTripDescSymbol}">
+                                        </div>
+                                        <!-- 便名称 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <input type="text" class="form-control" maxlength="50" disabled
+                                                   th:name="busDaiyasRegistedList[__${stat.index}__].busServiceName"
+                                                   th:value="${registed.busServiceName}">
+                                        </div>
+                                        <!-- 営業所 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <select class="form-control select2" disabled
+                                                    th:name="busDaiyasRegistedList[__${stat.index}__].officeId"
+                                                    style="width: 180px;">
+                                                <option value="">------------</option>
+                                                <option th:each="opt : ${busDaiyasOfficeOptionList}"
+                                                        th:value="${opt.officeId}"
+                                                        th:text="${opt.officeName}"
+                                                        th:selected="${registed.officeId == opt.officeId}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- 車いす利用区分 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <select class="form-control" disabled
+                                                    th:name="busDaiyasRegistedList[__${stat.index}__].wheelchairAccessibleType">
+                                                <option value="0"
+                                                        th:selected="${registed.wheelchairAccessibleType == 0}">情報なし
+                                                </option>
+                                                <option value="1"
+                                                        th:selected="${registed.wheelchairAccessibleType == 1}">1台は乗車可能
+                                                </option>
+                                                <option value="2"
+                                                        th:selected="${registed.wheelchairAccessibleType == 2}">不可
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <!-- 自転車持ち込み区分 -->
+                                        <div class="busDaiyaDetailRow busDaiyaDetailOpt">
+                                            <select class="form-control" disabled
+                                                    th:name="busDaiyasRegistedList[__${stat.index}__].bikesAllowedType">
+                                                <option value="0" th:selected="${registed.bikesAllowedType == 0}">
+                                                    情報なし
+                                                </option>
+                                                <option value="1" th:selected="${registed.bikesAllowedType == 1}">
+                                                    1台は持込可
+                                                </option>
+                                                <option value="2" th:selected="${registed.bikesAllowedType == 2}">不可
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div style="margin-top: 55px;">
+                                            <div class="busDaiyaInputDivArrDep"
+                                                 th:each="dtl, dtl_stat : ${registed.detailList}">
+                                                <input type="hidden" disabled
+                                                       th:value="${dtl.busDaiyaId}"
+                                                       th:name="busDaiyasRegistedList[__${stat.index}__].detailList[__${dtl_stat.index}__].busDaiyaId"
+                                                       value="">
+                                                <input type="hidden" disabled
+                                                       th:value="lineRouteBusStopId"
+                                                       th:name="busDaiyasRegistedList[__${stat.index}__].detailList[__${dtl_stat.index}__].lineRouteBusStopId"
+                                                       value="">
+                                                <div class="div-flex busDaiyaInputDivArr"
+                                                     th:if="${dtl.skipBusStopFlag == 1}">
+                                                    <span class="busDaiyaDetailSkipBusStop">↓</span>
+                                                    <input type="hidden" disabled
+                                                           th:name="busDaiyasRegistedList[__${stat.index}__].detailList[__${dtl_stat.index}__].skipBusStopFlag"
+                                                           th:value="${dtl.skipBusStopFlag}">
+                                                </div>
+                                                <div class="div-flex busDaiyaInputDivArr"
+                                                     th:if="${dtl.skipBusStopFlag == null or dtl.skipBusStopFlag == 0}">
+                                                    <label class="busDaiyaInputLabelArrDep">
+                                                        <span class="form-item-name">到着</span>
+                                                    </label>
+                                                    <input type="text" class="form-control busDaiyaInputArrDep"
+                                                           maxlength="4" minlength="1" disabled
+                                                           th:name="busDaiyasRegistedList[__${stat.index}__].detailList[__${dtl_stat.index}__].busStopArrivalTime"
+                                                           th:value="${dtl.busStopArrivalTime}">
+
+                                                </div>
+                                                <div class="div-flex busDaiyaInputDivDep"
+                                                     th:if="${dtl.skipBusStopFlag == null or dtl.skipBusStopFlag == 0}">
+                                                    <label class="busDaiyaInputLabelArrDep">
+                                                        <span class="form-item-name">出発</span>
+                                                    </label>
+                                                    <input type="text" class="form-control busDaiyaInputArrDep"
+                                                           maxlength="4" minlength="1" disabled
+                                                           th:name="busDaiyasRegistedList[__${stat.index}__].detailList[__${dtl_stat.index}__].busStopDepartureTime"
+                                                           th:value="${dtl.busStopDepartureTime}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer" style="text-align: right;">
+                            <button th:formaction="@{/operation/busDaiyas/detail/back/}"
+                                    class="btn btn-default double-click">戻る</button>
+                            <input type="submit" value="登録" class="btn btn-primary pull-right double-click"/>
+                        </div>
+                    </div>
+                    <div th:insert="~{common/modal :: passReissueDialog}" th:remove="tag"></div>
+                </form>
+            </div>
+        </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+        <script th:inline="javascript">
+            const rosenBusStops =  /*[[${busDaiyasLineRouteBusStopList}]]*/ "系統停留所情報";
+        </script>
+        <script th:src="@{/js/operation/busDaiyas/detail.js}"></script>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+    <style>
+        /* bodyを「画面高」or「内容高」で正しく伸ばす */
+        body.body-calendar-detail .page-container {
+            display: flex;
+            align-items: stretch;
+            min-height: 100vh;
+        }
+
+        /* sidebar を親の高さに追従させる */
+        body.body-calendar-detail .page-container .page-sidebar {
+            height: auto !important;
+            align-self: stretch;
+        }
+    </style>
+</div>
+<!-- end: contents -->
+</body>
+</html>

@@ -1,0 +1,370 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>maint</groupId>
+    <artifactId>bus-service-management-system</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>Maint base project</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.0</version>
+        <relativePath />
+    </parent>
+
+    <repositories>
+        <repository>
+            <id>in.house</id>
+            <url>https://nexus.willsmart.co.jp/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>17</java.version>
+        <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>LOCAL</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- System settings -->
+                <server.port>8080</server.port>
+                <thymeleaf.cache>false</thymeleaf.cache>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <maximum.active>2</maximum.active>
+                <minimum.idle>1</minimum.idle>
+                <!-- REDIS settings -->
+                <redis.host>localhost</redis.host>
+                <redis.password></redis.password>
+                <redis.port>6379</redis.port>
+                <!-- Log settings -->
+                <access.log.enabled>false</access.log.enabled>
+                <mvn.project.name>${project.artifactId}</mvn.project.name>
+                <mvn.log.dir>/tmp</mvn.log.dir>
+                <mvn.log.max.history>10</mvn.log.max.history>
+                <sql.log.level>debug</sql.log.level>
+                <sql.log.appender.ref><![CDATA[<appender-ref ref="STDOUT" />]]></sql.log.appender.ref>
+                <log.level>info</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="STDOUT" />]]></log.appender.ref>
+                <!-- AWS SES settings -->
+                <aws.ses.profile>xxx</aws.ses.profile>
+                <aws.ses.from.name>【LOCAL】コミュニティバス管理システム</aws.ses.from.name>
+                <aws.ses.from.email>xxx</aws.ses.from.email>
+                <system.admin.email>xxx</system.admin.email>
+                <!-- Google Map settings -->
+                <google.maps.api.key>xxx</google.maps.api.key>
+            </properties>
+        </profile>
+        <profile>
+            <id>MOCK</id>
+            <properties>
+                <!-- System settings -->
+                <server.port>80</server.port>
+                <thymeleaf.cache>true</thymeleaf.cache>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <maximum.active>10</maximum.active>
+                <minimum.idle>2</minimum.idle>
+                <!-- REDIS settings -->
+                <redis.host>localhost</redis.host>
+                <redis.password></redis.password>
+                <redis.port>6379</redis.port>
+                <!-- Log settings -->
+                <access.log.enabled>true</access.log.enabled>
+                <mvn.project.name>${project.artifactId}</mvn.project.name>
+                <mvn.log.dir>/var/log/tomcat</mvn.log.dir>
+                <mvn.log.max.history>90</mvn.log.max.history>
+                <sql.log.level>debug</sql.log.level>
+                <sql.log.appender.ref><![CDATA[<appender-ref ref="SQL_FILE" />]]></sql.log.appender.ref>
+                <log.level>info</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="FILE" /><appender-ref ref="ERROR_FILE" />]]></log.appender.ref>
+                <!-- AWS SES settings -->
+                <aws.ses.profile>xxx</aws.ses.profile>
+                <aws.ses.from.name>xxx</aws.ses.from.name>
+                <aws.ses.from.email>xxx</aws.ses.from.email>
+                <system.admin.email>xxx</system.admin.email>
+                <!-- Google Map settings -->
+                <google.maps.api.key>xxx</google.maps.api.key>
+            </properties>
+        </profile>
+        <profile>
+            <id>STG</id>
+            <properties>
+                <!-- System settings -->
+                <server.port>80</server.port>
+                <thymeleaf.cache>true</thymeleaf.cache>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <maximum.active>10</maximum.active>
+                <minimum.idle>2</minimum.idle>
+                <!-- REDIS settings -->
+                <redis.host>localhost</redis.host>
+                <redis.password></redis.password>
+                <redis.port>6379</redis.port>
+                <!-- Log settings -->
+                <access.log.enabled>true</access.log.enabled>
+                <mvn.project.name>${project.artifactId}</mvn.project.name>
+                <mvn.log.dir>/var/log/tomcat</mvn.log.dir>
+                <mvn.log.max.history>90</mvn.log.max.history>
+                <sql.log.level>debug</sql.log.level>
+                <sql.log.appender.ref><![CDATA[<appender-ref ref="SQL_FILE" />]]></sql.log.appender.ref>
+                <log.level>info</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="FILE" /><appender-ref ref="ERROR_FILE" />]]></log.appender.ref>
+                <!-- AWS SES settings -->
+                <aws.ses.profile>xxx</aws.ses.profile>
+                <aws.ses.from.name>【STG】コミュニティバス管理システム</aws.ses.from.name>
+                <aws.ses.from.email>xxx</aws.ses.from.email>
+                <system.admin.email>xxx</system.admin.email>
+                <!-- Google Map settings -->
+                <google.maps.api.key>xxx</google.maps.api.key>
+            </properties>
+        </profile>
+        <profile>
+            <id>PRD</id>
+            <properties>
+                <!-- System settings -->
+                <server.port>80</server.port>
+                <thymeleaf.cache>true</thymeleaf.cache>
+                <!-- JDBC settings -->
+                <jdbc.url>xxx</jdbc.url>
+                <jdbc.username>xxx</jdbc.username>
+                <jdbc.password>xxx</jdbc.password>
+                <maximum.active>15</maximum.active>
+                <minimum.idle>5</minimum.idle>
+                <!-- REDIS settings -->
+                <redis.host>xxx</redis.host>
+                <redis.password></redis.password>
+                <redis.port>6379</redis.port>
+                <!-- Log settings -->
+                <access.log.enabled>true</access.log.enabled>
+                <mvn.project.name>${project.artifactId}</mvn.project.name>
+                <mvn.log.dir>/var/log/tomcat</mvn.log.dir>
+                <mvn.log.max.history>90</mvn.log.max.history>
+                <sql.log.level>debug</sql.log.level>
+                <sql.log.appender.ref><![CDATA[<appender-ref ref="SQL_FILE" />]]></sql.log.appender.ref>
+                <log.level>info</log.level>
+                <log.appender.ref><![CDATA[<appender-ref ref="FILE" /><appender-ref ref="ERROR_FILE" />]]></log.appender.ref>
+                <!-- AWS SES settings -->
+                <aws.ses.profile>wst-ses-user</aws.ses.profile>
+                <aws.ses.from.name>コミュニティバス管理システム</aws.ses.from.name>
+                <aws.ses.from.email>xxx</aws.ses.from.email>
+                <system.admin.email>xxx</system.admin.email>
+                <!-- Google Map settings -->
+                <google.maps.api.key>xxx</google.maps.api.key>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.jboss.shrinkwrap/shrinkwrap-bom -->
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-bom</artifactId>
+            <version>2.0.0-beta-1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.2.0-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
+        <!-- SpringSecurity -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+        </dependency>
+        <!-- thymeleaf -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>nz.net.ultraq.thymeleaf</groupId>
+            <artifactId>thymeleaf-layout-dialect</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-springsecurity6 -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.4.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/dev.akkinoc.spring.boot/logback-access-spring-boot-starter -->
+        <dependency>
+            <groupId>dev.akkinoc.spring.boot</groupId>
+            <artifactId>logback-access-spring-boot-starter</artifactId>
+            <version>4.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+        </dependency>
+        <!-- amazon s3 setting -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.12.719</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.719</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+        <!-- Spring BootのバージョンアップでLogback access が動かなくなったことの対策 -->
+        <!-- https://developer.mamezou-tech.com/blogs/2024/10/18/logback-access-stoped/-->
+        <dependency>
+            <groupId>ch.qos.logback.access</groupId>
+            <artifactId>logback-access-tomcat</artifactId>
+            <version>2.0.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-catalina</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-coyote</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <executable>true</executable>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/builds/config</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+</project>

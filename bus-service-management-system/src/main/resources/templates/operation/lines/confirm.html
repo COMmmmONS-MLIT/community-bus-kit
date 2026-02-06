@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='路線管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${linesDetailForm}">
+  <!-- PAGE CONTENT WRAPPER -->
+  <div class="page-content-wrap form-horizontal">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <strong th:text="路線__*{dispMode.text}__確認">路線登録確認</strong>
+            </h3>
+          </div>
+
+          <!-- START メッセージ表示部 -->
+          <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+          <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+          <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+          <!-- END メッセージ表示部 -->
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label col-md-1" style="width: 200px;"><span
+                      class="badge badge-danger require-txt">必須</span> <span
+                      class="form-item-name">路線コード</span></label>
+              <div class="col-md-9">
+                <div class="input-group col-md-10 div-flex">
+                  <input type="text" th:field="*{rosenCode}" maxlength="256" class="form-control"
+                         style="width: 600px;"
+                         th:classappend="${#fields.hasErrors('rosenCode')} ? 'error' : ''" disabled/>
+                </div>
+                <p th:if="${#fields.hasErrors('rosenCode')}" th:errors="*{rosenCode}"
+                   style="color:red"></p>
+              </div>
+            </div>
+            <div th:if="*{dispMode.value} eq '1'" class="form-group">
+              <label class="control-label col-md-1" style="width: 200px;"><span
+                      class="badge badge-danger require-txt">必須</span> <span class="form-item-name">利用期間</span></label>
+              <div class="col-md-9">
+                <div class="input-group col-md-10 div-flex">
+                  <input type="date" max="9999-12" th:field="*{serviceStartDate}"
+                         class="form-control" style="width: 120px; display:none;"
+                         th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''" disabled/>
+                  <span class="dateToClass"
+                        style="width: 50px; padding-left: 16px; margin-top: 6px;">〜</span>
+                  <input type="date" max="9999-12" th:field="*{serviceEndDate}"
+                         class="form-control dateToClass" style="width: 120px;"
+                         th:classappend="${#fields.hasErrors('serviceEndDate')} ? 'error' : ''" disabled/>
+                </div>
+                <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}"
+                   class="text-danger"/>
+                <p th:if="${#fields.hasErrors('serviceEndDate')}" th:errors="*{serviceEndDate}"
+                   class="text-danger"/>
+              </div>
+            </div>
+              <input th:if="*{dispMode.value} eq '0'" type="hidden" th:field="*{serviceStartDate}">
+              <input th:if="*{dispMode.value} eq '0'" type="hidden" th:field="*{serviceEndDate}">
+            <div class="form-group">
+              <label class="control-label col-md-1" style="width: 200px;"><span
+                      class="badge badge-danger require-txt">必須</span> <span
+                      class="form-item-name">路線名称</span></label>
+              <div class="col-md-9">
+                <div class="input-group col-md-10 div-flex">
+                  <input type="text" th:field="*{rosenName}" maxlength="256" class="form-control"
+                         style="width: 600px;"
+                         th:classappend="${#fields.hasErrors('rosenName')} ? 'error' : ''" disabled/>
+                </div>
+                <p th:if="${#fields.hasErrors('rosenName')}" th:errors="*{rosenName}"
+                   style="color:red"></p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-1" style="width: 200px;"><span
+                      class="badge badge-danger require-txt">必須</span> <span
+                      class="form-item-name">路線名称 かな</span></label>
+              <div class="col-md-9">
+                <div class="input-group col-md-10 div-flex">
+                  <input type="text" th:field="*{rosenKanaName}" maxlength="256"
+                         class="form-control" style="width: 600px;"
+                         th:classappend="${#fields.hasErrors('rosenKanaName')} ? 'error' : ''" disabled/>
+                </div>
+                <p th:if="${#fields.hasErrors('rosenKanaName')}" th:errors="*{rosenKanaName}"
+                   style="color:red"></p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-1" style="width: 200px;"><span
+                      class="form-item-name">路線名称 英語</span></label>
+              <div class="col-md-9">
+                <div class="input-group col-md-10 div-flex">
+                  <input type="text" th:field="*{rosenEnName}" maxlength="256"
+                         class="form-control" style="width: 600px;"
+                         th:classappend="${#fields.hasErrors('rosenEnName')} ? 'error' : ''" disabled/>
+                </div>
+                <p th:if="${#fields.hasErrors('rosenEnName')}" th:errors="*{rosenEnName}"
+                   style="color:red"></p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-md-1" style="width: 200px;"><span
+                      class="badge badge-danger require-txt">必須</span> <span
+                      class="form-item-name">利用区分</span></label>
+              <div class="col-md-9">
+                <div class="col-md-12 radio">
+                  <input type="radio" id="r-dsp1" name="availableFlag"
+                         th:checked="*{availableFlag} eq null or *{availableFlag} eq 1"
+                         value="1" disabled/>
+                  <label class="inner-title" for="r-dsp1">利用中</label>
+                  <input type="radio" id="r-dsp2" name="availableFlag"
+                         th:checked="*{availableFlag} eq 0" value="0" disabled/>
+                  <label class="inner-title" for="r-dsp2">利用不可</label>
+                </div>
+                <p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}"
+                   style="color:red"></p>
+              </div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label col-md-1"><span
+                      class="badge badge-danger require-txt">必須</span> <span
+                      class="form-item-name">路線停留所</span></label>
+            </div>
+            <div>
+              <table class="table table-bordered" style="width: 90%;">
+                <thead>
+                <tr>
+                  <th style="width: 10%;">順番</th>
+                  <th style="width: 50%;">停留所名</th>
+                  <th style="width: 20%">乗降区分</th>
+                  <th style="width: 10%">削除</th>
+                  <th style="width: 10%">追加</th>
+                </tr>
+                </thead>
+                <tbody class="busStopTableBody">
+                <tr th:each="list, stat : *{lineBusStopsList}">
+                  <td style="text-align:center;" th:text="${list.sequenceNo}">1</td>
+                  <td>
+                    <select th:name="lineBusStopsList[__${stat.index}__].busStopId" class="selectBox select2" disabled>
+                      <option th:value="${list.busStopId}" th:text="${list.busStopName}" disabled selected>---------------</option>
+                    </select>
+                  </td>
+                  <td class="input-center">
+                    <div th:each="division, idx : ${T(maint.enums.RideAlightDivision).values()}"
+                         style="display: inline-block; margin-right: 10px;">
+                      <label>
+                        <input type="radio" th:name="lineBusStopsList[__${stat.index}__].rideAlightDivision"
+                               th:value="${division.value}"
+                               th:checked="${division.value} == ${list.rideAlightDivision}" disabled/>[[${division.text}]]
+                      </label>
+                    </div>
+                  </td>
+                  <td class="input-center">
+                    <input type="button" class="btn-gray" value="削除"  disabled th:style="${list.rosenBusStopId != null and list.rosenBusStopId != 0} ? 'display:none;' : 'width: 60px;'"/>
+                  </td>
+                  <td class="input-center">
+                    <input type="button" class="btn-gray" style="width: 60px;" value="追加" disabled/>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <form class="form-horizontal" method="post" th:action="@{#}">
+              <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+              <input type="hidden" th:field="*{page}">
+              <div class="pull-right">
+                <a th:if="*{dispMode.value} eq '3'" th:href="'/operation/lines/' + *{page} + '/'" class=" btn btn-default">戻る</a>
+                <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/operation/lines/detail/back/}"
+                        class="btn btn-default double-click">戻る</button>
+                <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary double-click"
+                        th:formaction="@{/operation/lines/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録':'変更'">登録</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END PAGE CONTENT WRAPPER -->
+  <th:block th:insert="~{common/script :: common_script}"></th:block>
+  <style>
+    /* 偶数行の背景色 */
+    .table tbody tr:nth-child(even) {
+      background-color: #f9f1e6;
+    }
+    /* bodyを「画面高」or「内容高」で正しく伸ばす */
+    body.body-calendar-detail .page-container{
+      display: flex;
+      align-items: stretch;
+      min-height: 100vh;
+    }
+    /* sidebar を親の高さに追従させる */
+    body.body-calendar-detail .page-container .page-sidebar{
+      height: auto !important;
+      align-self: stretch;
+    }
+  </style>
+</div>
+<!-- end: contents -->
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE logback>
+<configuration>
+
+    <property name="PRJ_NAME" value="@project.artifactId@" />
+    <property name="LOG_DIR" value="@mvn.log.dir@" />
+
+    <appender name="FILE"
+            class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/${PRJ_NAME}-access.log</file>
+        <rollingPolicy
+            class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/${PRJ_NAME}-access.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>@log.rotation@</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>combined</pattern>
+        </encoder>
+    </appender>
+    <appender-ref ref="FILE" />
+</configuration>

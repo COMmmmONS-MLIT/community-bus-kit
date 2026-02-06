@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='車両登録'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${displayForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" class="form-horizontal" id="confirmForm" th:action="@{/planDaiya/vehicles/detail/confirm/}">
+                    <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                    <input type="hidden" th:field="*{page}">
+                    <input type="hidden" th:field="*{vehicleId}">
+                    <input type="hidden" th:field="*{dispMode}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong th:text="車両__*{dispMode.text}__">車両</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="col-md-1 control-label">
+                                    <span class="badge badge-danger require-txt">必須</span>
+                                    <span class="form-item-name">運行会社名</span>
+                                </label>
+                                <div class="col-md-9">
+                                    <select class="form-control select2" th:field="*{operatingCompanyId}">
+                                        <option value="">-------</option>
+                                        <option th:each="item : ${operatingCompanyList}" th:value="${item.operatingCompanyId}" th:text="${item.operatingName}"> </option>
+                                    </select>
+                                    <p th:if="${#fields.hasErrors('operatingCompanyId')}" th:errors="*{operatingCompanyId}" class="text-danger"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label">
+                                    <span class="badge badge-danger require-txt">必須</span>
+                                    <span class="form-item-name">車両名</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="input-group col-md-11 div-flex">
+                                        <input type="text" name="vehicleName" th:value="*{vehicleName}" class="form-control" style="width: 300px;" th:classappend="${#fields.hasErrors('vehicleName')} ? 'error' : ''" />
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('vehicleName')}" th:errors="*{vehicleName}" class="text-danger" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="padding-right: 0px;">
+                                    <span class="badge badge-danger require-txt">必須</span>
+                                    <span class="form-item-name" >GPSトラッカーシリアル</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="input-group col-md-11 div-flex">
+                                        <input type="text" name="gpsSerial" th:value="*{gpsSerial}" class="form-control" style="width: 300px;" th:classappend="${#fields.hasErrors('gpsSerial')} ? 'error' : ''" />
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('gpsSerial')}" th:errors="*{gpsSerial}" class="text-danger" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="white-space:nowrap;">
+                                    <span class="badge badge-danger require-txt">必須</span>
+                                    <span class="form-item-name">GPS測地系</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="col-md-12 radio">
+                                        <input type="radio" name="japanPositioningFlag" th:id="japanPositioningFlag__0__" th:value="0" th:checked="*{japanPositioningFlag == 0}"/>
+                                        <label class="inner-title" th:for="japanPositioningFlag__0__" th:text="世界測地系"></label>
+                                        <input type="radio" name="japanPositioningFlag" th:id="japanPositioningFlag__1__" th:value="1" th:checked="*{japanPositioningFlag == 1}"/>
+                                        <label class="inner-title" th:for="japanPositioningFlag__1__" th:text="日本測地系"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-1 control-label" style="white-space:nowrap;">
+                                    <span class="badge badge-danger require-txt">必須</span>
+                                    <span class="form-item-name">利用区分</span>
+                                </label>
+                                <div class="col-md-10">
+                                    <div class="col-md-12 radio">
+                                        <input type="radio" name="availableFlag" th:id="availableFlag__0__" th:value="1" th:checked="*{availableFlag eq 1}"/>
+                                        <label class="inner-title" th:for="availableFlag__0__" th:text="利用中"></label>
+                                        <input type="radio" name="availableFlag" th:id="availableFlag__1__" th:value="0" th:checked="*{availableFlag eq 0}"/>
+                                        <label class="inner-title" th:for="availableFlag__1__" th:text="利用不可"></label>
+                                        <p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}" class="text-danger"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer" style="text-align: right;">
+                            <a th:href="'/planDaiya/vehicles/' + *{page} + '/'" class=" btn btn-default">戻る</a>
+                            <button type="button" id="confirm" class="btn btn-primary pull-right double-click" style="margin-left: 5px">確認</button>
+                        </div>
+                    </div>
+                    <div th:insert="~{common/modal :: passReissueDialog}" th:remove="tag"></div>
+                </form>
+            </div>
+        </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+</div>
+<!-- end: contents -->
+</body>
+</html>

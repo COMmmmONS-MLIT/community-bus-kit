@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<div th:fragment="common_menu">
+    <div class="page-sidebar" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <!-- START X-NAVIGATION -->
+            <ul class="x-navigation sidebar">
+                <li class="xn-profile">
+                    <div class="profile">
+                        <div class="profile-data">
+                            <div class="profile-data-name">
+                                <a th:href="@{/}" style="color: inherit; text-decoration: none;">
+                                  <span>ロゴ</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <th:block th:insert="~{common/sidebar :: common_side_bar}"></th:block>
+            </ul>
+            <!-- END X-NAVIGATION -->
+        </div>
+    </div>
+</div>
+</html>

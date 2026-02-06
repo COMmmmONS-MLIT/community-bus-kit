@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MainMapper">
+
+    <insert id="insertIntoVehicleTrackingWithOperation">
+        INSERT INTO "vehicle_tracking" (
+            "del_flag",
+            "gps_serial",
+            "work_number",
+            "latitude_longitude",
+            "direction",
+            "created_datetime",
+            "bus_service_id",
+            "signpost_id",
+            "delay",
+            "arrival_division",
+            "created_user",
+            "created_at",
+            "updated_user",
+            "updated_at"
+        ) VALUES (
+             0,
+             #{gpsSerial},
+             #{workNumber},
+             #{latitudeLongitude},
+             #{direction},
+             (#{createdDatetimeParsed} AT TIME ZONE 'Asia/Tokyo'),
+             #{busServiceId},
+             #{signpostId},
+             #{delaySeconds},
+             #{arrivalDivision},
+             'SYSTEM',
+             (NOW() AT TIME ZONE 'Asia/Tokyo'),
+             'SYSTEM',
+             (NOW() AT TIME ZONE 'Asia/Tokyo')
+         )
+    </insert>
+
+    <select id="getVehiclesInfo" resultType="communitybus.lambda.dto.VehiclesDto">
+        SELECT "vehicle_id"
+             , "del_flag"
+             , "operating_company_id"
+             , "vehicle_name"
+             , "gps_serial"
+             , "available_flag"
+             , "japan_positioning_flag"
+             , "created_user"
+             , "created_at"
+             , "updated_user"
+             , "updated_at"
+          FROM "vehicles"
+         WHERE "del_flag"       = 0
+           AND "available_flag" = 1
+           AND "gps_serial"     = #{gpsSerial}
+         LIMIT 1
+    </select>
+
+    <select id="getLatestVehicleTracking" resultType="communitybus.lambda.dto.VehicleTrackingDto">
+   SELECT "latitude_longitude"      AS "latitudeLongitude"
+     FROM "vehicle_tracking"
+    WHERE "del_flag"                = 0
+      AND "gps_serial"              = #{gpsSerial}
+      AND DATE(created_datetime)    = TO_DATE(#{createdDatetime}, 'YYYY-MM-DD')
+      ORDER BY "created_datetime"   DESC
+      LIMIT 1
+    </select>
+
+    <select id="getOperationAggregate" resultType="communitybus.lambda.dto.OperationAggregateDto">
+    SELECT "d"."del_flag"                    AS "dailyDelFlag"
+         , "d"."operation_cancel_flg"        AS "dailyOperationCancelFlg"
+         , "d"."sales_cancel_flg"            AS "dailySalesCancelFlg"
+         , "d"."service_date"                AS "dailyServiceDate"
+         , "bd"."bus_service_id"             AS "busDetailBusServiceId"
+         , "bd"."bus_stop_arrival_time"      AS "scheduledArrivalTime"
+         , "bd"."bus_stop_departure_time"    AS "scheduledDepartureTime"
+         , "bd"."del_flag"                   AS "busDetailDelFlag"
+         , "bd"."bus_stop_arrival_time"      AS "busStopArrivalTime"
+         , "bs"."bus_service_id"             AS "busServiceId"
+         , "bs"."del_flag"                   AS "busDelFlag"
+         , "bs"."wheelchair_accessible_type" AS "wheelchairAccessibleType"
+         , "bs"."bus_service_trip_id"        AS "busServiceTripId"
+         , "lrb"."del_flag"                  AS "lineRouteStopDelFlag"
+         , "lrb"."line_route_bus_stop_id"    AS "lineRouteStopId"
+         , "lrb"."stop_sequence"             AS "stopSequence"
+         , "sp"."available_flag"             AS "signpostAvailableFlag"
+         , "sp"."del_flag"                   AS "signpostDelFlag"
+         , "sp"."signpost_id"                AS "signpostId"
+         , "sp"."signpost_branch_number"     AS "signpostBranchNumber"
+         , "sp"."latitude_longitude"         AS "latitudeLongitude"
+         , "sp"."arrival_point"              AS "arrivalPoint"
+         , "sp"."arrival_point_radius"       AS "arrivalPointRadius"
+         , COALESCE("vta"."arrival_division", "vtd"."arrival_division") AS "arrivalDivision"
+         , "vta"."bus_service_id"            AS "vehicleTrackingArrivalBusServiceId"
+         , "vta"."created_datetime"          AS "vehicleTrackingArrivalCreatedDatetime"
+         , "vta"."delay"                     AS "arrivalDelaySeconds"
+         , "vta"."signpost_id"               AS "vehicleTrackingArrivalSignpostId"
+         , "vta"."created_datetime"          AS "actualArrivalTime"
+         , "vtd"."bus_service_id"            AS "vehicleTrackingDepartureBusServiceId"
+         , "vtd"."created_datetime"          AS "vehicleTrackingDepartureCreatedDatetime"
+         , "vtd"."delay"                     AS "departureDelaySeconds"
+         , "vtd"."signpost_id"               AS "vehicleTrackingDepartureSignpostId"
+         , "vtd"."created_datetime"          AS "actualDepartureTime"
+         , "bsm"."bus_stop_code"             AS "bus_stop_code"
+      FROM "daily_bus_daiyas"                AS "d"
+      JOIN "bus_services"                    AS "bs"
+        ON "bs"."del_flag"                   = 0
+       AND "bs"."bus_service_id"             = "d"."bus_service_id"
+      JOIN "bus_daiyas"                      AS "bd"
+        ON "bd"."del_flag"                   = 0
+       AND "bd"."bus_service_id"             = "bs"."bus_service_id"
+      JOIN "line_route_bus_stops"            AS "lrb"
+        ON "lrb"."del_flag"                  = 0
+       AND "lrb"."line_route_bus_stop_id"    = "bd"."line_route_bus_stop_id"
+      JOIN "signposts"                       AS "sp"
+        ON "sp"."del_flag"                   = 0
+       AND "sp"."available_flag"             = 1
+       AND "sp"."signpost_id"                = "lrb"."signpost_id"
+      JOIN "bus_stops"                       AS "bsm"
+        ON "bsm"."del_flag"                  = 0
+       AND "bsm"."available_flag"            = 1
+       AND "bsm"."bus_stop_id"               = "sp"."bus_stop_id"
+ LEFT JOIN "vehicle_tracking"                AS "vta"
+        ON "vta"."arrival_division"          = 1
+       AND "vta"."gps_serial"                = #{gpsSerial}
+       AND "vta"."created_datetime"::date    = #{createdDatetimeParsed}::date
+       AND "vta"."bus_service_id"            = "bs"."bus_service_id"
+       AND "vta"."signpost_id"               = "sp"."signpost_id"
+ LEFT JOIN "vehicle_tracking"                AS "vtd"
+        ON "vtd"."arrival_division"          = 2
+       AND "vtd"."gps_serial"                = #{gpsSerial}
+       AND "vtd"."created_datetime"::date    = #{createdDatetimeParsed}::date
+       AND "vtd"."bus_service_id"            = "bs"."bus_service_id"
+       AND "vtd"."signpost_id"               = "sp"."signpost_id"
+     WHERE "d"."del_flag"                    = 0
+       AND "d"."operation_cancel_flg"        = 0
+       AND "d"."sales_cancel_flg"            = 0
+       AND "d"."service_date"::date          = #{createdDatetimeParsed}::date
+       AND "d"."vehicle_id"                  = #{vehicleId}
+  ORDER BY "bs"."bus_service_id"
+         , "lrb"."stop_sequence"
+    </select>
+
+    <select id="getOperationAggregateByBusVehicleId" resultType="communitybus.lambda.dto.OperationAggregateDto">
+      SELECT "d"."del_flag"                    AS "dailyDelFlag"
+           , "d"."operation_cancel_flg"        AS "dailyOperationCancelFlg"
+           , "d"."sales_cancel_flg"            AS "dailySalesCancelFlg"
+           , "d"."service_date"                AS "dailyServiceDate"
+           , "bd"."bus_service_id"             AS "busDetailBusServiceId"
+           , "bd"."bus_stop_arrival_time"      AS "scheduledArrivalTime"
+           , "bd"."bus_stop_departure_time"    AS "scheduledDepartureTime"
+           , "bd"."del_flag"                   AS "busDetailDelFlag"
+           , "bd"."bus_stop_arrival_time"      AS "busStopArrivalTime"
+           , "bs"."bus_service_id"             AS "busServiceId"
+           , "bs"."del_flag"                   AS "busDelFlag"
+           , "bs"."wheelchair_accessible_type" AS "wheelchairAccessibleType"
+           , "bs"."bus_service_trip_id"        AS "busServiceTripId"
+           , "lrb"."del_flag"                  AS "lineRouteStopDelFlag"
+           , "lrb"."line_route_bus_stop_id"    AS "lineRouteStopId"
+           , "lrb"."stop_sequence"             AS "stopSequence"
+           , "sp"."available_flag"             AS "signpostAvailableFlag"
+           , "sp"."del_flag"                   AS "signpostDelFlag"
+           , "sp"."signpost_id"                AS "signpostId"
+           , "sp"."signpost_branch_number"     AS "signpostBranchNumber"
+           , "sp"."latitude_longitude"         AS "latitudeLongitude"
+           , "sp"."arrival_point"              AS "arrivalPoint"
+           , "sp"."arrival_point_radius"       AS "arrivalPointRadius"
+           , COALESCE("vta"."arrival_division", "vtd"."arrival_division") AS "arrivalDivision"
+           , "vta"."bus_service_id"            AS "vehicleTrackingArrivalBusServiceId"
+           , "vta"."created_datetime"          AS "vehicleTrackingArrivalCreatedDatetime"
+           , "vta"."delay"                     AS "arrivalDelaySeconds"
+           , "vta"."signpost_id"               AS "vehicleTrackingArrivalSignpostId"
+           , "vta"."created_datetime"          AS "actualArrivalTime"
+           , "vtd"."bus_service_id"            AS "vehicleTrackingDepartureBusServiceId"
+           , "vtd"."created_datetime"          AS "vehicleTrackingDepartureCreatedDatetime"
+           , "vtd"."delay"                     AS "departureDelaySeconds"
+           , "vtd"."signpost_id"               AS "vehicleTrackingDepartureSignpostId"
+           , "vtd"."created_datetime"          AS "actualDepartureTime"
+           , "bsm"."bus_stop_code"             AS "bus_stop_code"
+        FROM "daily_bus_daiyas"                AS "d"
+        JOIN "bus_services"                    AS "bs"
+          ON "bs"."del_flag"                   = 0
+         AND "bs"."bus_service_id"             = "d"."bus_service_id"
+        JOIN "bus_daiyas"                      AS "bd"
+          ON "bd"."del_flag"                   = 0
+         AND "bd"."bus_service_id"             = "bs"."bus_service_id"
+        JOIN "line_route_bus_stops"            AS "lrb"
+          ON "lrb"."del_flag"                  = 0
+         AND "lrb"."line_route_bus_stop_id"    = "bd"."line_route_bus_stop_id"
+        JOIN "signposts"                       AS "sp"
+          ON "sp"."del_flag"                   = 0
+         AND "sp"."available_flag"             = 1
+         AND "sp"."signpost_id"                = "lrb"."signpost_id"
+        JOIN "bus_stops"                       AS "bsm"
+          ON "bsm"."del_flag"                  = 0
+         AND "bsm"."available_flag"            = 1
+         AND "bsm"."bus_stop_id"               = "sp"."bus_stop_id"
+   LEFT JOIN "vehicle_tracking"                AS "vta"
+          ON "vta"."arrival_division"          = 1
+         AND "vta"."gps_serial"                = #{gpsSerial}
+         AND "vta"."created_datetime"::date    = #{createdDatetimeParsed}::date
+         AND "vta"."bus_service_id"            = "bs"."bus_service_id"
+         AND "vta"."signpost_id"               = "sp"."signpost_id"
+   LEFT JOIN "vehicle_tracking"                AS "vtd"
+          ON "vtd"."arrival_division"          = 2
+         AND "vtd"."gps_serial"                = #{gpsSerial}
+         AND "vtd"."created_datetime"::date    = #{createdDatetimeParsed}::date
+         AND "vtd"."bus_service_id"            = "bs"."bus_service_id"
+         AND "vtd"."signpost_id"               = "sp"."signpost_id"
+       WHERE "d"."del_flag"                    = 0
+         AND "d"."operation_cancel_flg"        = 0
+         AND "d"."sales_cancel_flg"            = 0
+         AND "d"."service_date"::date          = #{createdDatetimeParsed}::date
+         AND "bs"."vehicle_id"                 = #{vehicleId}
+    ORDER BY "bs"."bus_service_id"
+           , "lrb"."stop_sequence"
+    </select>
+
+    <select id="getAccessKey" resultType="java.lang.Integer">
+        SELECT COUNT("business_corp_id")
+        FROM "agencies"
+        WHERE "del_flag" = 0
+          AND "access_key" = #{accessKey}
+          AND "available_flag" = 1 LIMIT 1
+    </select>
+
+</mapper>

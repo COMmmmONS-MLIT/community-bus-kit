@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.CalendarsMapper">
+
+    <select id="countCalendarsBySearch" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT("c"."calendar_id"))
+        <include refid="fromWhereBySearch" />
+    </select>
+
+    <select id="getCalendarsBySearch" resultType="CalendarDto">
+        SELECT DISTINCT("c"."calendar_id")
+        , "c"."calendar_type"
+        , "c"."week_designatable_flag"
+        , "c"."available_flag"
+        <include refid="fromWhereBySearch" />
+        ORDER BY "c"."calendar_id"
+        LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <sql id="fromWhereBySearch">
+        FROM "calendars" "c"
+   LEFT JOIN "calendar_details" "cd"
+          ON "cd"."del_flag"        = 0
+         AND "cd"."calendar_id"     = "c"."calendar_id"
+        JOIN "agencies" "a"
+          ON "a"."del_flag"         = 0
+         AND "a"."available_flag"   = 1
+         AND "a"."business_corp_id" = "c"."business_corp_id"
+       WHERE "c"."del_flag"         = 0
+         AND "a"."business_corp_id" = #{businessCorpId}
+        <if test="calendarType != null and calendarType != ''">
+         AND "c"."calendar_type" LIKE #{likeCalendarType}
+        </if>
+        <if test="availableFlag != null">
+         AND "c"."available_flag"   = #{availableFlag}
+        </if>
+        <if test="sunday or monday or tuesday or wednesday or thursday or friday or saturday or holiday">
+         AND cd.day_week_type IN
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="sunday">    '1',  </if>
+                <if test="monday">    '2',  </if>
+                <if test="tuesday">   '3',  </if>
+                <if test="wednesday"> '4',  </if>
+                <if test="thursday">  '5',  </if>
+                <if test="friday">    '6',  </if>
+                <if test="saturday">  '7',  </if>
+                <if test="holiday">   '10', </if>
+            </trim>
+        </if>
+    </sql>
+
+    <select id="getCalendarByPk" resultType="CalendarDto">
+       SELECT "calendar_id"
+            , "week_designatable_flag"
+            , "week_designation_type"
+            , "calendar_type"
+            , "available_flag"
+         FROM "calendars"
+        WHERE "del_flag" = 0
+          AND "calendar_id" = #{busStopId}
+    </select>
+
+    <select id="getCalendarsById" resultType="CalendarInfoDto">
+        SELECT "c"."calendar_id"
+             , "c"."business_corp_id"
+             , "c"."week_designatable_flag"
+             , "c"."week_designation_type"
+             , "c"."calendar_type"
+             , "c"."available_flag"
+             , "cd"."day_week_type"
+          FROM "calendars" "c"
+     LEFT JOIN "calendar_details" "cd"
+            ON "cd"."del_flag"        = 0
+           AND "cd"."calendar_id"     = "c"."calendar_id"
+         WHERE "c"."del_flag"         = 0
+           AND "c"."available_flag"   = 1
+           AND "c"."calendar_id"      = #{calendarId}
+           AND "c"."business_corp_id" = #{businessCorpId}
+    </select>
+
+    <select id="countCalendarActive" resultType="int">
+        SELECT COUNT(1)
+          FROM "calendars"             AS "oc"
+         WHERE "oc"."del_flag"         = 0
+           AND "oc"."available_flag"   = 1
+           AND "oc"."business_corp_id" = CAST(#{businessCorpId} AS INTEGER)
+           AND "oc"."calendar_id"      = CAST(#{calendarId} AS INTEGER)
+    </select>
+
+    <insert id="registerCalendar" useGeneratedKeys="true" keyProperty="calendarId">
+        INSERT INTO "calendars" (
+               "business_corp_id"
+             , "week_designatable_flag"
+             , "week_designation_type"
+             , "calendar_type"
+             , "available_flag"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{businessCorpId}
+             , #{weekDesignatableFlag}
+             , #{weekDesignationType}
+             , #{calendarType}
+             , #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateCalendar">
+      UPDATE "calendars"
+         SET "week_designatable_flag" = #{weekDesignatableFlag}
+           , "week_designation_type"  = #{weekDesignationType}
+           , "calendar_type"          = #{calendarType}
+           , "available_flag"         = #{availableFlag}
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+       WHERE "del_flag"               = 0
+         AND "calendar_id"            = #{calendarId}
+    </update>
+
+</mapper>

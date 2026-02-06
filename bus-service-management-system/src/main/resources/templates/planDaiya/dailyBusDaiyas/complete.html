@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='日毎便ダイヤ完了'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${dailyBusDaiyasDetailForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong th:text="日毎便ダイヤ__*{dispMode.text}__完了">日毎便ダイヤ登録完了</strong>
+                        </h3>
+                    </div>
+
+                    <!-- START メッセージ表示部 -->
+                    <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                    <!-- END メッセージ表示部 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <button class="btn btn-info btn-block btn-lg" th:onclick="'document.location.href = \'/planDaiya/dailyBusDaiyas/' + *{page} + '/\';'">日毎便ダイヤ一覧に戻る</button>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+</div>
+<!-- end: contents -->
+
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.CalendarDesignatedDatesMapper">
+
+    <select id="getFutureDesignatedDatesByCalendarId" resultType="java.lang.String">
+        SELECT "cd"."operation_designated_date"
+          FROM "calendar_designated_dates" "cd"
+          JOIN "calendars" "c"
+            ON "c"."del_flag"                      = 0
+           AND "c"."available_flag"                = 1
+           AND "c"."business_corp_id"              = #{businessCorpId}
+           AND "c"."calendar_id"                   = "cd"."calendar_id"
+         WHERE "cd"."del_flag"                     = 0
+           AND "cd"."operation_designated_date" &gt; CURRENT_DATE
+           AND "cd"."calendar_id"                  = #{calendarId}
+    </select>
+
+    <select id="getDesignatedDateByCalendarId" resultType="CalendarDesignatedDateDto">
+        SELECT "calendar_designated_date_id"
+             , to_char("operation_designated_date", 'YYMMDD') AS "operation_designated_date"
+          FROM "calendar_designated_dates"
+         WHERE "del_flag"    = 0
+           AND "calendar_id" = #{calendarId}
+    </select>
+
+    <select id="getCalendarDesignatedDatesList" resultType="java.lang.String">
+        SELECT TO_CHAR("cdd"."operation_designated_date", 'YYYYMMDD') AS "operationDesignatedDate"
+          FROM "calendar_designated_dates"                            AS "cdd"
+         WHERE "cdd"."del_flag"                                       = 0
+           AND "cdd"."calendar_id"                                    = #{calendarId, jdbcType=INTEGER}
+      ORDER BY "cdd"."operation_designated_date"                      ASC
+    </select>
+
+    <insert id="registerCalendarDesignatedDate" useGeneratedKeys="true" keyProperty="calendarDesignatedDateId">
+        INSERT INTO "calendar_designated_dates" (
+               "calendar_id"
+             , "operation_designated_date"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{calendarId}
+             , CAST(#{operationDesignatedDate} AS date)
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="deleteDesignatedDate">
+        UPDATE "calendar_designated_dates"
+           SET "del_flag"                    = #{calendarDesignatedDateId}
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"                    = 0
+           AND "calendar_designated_date_id" = #{calendarDesignatedDateId}
+    </update>
+
+</mapper>

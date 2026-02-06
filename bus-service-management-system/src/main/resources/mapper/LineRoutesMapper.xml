@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.LineRoutesMapper">
+
+    <select id="countLineRoutesForLine" resultType="java.lang.Long">
+        SELECT COUNT("line_route_id")
+        FROM "line_routes"
+        WHERE "del_flag" = 0
+        AND "rosen_id" = #{rosenId}
+        AND "available_flag" = 1
+    </select>
+
+    <select id="countLineRouteByDateAndLine" resultType="java.lang.Long">
+        SELECT COUNT("line_route_id")
+        FROM "line_routes"
+        WHERE "del_flag" = 0
+          AND "available_flag" = 1
+          AND (
+            "service_start_date" &lt; CAST(#{serviceStartDate} AS date)
+                OR "service_end_date" &gt; CAST(#{serviceEndDate} AS date)
+            )
+          AND "rosen_id" = #{rosenId}
+    </select>
+
+    <select id="countLineRoutes" resultType="java.lang.Long">
+        SELECT COUNT("lr"."line_route_id")
+        FROM "line_routes" "lr"
+        JOIN "lines" "l"
+        ON "l"."rosen_id" = "lr"."rosen_id"
+        AND "l"."del_flag" = 0
+        AND "l"."available_flag" = 1
+        <if test="rosenId != null and rosenId != 0">
+            AND "l"."rosen_id" = #{rosenId}
+        </if>
+        JOIN "agencies" "a"
+        ON "a"."business_corp_id" = "l"."business_corp_id"
+        AND "a"."available_flag" = 1
+        <if test="businessCorpId != null and businessCorpId != 0">
+            AND "a"."business_corp_id" = #{businessCorpId}
+        </if>
+        AND "a"."del_flag" = 0
+        WHERE "lr"."del_flag" = 0
+        <if test="lineRouteName != null and lineRouteName != ''">
+            AND "lr"."line_route_name" LIKE #{likeSearchLineRouteName}
+        </if>
+        <if test="availableFlag != null">
+            AND "lr"."available_flag" = #{availableFlag}
+        </if>
+    </select>
+
+    <select id="getLineRoutes" resultType="SearchLineRoutesDto">
+        SELECT "lr"."line_route_id"
+        , "lr"."line_route_name"
+        , "lr"."service_start_date"
+        , "lr"."service_end_date"
+        , "lr"."available_flag"
+        , "l"."rosen_name"
+        FROM "line_routes" "lr"
+        JOIN "lines" "l"
+        ON "l"."rosen_id" = "lr"."rosen_id"
+        AND "l"."del_flag" = 0
+        AND "l"."available_flag" = 1
+        <if test="rosenId != null and rosenId != 0">
+            AND "l"."rosen_id" = #{rosenId}
+        </if>
+        JOIN "agencies" "a"
+        ON "a"."business_corp_id" = "l"."business_corp_id"
+        AND "a"."available_flag" = 1
+        <if test="businessCorpId != null and businessCorpId != 0">
+            AND "a"."business_corp_id" = #{businessCorpId}
+        </if>
+        AND "a"."del_flag" = 0
+        WHERE "lr"."del_flag" = 0
+        <if test="lineRouteName != null and lineRouteName != ''">
+            AND "lr"."line_route_name" LIKE #{likeSearchLineRouteName}
+        </if>
+        <if test="availableFlag != null">
+            AND "lr"."available_flag" = #{availableFlag}
+        </if>
+        ORDER BY "lr"."line_route_id"
+        LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="lineRouteId">
+        INSERT INTO "line_routes" (
+        "rosen_id",
+        "line_route_code",
+        "service_start_date",
+        "service_end_date",
+        "line_route_name",
+        "line_route_short_name",
+        "line_route_number",
+        "line_route_number_en",
+        "line_detail_service_division",
+        "main_stopover_point",
+        "line_route_url",
+        "line_route_color",
+        "line_route_text_color",
+        "line_route_remarks",
+        "available_flag"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        ) VALUES (
+        #{rosenId},
+        #{lineRouteCode},
+        CAST(#{serviceStartDate} AS date),
+        CAST(#{serviceEndDate} AS date),
+        #{lineRouteName},
+        #{lineRouteShortName},
+        #{lineRouteNumber},
+        #{lineRouteNumberEn},
+        #{lineDetailServiceDivision},
+        #{mainStopoverPoint},
+        #{lineRouteUrl},
+        #{lineRouteColor},
+        #{lineRouteTextColor},
+        #{lineRouteRemarks},
+        #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE "line_routes"
+        SET
+        "rosen_id" = #{rosenId},
+        "line_route_code" = #{lineRouteCode},
+        "service_start_date" = CAST(#{serviceStartDate} AS date),
+        "service_end_date" = CAST(#{serviceEndDate} AS date),
+        "line_route_name" = #{lineRouteName},
+        "line_route_short_name" = #{lineRouteShortName},
+        "line_route_number" = #{lineRouteNumber},
+        "line_route_number_en" = #{lineRouteNumberEn},
+        "line_detail_service_division" = #{lineDetailServiceDivision},
+        "main_stopover_point" = #{mainStopoverPoint},
+        "line_route_url" = #{lineRouteUrl},
+        "line_route_color" = #{lineRouteColor},
+        "line_route_text_color" = #{lineRouteTextColor},
+        "line_route_remarks" = #{lineRouteRemarks},
+        "available_flag" = #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE
+        "line_route_id" = #{lineRouteId}
+    </update>
+
+    <select id="getLineRouteByPkId" resultMap="DetailFormMap">
+        SELECT "l"."rosen_name"
+        , "lr"."line_route_id"
+        , "lr"."rosen_id"
+        , "lr"."line_detail_service_division"
+        , "lr"."line_route_code"
+        , "lr"."line_route_short_name"
+        , "lr"."line_route_number"
+        , "lr"."line_route_number_en"
+        , "lr"."service_start_date"
+        , "lr"."service_end_date"
+        , "lr"."line_route_name"
+        , "lr"."main_stopover_point"
+        , "lr"."line_route_url"
+        , "lr"."line_route_color"
+        , "lr"."line_route_text_color"
+        , "lr"."line_route_remarks"
+        , "lr"."available_flag"
+        , "lrb"."line_route_bus_stop_id"
+        , "lrb"."rosen_bus_stop_id"
+        , "lrb"."signpost_id"
+        , "lrb"."stop_sequence"
+        , "lrb"."shape_dist_traveled"
+        , "lrb"."ride_alight_division"
+        , "lrb"."drop_off_division"
+        , "lrb"."stop_headsign"
+        , "lrb"."stop_headsign_en"
+        , "s"."signpost_name"
+        , "lbs"."ride_alight_division" AS "original_ride_alight_division"
+        FROM "line_routes" "lr"
+        JOIN "lines" "l"
+        ON "l"."rosen_id" = "lr"."rosen_id"
+        AND "l"."del_flag" = 0
+        JOIN "line_route_bus_stops" "lrb"
+        ON "lrb"."line_route_id" = "lr"."line_route_id"
+        AND "lrb"."del_flag" = 0
+        JOIN "signposts" "s"
+        ON "s"."signpost_id" = "lrb"."signpost_id"
+        AND "s"."del_flag" = 0
+        JOIN "line_bus_stops" "lbs"
+        ON "lbs"."rosen_bus_stop_id" = "lrb"."rosen_bus_stop_id"
+        AND "lbs"."del_flag" = 0
+        WHERE "lr"."del_flag" = 0
+        AND "lr"."line_route_id" = #{lineRouteId}
+    </select>
+
+    <resultMap id="DetailFormMap" type="maint.form.lineRoutes.LineRoutesDetailForm">
+        <id property="lineRouteId" column="line_route_id"/>
+        <result property="rosenId" column="rosen_id"/>
+        <result property="rosenName" column="rosen_name"/>
+        <result property="lineDetailServiceDivision" column="line_detail_service_division"/>
+        <result property="lineRouteCode" column="line_route_code"/>
+        <result property="lineRouteShortName" column="line_route_short_name"/>
+        <result property="lineRouteNumber" column="line_route_number"/>
+        <result property="lineRouteNumberEn" column="line_route_number_en"/>
+        <result property="serviceStartDate" column="service_start_date"/>
+        <result property="serviceEndDate" column="service_end_date"/>
+        <result property="lineRouteName" column="line_route_name"/>
+        <result property="mainStopoverPoint" column="main_stopover_point"/>
+        <result property="lineRouteUrl" column="line_route_url"/>
+        <result property="lineRouteColor" column="line_route_color"/>
+        <result property="lineRouteTextColor" column="line_route_text_color"/>
+        <result property="lineRouteRemarks" column="line_route_remarks"/>
+        <result property="availableFlag" column="available_flag"/>
+
+        <!-- 系統停留所リスト -->
+        <collection property="lineRouteBusStopList" resultMap="LineRouteBusStopsDtoMap"/>
+    </resultMap>
+
+    <resultMap id="LineRouteBusStopsDtoMap" type="maint.dto.operation.lineRoutes.LineRouteBusStopsDto">
+        <id property="lineRouteBusStopId" column="line_route_bus_stop_id"/>
+        <result property="rosenBusStopId" column="rosen_bus_stop_id"/>
+        <result property="signpostId" column="signpost_id"/>
+        <result property="lineRouteBusStopsRideAlightDivision" column="ride_alight_division"/>
+        <result property="dropOffDivision" column="drop_off_division"/>
+        <result property="originalRideAlightDivision" column="original_ride_alight_division"/>
+        <result property="busStopName" column="signpost_name"/>
+        <result property="sequenceNo" column="stop_sequence"/>
+        <result property="shapeDistTraveled" column="shape_dist_traveled"/>
+        <result property="stopHeadsign" column="stop_headsign"/>
+        <result property="stopHeadsignEn" column="stop_headsign_en"/>
+    </resultMap>
+
+    <select id="getLineRouteList" resultType="maint.dto.integrate.gtfsReport.GtfsLineRouteDto">
+        SELECT "l"."rosen_code"
+             , "ag"."operation_company_no"
+             , "lr"."line_route_code"
+             , "lr"."line_route_color"
+             , "lr"."line_route_number"
+             , "lr"."line_route_number_en"
+             , "lr"."line_route_remarks"
+             , "lr"."line_route_short_name"
+             , "lr"."line_route_text_color"
+             , "lr"."line_route_url"
+          FROM "line_routes"           AS "lr"
+    INNER JOIN "lines"                 AS "l"
+            ON "l"."del_flag"           = 0
+           AND "l"."rosen_id"           = "lr"."rosen_id"
+    INNER JOIN "agencies"              AS "ag"
+            ON "ag"."del_flag"          = 0
+           AND "ag"."available_flag"    = 1
+           AND "ag"."business_corp_id"  = "l"."business_corp_id"
+         WHERE "lr"."del_flag"          = 0
+           AND "lr"."rosen_id" IN
+        <foreach collection="rosenIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+      ORDER BY "lr"."line_route_id"     ASC
+    </select>
+
+</mapper>

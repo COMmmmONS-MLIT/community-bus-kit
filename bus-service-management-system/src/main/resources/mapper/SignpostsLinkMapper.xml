@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.SignpostsLinkMapper">
+
+    <select id="countSignpostsBySearch" resultType="java.lang.Long">
+        SELECT COUNT("s"."signpost_id")
+        <include refid="fromWhereBySearch" />
+    </select>
+
+    <sql id="fromWhereBySearch">
+        FROM "signposts" "s"
+        JOIN "bus_stops" "b"
+          ON "b"."del_flag"               = 0
+         AND "b"."available_flag"         = 1
+         AND "b"."business_corp_id"       = #{businessCorpId}
+         AND "b"."bus_stop_id"            = "s"."bus_stop_id"
+        JOIN "agencies" "a"
+          ON "a"."del_flag"               = 0
+         AND "a"."available_flag"         = 1
+         AND "a"."business_corp_id"       = "b"."business_corp_id"
+       WHERE "s"."del_flag"               = 0
+        <if test="busStopId != null and busStopId != ''">
+            AND "s"."bus_stop_id"            = #{busStopId}
+        </if>
+        <if test="signpostBranchNumber != null and signpostBranchNumber != ''">
+            AND "s"."signpost_branch_number" = #{signpostBranchNumber}
+        </if>
+        <if test="signpostName != null and signpostName != ''">
+            AND "s"."signpost_name"       LIKE #{likeSearchSignpostName}
+        </if>
+        <if test="availableFlag != null">
+            AND "s"."available_flag"         = #{availableFlag}
+        </if>
+    </sql>
+
+    <select id="getSignpostByPk" resultType="SignpostsLinkDetailDto">
+        SELECT "signpost_id"
+             , "bus_stop_id"
+             , "signpost_branch_number"
+             , "signpost_code"
+             , "signpost_name"
+             , "signpost_kana_name"
+             , "signpost_en_name"
+             , "signpost_sub_name"
+             , "address"
+             , "place_name"
+             , "signpost_desc"
+             , "latitude_longitude"
+             , "signpost_url"
+             , "platform_code"
+             , "available_flag"
+             , "wheelchair_accessible_type"
+             , "arrival_point"
+             , "arrival_point_radius"
+          FROM "signposts"
+         WHERE "del_flag"     = 0
+           AND "signpost_id"  = #{signpostId}
+    </select>
+
+    <insert id="registerSignpost" useGeneratedKeys="true" keyProperty="signpostId">
+        INSERT INTO "signposts" (
+        "bus_stop_id"
+        , "signpost_branch_number"
+        , "signpost_code"
+        , "signpost_name"
+        , "signpost_kana_name"
+        , "signpost_en_name"
+        , "signpost_sub_name"
+        , "address"
+        , "place_name"
+        , "signpost_desc"
+        , "signpost_url"
+        , "bus_stop_type"
+        , "platform_code"
+        , "available_flag"
+        , "latitude_longitude"
+        , "wheelchair_accessible_type"
+        , "arrival_point"
+        , "arrival_point_radius"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+        #{busStopId}
+        , #{signpostBranchNumber}
+        , #{signpostBranchCode}
+        , #{signpostName}
+        , #{signpostKanaName}
+        , #{signpostEnName}
+        , #{signpostSubName}
+        , #{address}
+        , #{placeName}
+        , #{signpostDesc}
+        , #{signpostUrl}
+        , #{busStopType}
+        , #{platformCode}
+        , #{availableFlag}
+        , #{latitudeLongitude}
+        , #{wheelchairAccessibleType}
+        , #{arrivalPoint}
+        , #{arrivalPointRadius}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateSignpost">
+        UPDATE "signposts"
+           SET "signpost_code"              = #{signpostBranchCode}
+             , "signpost_name"              = #{signpostName}
+             , "signpost_kana_name"         = #{signpostKanaName}
+             , "signpost_en_name"           = #{signpostEnName}
+             , "signpost_sub_name"          = #{signpostSubName}
+             , "address"                    = #{address}
+             , "place_name"                 = #{placeName}
+             , "signpost_desc"              = #{signpostDesc}
+             , "latitude_longitude"         = #{latitudeLongitude}
+             , "signpost_url"               = #{signpostUrl}
+             , "platform_code"              = #{platformCode}
+             , "available_flag"             = #{availableFlag}
+             , "wheelchair_accessible_type" = #{wheelchairAccessibleType}
+             , "arrival_point"              = #{arrivalPoint}
+             , "arrival_point_radius"       = #{arrivalPointRadius}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "del_flag"                   = 0
+          AND "signpost_id"                = #{signpostId}
+    </update>
+
+    <insert id="insertSignpost" parameterType="SignpostInsertEntity">
+        INSERT INTO "signposts" (
+        "bus_stop_id"
+        , "signpost_branch_number"
+        , "signpost_code"
+        , "signpost_name"
+        , "signpost_kana_name"
+        , "signpost_en_name"
+        , "address"
+        , "place_name"
+        , "signpost_desc"
+        , "signpost_url"
+        , "bus_stop_type"
+        , "platform_code"
+        , "available_flag"
+        , "signpost_sub_name"
+        , "latitude_longitude"
+        , "wheelchair_accessible_type"
+        , "arrival_point"
+        , "arrival_point_radius"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        ) VALUES (
+        CAST(#{busStopId} AS INTEGER)
+        , CAST(COALESCE(#{signpostBranchNumber}, '0') AS INTEGER)
+        , COALESCE(#{signpostCode}, '')
+        , COALESCE(#{signpostName}, '')
+        , COALESCE(#{signpostKanaName}, '')
+        , COALESCE(#{signpostEnName}, '')
+        , COALESCE(#{address}, '')
+        , COALESCE(#{placeName}, '')
+        , COALESCE(#{signpostDesc}, '')
+        , COALESCE(#{signpostUrl}, '')
+        , 0
+        , COALESCE(#{platformCode}, '')
+        , 1
+        , COALESCE(#{signpostSubName}, '')
+        , COALESCE(#{latitudeLongitude}, '')
+        , CAST(COALESCE(#{wheelchairAccessibleType}, '0') AS SMALLINT)
+        , COALESCE(#{arrivalPoint}, '')
+        , CAST(#{arrivalPointRadius} AS INTEGER)
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <select id="getSignpostList" resultType="SignpostsLinkDetailDto">
+        SELECT "signpost_id"
+             , "bus_stop_id"
+             , "signpost_branch_number"
+             , "signpost_code"
+             , "signpost_name"
+             , "signpost_kana_name"
+             , "signpost_en_name"
+             , "signpost_sub_name"
+             , "address"
+             , "place_name"
+             , "signpost_desc"
+             , "latitude_longitude"
+             , "signpost_url"
+             , "platform_code"
+             , "available_flag"
+             , "wheelchair_accessible_type"
+             , "arrival_point"
+             , "arrival_point_radius"
+        FROM "signposts"
+        WHERE "del_flag"     = 0
+          AND "bus_stop_id"  = #{busStopId}
+     ORDER BY "signpost_id"
+    </select>
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.MenusMapper">
+
+    <select id="getMenus" resultType="PermissionRoleDetailsDto">
+        SELECT "m"."menu_id"
+             , "m"."menu_name"
+             , "m"."menu_code"
+             , "m"."display_order"
+             , CASE WHEN "pm"."perm_role_detail_id" IS NULL THEN 0
+                    ELSE 1
+                    END AS "read_perm_flg"
+             , "pm"."write_perm_flg"
+             , "pm"."download_perm_flg"
+          FROM menus "m"
+          LEFT JOIN (SELECT "pd"."perm_role_detail_id"
+                          , "pd"."write_perm_flg"
+                          , "pd"."download_perm_flg"
+                          , "pd"."menu_code"
+                       FROM "permission_roles" "p"
+                       JOIN "permission_role_details" "pd"
+                         ON "pd"."del_flag"             = 0
+                        AND "pd"."perm_role_id"         = "p"."perm_role_id"
+                      WHERE "p"."del_flag"              = 0
+                      <if test="permissionRoleId != null">
+                        AND "p"."perm_role_id"    = #{permRoleId}
+                      </if>
+                      <if test="permissionRoleId == null">
+                        AND "p".perm_role_id IS NULL
+                      </if>
+             ) "pm"
+            ON "pm".menu_code = "m".menu_code
+    </select>
+
+</mapper>

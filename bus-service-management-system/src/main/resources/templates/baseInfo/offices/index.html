@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='営業所管理'">
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${officesSearchForm}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>営業所一覧</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"> <span class="badge badge-danger"></span>
+                                        <span class="form-item-name">運行会社</span>
+                                    </label>
+                                    <div class="col-md-9">
+                                        <select class="form-control select2" th:field="*{searchOperatingCompanyId}">
+                                            <option value="">-------</option>
+                                            <option th:each="item : ${operatingCompanyList}"
+                                                    th:value="${item.operatingCompanyId}" th:text="${item.operatingName}">
+                                            </option>
+                                        </select>
+                                        <p th:if="${#fields.hasErrors('searchOperatingCompanyId')}"
+                                           th:errors="*{searchOperatingCompanyId}" class="text-danger"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"> <span class="badge badge-danger"></span>
+                                        <span class="form-item-name">営業所名</span>
+                                    </label>
+                                    <div class="col-md-9">
+                                        <div class="input-group col-md-12">
+                                            <div class="div-flex">
+                                                <input type="text" class="form-control" maxlength="100"
+                                                       th:field="*{searchName}" style="width: 300px;"
+                                                       th:classappend="${#fields.hasErrors('searchName')} ? 'error' : ''"/>
+                                                <div>
+                                                    <span class="help-block text-danger" style="width: 100px;">※部分一致</span>
+                                                </div>
+                                            </div>
+                                            <span th:if="*{#fields.hasErrors('searchName')}" th:errors="*{searchName}" class="text-danger"></span></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger"></span>
+                                        <span class="form-item-name">利用区分</span>
+                                    </label>
+                                    <div class="col-md-9">
+                                        <div class="radio col-md-12">
+                                            <input type="radio" name="searchAvailableFlag" th:id="searchAvailabilityUseFlag__0__" th:value="1" th:checked="*{searchAvailableFlag eq 1}"/>
+                                            <label class="inner-title" th:for="searchAvailabilityUseFlag__0__" th:text="利用中"></label>
+                                            <input type="radio" name="searchAvailableFlag" th:id="searchAvailabilityUseFlag__1__" th:value="0" th:checked="*{searchAvailableFlag eq 0}"/>
+                                            <label class="inner-title" th:for="searchAvailabilityUseFlag__1__" th:text="利用不可"></label>
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('searchAvailableFlag')}" th:errors="*{searchAvailableFlag}" class="text-danger"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <a th:if="${writeFlag}" th:href="@{/baseInfo/offices/detail/}" class="btn btn-success btn-default btn-submit">
+                            <i class="fa fa-pencil-square-o"  aria-hidden="true"></i>新規登録
+                        </a>
+                        <div style="display: flex;" class="pull-right">
+                            <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/baseInfo/offices/}">
+                                <i class="fa fa-search" aria-hidden="true"></i>検索
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                            <tr role="row">
+                                <th style="width: 120px;">ID</th>
+                                <th style="width: 500px;">運行会社名</th>
+                                <th style="width: 500px;">営業所名</th>
+                                <th style="width: 200px;">利用区分</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody th:if="${pager} neq null">
+                            <tr th:each="offices : ${pager.list}" role="row" class="odd">
+                                <td th:text="${offices.officeId}"></td>
+                                <td th:text="${offices.operatingName}"></td>
+                                <td th:text="${offices.name}"></td>
+                                <td th:text="${offices.availableFlag}? '利用中':'利用不可'"></td>
+                                <td>
+                                    <form method="post" th:action="@{/baseInfo/offices/detail/}">
+                                        <input type="hidden" name="officeId" th:value="${offices.officeId}"/>
+                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <button th:if="${writeFlag}" type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/baseInfo/offices/detail/}">変更</button>
+                                        <button th:if="!${writeFlag}" type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/baseInfo/offices/detail/content/}">確認</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div th:replace="~{common/paginate :: pagination('/baseInfo/offices/',${pager})}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:insert="~{common/modal :: customDialog}"></div>
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

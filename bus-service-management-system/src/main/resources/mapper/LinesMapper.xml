@@ -1,0 +1,1007 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.LinesMapper">
+
+    <select id="getAllLinesForSelectOption" resultType="LineInfoForReportDto">
+     SELECT "l"."business_corp_id"
+          , "l"."rosen_id"
+          , "l"."rosen_name"
+       FROM "lines" "l"
+ INNER JOIN "agencies" "ag"
+        ON  "ag"."del_flag"          = 0
+        AND "ag"."available_flag"    = 1
+        AND "ag"."business_corp_id"  = "l"."business_corp_id"
+      WHERE "l"."del_flag"           = 0
+        AND "l"."available_flag"     = 1
+        AND "l"."business_corp_id"   = #{businessCorpId}
+    </select>
+
+    <select id="getLinesForSelectOption" resultType="LinesSelectDto">
+        SELECT "l"."rosen_id"
+             , "l"."rosen_name"
+        FROM "lines" "l"
+        JOIN "agencies" "a"
+          ON "a"."del_flag"         = 0
+         AND "a"."available_flag"   = 1
+         AND "a"."business_corp_id" = "l"."business_corp_id"
+       WHERE "l"."del_flag"         = 0
+         AND "l"."available_flag"   = 1
+         AND "a"."business_corp_id" = #{businessCorpId}
+       ORDER BY "rosen_id"
+    </select>
+
+    <select id="countLines" resultType="java.lang.Long">
+        SELECT COUNT("rosen_id")
+         FROM "lines"
+        WHERE "del_flag" = 0
+        <if test="rosenName != null and rosenName != ''">
+            AND "rosen_name" LIKE #{likeSearchRosenName}
+        </if>
+        <if test="availableFlag != null">
+            AND "available_flag" = #{availableFlag}
+        </if>
+        <if test="businessCorpId != null and businessCorpId != 0">
+            AND "business_corp_id" = #{businessCorpId}
+        </if>
+    </select>
+
+    <select id="getLines" resultType="SearchLinesDto">
+   SELECT "l"."rosen_id"
+        , "l"."business_corp_id"
+        , "l"."rosen_code"
+        , "l"."service_start_date"
+        , "l"."service_end_date"
+        , "l"."rosen_name"
+        , "l"."rosen_kana_name"
+        , "l"."rosen_en_name"
+        , "l"."available_flag"
+        , "a"."name"
+     FROM "lines" "l"
+     JOIN "agencies" "a"
+       ON "a"."del_flag"         = 0
+      AND "a"."business_corp_id" = "l"."business_corp_id"
+      AND "a"."available_flag"   = 1
+    WHERE "l"."del_flag"         = 0
+        <if test="rosenName != null and rosenName != ''">
+            AND "l"."rosen_name" LIKE #{likeSearchRosenName}
+        </if>
+        <if test="availableFlag != null">
+            AND "l"."available_flag" = #{availableFlag}
+        </if>
+        <if test="businessCorpId != null and businessCorpId != 0">
+            AND "l"."business_corp_id" = #{businessCorpId}
+        </if>
+        ORDER BY "rosen_id"
+        LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="rosenId">
+        INSERT INTO "lines" (
+        "business_corp_id",
+        "rosen_code",
+        "service_start_date",
+        "service_end_date",
+        "rosen_name",
+        "rosen_kana_name",
+        "rosen_en_name",
+        "available_flag"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        ) VALUES (
+        #{businessCorpId},
+        #{rosenCode},
+        CAST(#{serviceStartDate} AS date),
+        CAST(#{serviceEndDate} AS date),
+        #{rosenName},
+        #{rosenKanaName},
+        #{rosenEnName},
+        #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE "lines"
+        SET
+        "business_corp_id"   = #{businessCorpId},
+        "rosen_code"         = #{rosenCode},
+        "service_start_date" = CAST(#{serviceStartDate} AS date),
+        "service_end_date"   = CAST(#{serviceEndDate} AS date),
+        "rosen_name"         = #{rosenName},
+        "rosen_kana_name"    = #{rosenKanaName},
+        "rosen_en_name"      = #{rosenEnName},
+        "available_flag"     = #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "rosen_id"     = #{rosenId}
+    </update>
+
+    <select id="getSelectableLines" resultType="SearchLinesDto">
+     SELECT "l"."rosen_id"
+          , "l"."rosen_name"
+       FROM "lines" "l"
+       JOIN "agencies" "a"
+         ON "a"."business_corp_id" = "l"."business_corp_id"
+        AND "a"."del_flag"         = 0
+        AND "a"."available_flag"   = 1
+      WHERE "l"."del_flag"         = 0
+        AND "l"."available_flag"   = 1
+        <if test="businessCorpId != null and businessCorpId != 0">
+            AND "l"."business_corp_id" = #{businessCorpId}
+        </if>
+    </select>
+
+    <select id="countLineByDateAndLine" resultType="java.lang.Long">
+       SELECT COUNT("rosen_id")
+         FROM "lines"
+        WHERE "del_flag" = 0
+          AND "available_flag" = 1
+          AND (
+            "service_start_date" &gt; CAST(#{serviceStartDate} AS date)
+                OR "service_end_date" &lt; CAST(#{serviceEndDate} AS date)
+            )
+          AND "rosen_id" = #{rosenId}
+    </select>
+
+    <select id="getLineBusStopListByServiceDateAndRosenId" resultType="LineRouteBusStopsDto">
+   SELECT "lbs"."rosen_bus_stop_id"
+        , "lbs"."sequence_no"
+        , "lbs"."ride_alight_division"
+        , "s"."signpost_name" AS "busStopName"
+        , "s"."signpost_id"
+     FROM "lines" "l"
+     JOIN "line_bus_stops" "lbs"
+       ON "lbs"."rosen_id"      = "l"."rosen_id"
+      AND "lbs"."del_flag"      = 0
+     JOIN "bus_stops" "bs"
+       ON "bs"."bus_stop_id"    = "lbs"."bus_stop_id"
+      AND "bs"."del_flag"       = 0
+      AND "bs"."available_flag" = 1
+        <if test="serviceStartDate != null and serviceStartDate != ''">
+            AND "bs"."service_start_date" &lt;= CAST(#{serviceStartDate} AS date)
+        </if>
+        <if test="serviceEndDate != null and serviceEndDate != ''">
+            AND "bs"."service_end_date" &gt;= CAST(#{serviceEndDate} AS date)
+        </if>
+     JOIN "signposts" "s"
+       ON "s"."bus_stop_id"     = "bs"."bus_stop_id"
+      AND "s"."del_flag"        = 0
+      AND "s"."available_flag"  = 1
+    WHERE "l"."del_flag"        = 0
+      AND "l"."available_flag"  = 1
+        <if test="serviceStartDate != null and serviceStartDate != ''">
+            AND "l"."service_start_date" &lt;= CAST(#{serviceStartDate} AS date)
+        </if>
+        <if test="serviceEndDate != null and serviceEndDate != ''">
+            AND "l"."service_end_date" &gt;= CAST(#{serviceEndDate} AS date)
+        </if>
+        <if test="rosenId != null and rosenId != ''">
+            AND "l"."rosen_id" = #{rosenId}
+        </if>
+        ORDER BY "lbs"."sequence_no" ASC
+                ,"s"."signpost_id"   ASC
+    </select>
+
+    <select id="getDisplayDaiyas" resultType="DisplayDaiyasDto">
+        SELECT "bs"."work_number"
+        ,"dbd"."sales_cancel_flg"
+        , MIN("bd"."bus_stop_departure_time") AS bus_stop_departure_time
+        , MAX("bd"."bus_stop_arrival_time") AS bus_stop_arrival_time
+        FROM "lines" "l"
+        JOIN "line_routes" "lr"
+        ON "lr"."rosen_id" = "l"."rosen_id"
+        AND "lr"."del_flag" = 0
+        AND "lr"."available_flag" = 1
+        JOIN "bus_services" "bs"
+        ON "bs"."line_route_id" = "lr"."line_route_id"
+        AND "bs"."del_flag" = 0
+        <if test="workNumber != null and workNumber != ''">
+            AND "bs"."work_number" = #{workNumber}
+        </if>
+        JOIN "bus_daiyas" "bd"
+        ON "bd"."bus_service_id" = "bs"."bus_service_id"
+        AND "bd"."del_flag" = 0
+        JOIN "daily_bus_daiyas" "dbd"
+        ON "dbd"."bus_service_id" = "bs"."bus_service_id"
+        AND "dbd"."del_flag" = 0
+        AND "dbd"."service_date" = CAST(#{serviceDate} AS date)
+        AND "dbd"."operation_cancel_flg" = 0
+        JOIN "agencies" "a"
+        ON "a"."business_corp_id" = "l"."business_corp_id"
+        AND "a"."del_flag" = 0
+        AND "a"."available_flag" = 1
+        WHERE "l"."del_flag" = 0
+        AND "l"."available_flag" = 1
+        AND "l"."rosen_id" = #{rosenId}
+        GROUP BY
+        "bs"."bus_service_id",
+        "bs"."work_number",
+        "dbd"."sales_cancel_flg"
+        ORDER BY
+        "bs"."work_number" ASC,
+        MIN("bd"."bus_stop_departure_time") ASC,
+        MAX("bd"."bus_stop_arrival_time") ASC
+    </select>
+
+    <select id="getDistanceReportForBusStopList" resultType="DistanceReportDto">
+        SELECT "lrOutBound"."line_route_id"
+        , "lrInBound"."line_route_id"
+        , "lrbsOutBound"."stop_sequence"
+        , "lrOutBound"."line_route_name"
+        , "bst"."bus_stop_name"
+        , "spOutBound"."address" AS "outboundAddress"
+        , "spInBound"."address" AS "inboundAddress"
+        , "lrbsOutBound"."shape_dist_traveled" AS "outboundShapeDistTraveled"
+        FROM "lines" "l"
+        JOIN "line_routes" "lrOutBound"
+        ON "lrOutBound"."del_flag" = 0
+        AND "lrOutBound"."rosen_id" = "l"."rosen_id"
+        AND "lrOutBound"."service_start_date" &lt;= CAST(#{serviceDate} AS date)
+        AND "lrOutBound"."service_end_date" &gt;= CAST(#{serviceDate} AS date)
+        AND "lrOutBound"."line_detail_service_division" = 1
+        JOIN "line_route_bus_stops" "lrbsOutBound"
+        ON "lrbsOutBound"."del_flag" = 0
+        AND "lrbsOutBound"."line_route_id" = "lrOutBound"."line_route_id"
+        JOIN "signposts" "spOutBound"
+        ON "spOutBound"."del_flag" = 0
+        AND "spOutBound"."signpost_id" = "lrbsOutBound"."signpost_id"
+        JOIN "bus_stops" "bst"
+        ON "bst"."del_flag" = 0
+        AND "bst"."bus_stop_id" = "spOutBound"."bus_stop_id"
+        LEFT JOIN "signposts" "spInBound"
+        ON "spInBound"."del_flag" = 0
+        AND "spInBound"."bus_stop_id" = "bst"."bus_stop_id"
+        AND "spInBound"."signpost_id" != "spOutBound"."signpost_id"
+        LEFT JOIN "line_route_bus_stops" "lrbsInBound"
+        ON "lrbsInBound"."del_flag" = 0
+        AND "lrbsInBound"."signpost_id" = "spInBound"."signpost_id"
+        LEFT JOIN "line_routes" "lrInBound"
+        ON "lrInBound"."del_flag" = 0
+        AND "lrInBound"."line_route_id" = "lrbsInBound"."line_route_id"
+        AND "lrInBound"."service_start_date" &lt;= CAST(#{serviceDate} AS date)
+        AND "lrInBound"."service_end_date" &gt;= CAST(#{serviceDate} AS date)
+        AND "lrInBound"."line_detail_service_division" = 0
+        WHERE "l"."del_flag" = 0
+        AND "l"."business_corp_id" = #{businessCorpId}
+        AND "l"."available_flag" = 1
+        AND "l"."rosen_id" = #{rosenId}
+        ORDER BY
+        "lrOutBound"."line_route_id" ASC,
+        "lrbsOutBound"."stop_sequence" ASC,
+        "lrInBound"."line_route_id" ASC
+    </select>
+
+    <select id="getLineByPkId" resultMap="DetailFormMap">
+   SELECT "l"."rosen_id"
+        , "l"."rosen_code"
+        , "l"."service_start_date"
+        , "l"."service_end_date"
+        , "l"."rosen_name"
+        , "l"."rosen_kana_name"
+        , "l"."rosen_en_name"
+        , "l"."available_flag"
+        , "lb"."rosen_bus_stop_id"
+        , "lb"."bus_stop_id"
+        , "lb"."ride_alight_division"
+        , "lb"."sequence_no"
+        , "bs"."bus_stop_name"
+     FROM "lines" "l"
+     JOIN "line_bus_stops" "lb"
+       ON "lb"."rosen_id"       = "l"."rosen_id"
+      AND "lb"."del_flag"       = 0
+     JOIN "bus_stops" "bs"
+       ON "bs"."bus_stop_id"    = "lb"."bus_stop_id"
+      AND "bs"."del_flag"       = 0
+      AND "bs"."available_flag" = 1
+    WHERE "l"."del_flag"        = 0
+      AND "l"."rosen_id"        = #{rosenId}
+    </select>
+
+    <resultMap id="DetailFormMap" type="maint.form.lines.LinesDetailForm">
+        <id property="rosenId" column="rosen_id"/>
+        <result property="rosenCode" column="rosen_code"/>
+        <result property="serviceStartDate" column="service_start_date"/>
+        <result property="serviceEndDate" column="service_end_date"/>
+        <result property="rosenName" column="rosen_name"/>
+        <result property="rosenKanaName" column="rosen_kana_name"/>
+        <result property="rosenEnName" column="rosen_en_name"/>
+        <result property="availableFlag" column="available_flag"/>
+        <collection property="lineBusStopsList" resultMap="BusStopsMap"/>
+    </resultMap>
+
+    <resultMap id="BusStopsMap" type="maint.dto.operation.lines.LineBusStopsDto">
+        <id property="rosenBusStopId" column="rosen_bus_stop_id"/>
+        <id property="busStopId" column="bus_stop_id"/>
+        <result property="rideAlightDivision" column="ride_alight_division"/>
+        <result property="busStopName" column="bus_stop_name"/>
+        <result property="sequenceNo" column="sequence_no"/>
+    </resultMap>
+
+    <select id="countLinesByIdDate" resultType="java.lang.Long">
+        SELECT count("l"."rosen_id")
+          FROM "lines" "l"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"               = 0
+           AND "a"."available_flag"         = 1
+           AND "a"."business_corp_id"       = "l"."business_corp_id"
+         WHERE "l"."del_flag"               = 0
+           AND "l"."available_flag"         = 1
+           AND "a"."business_corp_id"       = #{businessCorpId}
+           AND "l"."rosen_id"               = #{rosenId}
+           AND "l"."service_start_date" &lt;= CAST(#{serviceStartDate} AS date)
+           AND "l"."service_end_date"   &gt;= CAST(#{serviceStartDate} AS date)
+    </select>
+
+    <select id="getServiceEndDateById" resultType="String">
+        SELECT "service_end_date"
+          FROM "lines"
+         WHERE "del_flag"       = 0
+           AND "available_flag" = 1
+           AND "rosen_id"       = #{rosenId}
+    </select>
+
+    <select id="getOperationRecords" resultType="OperationRecordsDto">
+        WITH "params" AS (
+            SELECT CAST(#{extractionStartDate} AS date) AS "from_date"
+                 , CAST(#{extractionEndDate} AS date)   AS "to_date"
+        )
+        , "base_lines" AS (
+            SELECT "l"."rosen_id"
+                 , "l"."service_start_date" AS "line_start"
+                 , "l"."service_end_date"   AS "line_end"
+                 , "lr"."line_route_id"
+                 , "lr"."main_stopover_point"
+                 , "lr"."line_route_code"
+              FROM "lines" "l"
+              JOIN "agencies" "a"
+                ON "a"."del_flag"                = 0
+               AND "a"."available_flag"          = 1
+               AND "a"."business_corp_id"        = #{businessCorpId}
+               AND "a"."business_corp_id"        = "l"."business_corp_id"
+              JOIN "line_routes" "lr"
+                ON "lr"."del_flag"               = 0
+               AND "lr"."rosen_id"               = "l"."rosen_id"
+             WHERE "l"."del_flag"                = 0
+               AND "l"."rosen_id"                = #{rosenId}
+        )
+        , "base_services" AS (
+            SELECT "dr"."daiya_revision_id"
+                 , "bl"."rosen_id"
+                 , "bl"."line_route_id"
+                 , "bl"."line_route_code"
+                 , "bs"."bus_service_id"
+              FROM "daiya_revisions" "dr"
+              JOIN "base_lines" "bl"
+                ON "bl"."rosen_id"               = "dr"."rosen_id"
+              JOIN "bus_services" "bs"
+                ON "bs"."del_flag"               = 0
+               AND "bs"."daiya_revision_id"      = "dr"."daiya_revision_id"
+               AND "bs"."line_route_id"          = "bl"."line_route_id"
+             WHERE "dr"."del_flag"               = 0
+               AND "dr"."service_start_date" &lt;= (select "to_date" from "params")
+               AND "dr"."service_end_date"   &gt;= (select "from_date" from "params")
+        )
+        , "route_agg" AS (
+            SELECT "bl"."line_route_id"
+                 , "bl"."line_route_code"
+                 , (ARRAY_AGG("bsp"."bus_stop_name" ORDER BY "lrbs"."stop_sequence" ASC, "lrbs"."line_route_bus_stop_id" ASC))[1]          AS "first_stop_name"
+                 , (ARRAY_AGG("bsp"."bus_stop_name" ORDER BY "lrbs"."stop_sequence" DESC, "lrbs"."line_route_bus_stop_id" DESC))[1]        AS "last_stop_name"
+                 , (ARRAY_AGG("lrbs"."shape_dist_traveled" ORDER BY "lrbs"."stop_sequence" DESC, "lrbs"."line_route_bus_stop_id" DESC))[1] AS "last_stop_total_distance"
+                 , "bl"."main_stopover_point"
+              FROM "base_lines" "bl"
+              JOIN "line_route_bus_stops" "lrbs"
+                ON "lrbs"."del_flag"         = 0
+               AND "lrbs"."line_route_id"    = "bl"."line_route_id"
+              JOIN "line_bus_stops" "lbs"
+                ON "lbs"."del_flag"          = 0
+               AND "lbs"."rosen_bus_stop_id" = "lrbs"."rosen_bus_stop_id"
+              JOIN "bus_stops" "bsp"
+                ON "bsp"."del_flag"          = 0
+               AND "bsp"."bus_stop_id"       = "lbs"."bus_stop_id"
+          GROUP BY "bl"."line_route_id"
+                 , "bl"."line_route_code"
+                 , "bl"."main_stopover_point"
+        )
+        , "service_span" AS (
+            SELECT "lrbs"."line_route_id"
+                 , (array_agg("bd"."bus_stop_departure_time" ORDER BY "lrbs"."stop_sequence" ASC,  "bd"."bus_stop_departure_time" ASC))[1]  AS "first_departure_time"
+                 , (array_agg("bd"."bus_stop_departure_time" ORDER BY "lrbs"."stop_sequence" ASC,  "bd"."bus_stop_departure_time" DESC))[1] AS "last_departure_time"
+                 , (array_agg("bd"."bus_stop_arrival_time"   ORDER BY "lrbs"."stop_sequence" DESC, "bd"."bus_stop_arrival_time" DESC))[1]   AS "last_arrival_time"
+              FROM "base_services" "bs"
+              JOIN "bus_daiyas" "bd"
+                ON "bd"."del_flag"                 = 0
+               AND "bd"."bus_service_id"           = "bs"."bus_service_id"
+              JOIN "line_route_bus_stops" "lrbs"
+                ON "lrbs"."del_flag"               = 0
+               AND "lrbs"."line_route_bus_stop_id" = "bd"."line_route_bus_stop_id"
+          GROUP BY "lrbs"."line_route_id"
+        )
+        , "daily_cnt" AS (
+            SELECT "bs"."line_route_id"
+                 , COUNT(DISTINCT "dbd"."daily_bus_daiya_id") AS "daily_bus_daiya_count_total"
+              FROM (SELECT DISTINCT "line_route_id", "bus_service_id" FROM "base_services") "bs"
+              JOIN "daily_bus_daiyas" "dbd"
+                ON "dbd"."del_flag"             = 0
+               AND "dbd"."bus_service_id"       = "bs"."bus_service_id"
+               AND "dbd"."sales_cancel_flg"     = 0
+               AND "dbd"."operation_cancel_flg" = 0
+               AND "dbd"."service_date"     &gt;= (select "from_date" from "params")
+               AND "dbd"."service_date"     &lt;= (select "to_date" from "params")
+        GROUP BY "bs"."line_route_id"
+        )
+        SELECT DISTINCT ON ("ra"."line_route_id")
+               "ra"."line_route_code"     AS "lineRouteNo"
+             , "ra"."first_stop_name"     AS "origin"
+             , "ra"."main_stopover_point" AS "mainViaStops"
+             , "ra"."last_stop_name"      AS "destination"
+             , "ss"."first_departure_time" AS "firstDepartureTime"
+             , "ss"."last_departure_time"  AS "lastDepartureTime"
+             , (
+                 ((SUBSTRING("ss"."last_arrival_time", 1, 2)::int * 60) + SUBSTRING("ss"."last_arrival_time", 3, 2)::int)
+                   -
+                 ((SUBSTRING("ss"."last_departure_time", 1, 2)::int * 60) + SUBSTRING("ss"."last_departure_time", 3, 2)::int)
+                   +
+                 CASE WHEN "ss"."last_arrival_time" &lt; "ss"."last_departure_time" THEN 24 * 60 ELSE 0 END
+               ) AS "durationMinutes"
+             , COALESCE("dc"."daily_bus_daiya_count_total", 0) AS "operationCount"
+             , "ra"."last_stop_total_distance"                 AS "distanceKm"
+          FROM "bus_daiyas" "bd"
+          JOIN "base_services" "bs"
+            ON "bs"."bus_service_id"    = "bd"."bus_service_id"
+          JOIN "route_agg" "ra"
+            ON "ra"."line_route_id"     = "bs"."line_route_id"
+     LEFT JOIN "service_span" "ss"
+            ON "ss"."line_route_id"     = "bs"."line_route_id"
+     LEFT JOIN "daily_cnt" "dc"
+            ON "dc"."line_route_id"     = "bs"."line_route_id"
+          JOIN "line_routes" "lr_cur"
+            ON "lr_cur"."line_route_id" = "bs"."line_route_id"
+      GROUP BY "bd"."bus_daiya_id"
+             , "ra"."line_route_id"
+             , "ra"."line_route_code"
+             , "ra"."first_stop_name"
+             , "ra"."main_stopover_point"
+             , "ra"."last_stop_name"
+             , "ra"."last_stop_total_distance"
+             , "ss"."first_departure_time"
+             , "ss"."last_departure_time"
+             , "ss"."last_arrival_time"
+             , "dc"."daily_bus_daiya_count_total"
+             , "lr_cur"."line_detail_service_division"
+      ORDER BY "ra"."line_route_id"
+             , "ra"."line_route_code"
+             , "ss"."first_departure_time"
+             , "ss"."last_departure_time"
+             , "ss"."last_arrival_time"
+             , "bd"."bus_daiya_id"
+    </select>
+
+    <select id="getDaiyaRevisionList" resultType="maint.dto.integrate.gtfsReport.GtfsDaiyaRevisionDto">
+        SELECT "l"."rosen_id"                             AS "rosenId"
+             , "ag"."provider_organization_contact_email" AS "providerOrganizationContactEmail"
+             , "ag"."provider_organization_contact_url"   AS "providerOrganizationContactUrl"
+             , "ag"."provider_organization_name"          AS "providerOrganizationName"
+             , "ag"."provider_organization_url"           AS "providerOrganizationUrl"
+             , "dr"."daiya_revision_id"                   AS "daiyaRevisionId"
+             , "dr"."service_end_date"                    AS "serviceEndDate"
+             , "dr"."service_start_date"                  AS "serviceStartDate"
+          FROM "lines"                                    AS "l"
+    INNER JOIN "agencies"                                 AS "ag"
+            ON "ag"."del_flag"                             = 0
+           AND "ag"."available_flag"                       = 1
+           AND "ag"."business_corp_id"                     = "l"."business_corp_id"
+    INNER JOIN "daiya_revisions"                          AS "dr"
+            ON "dr"."del_flag"                             = 0
+           AND "dr"."rosen_id"                             = "l"."rosen_id"
+           AND "dr"."service_start_date"               &lt;= CAST(#{targetDate} AS DATE)
+           AND "dr"."service_end_date"                 &gt;= CAST(#{targetDate} AS DATE)
+         WHERE "l"."del_flag"                              = 0
+           AND "l"."available_flag"                        = 1
+           AND "l"."business_corp_id"                      = #{businessCorpId}
+      ORDER BY "l"."rosen_id" ASC
+             , "dr"."service_start_date" DESC
+    </select>
+
+    <select id="getLineInfosForSelectOption" resultType="maint.dto.selectBox.LineInfoForReportDto">
+        SELECT "d"."rosen_id"           AS "rosenId"
+             , "d"."service_start_date" AS "serviceStartDate"
+             , "l"."business_corp_id"   AS "businessCorpId"
+             , "l"."rosen_name"         AS "rosen_name"
+             , "d"."daiya_revision_id"  AS "daiyaRevisionId"
+        FROM "lines"                    AS "l"
+  INNER JOIN "agencies"                 AS "a"
+          ON "a"."del_flag"              = 0
+         AND "a"."available_flag"        = 1
+         AND "l"."business_corp_id"      = "a"."business_corp_id"
+      <if test="businessCorpId != null">
+         AND "a"."business_corp_id"      = #{businessCorpId}
+      </if>
+  INNER JOIN "daiya_revisions"          AS "d"
+          ON "d"."del_flag"              = 0
+         AND "l"."rosen_id"              = "d"."rosen_id"
+       WHERE "l"."del_flag"              = 0
+    ORDER BY "d"."service_start_date" DESC
+    </select>
+
+    <select id="getReportForDownload" parameterType="maint.form.report.ReportListsExcelForm" resultType="maint.dto.export.lists.ReportDownLoadDto">
+        SELECT "a"."business_corp_id"              AS "businessCorpId",
+               "d"."daiya_revision_id"             AS "daiyaRevisionId",
+               "bst"."bus_stop_id"                 AS "busStopId",
+               "bst"."bus_stop_name"               AS "busStopName",
+               "bst"."service_start_date"          AS "serviceStartDate",
+               "bst"."service_end_date"            AS "serviceEndDate",
+               "bst"."latitude_longitude"          AS "latitudeLongitude",
+               "bst"."bus_stop_url"                AS "busStopUrl",
+               "sp"."signpost_id"                  AS "signpostId",
+               "sp"."signpost_branch_number"       AS "signpostBranchNumber",
+               "sp"."signpost_code"                AS "signpostCode",
+               "sp"."signpost_name"                AS "signpostName",
+               "sp"."address"                      AS "address",
+               "sp"."place_name"                   AS "placeName",
+               "sp"."signpost_desc"                AS "signpostDesc",
+               "sp"."latitude_longitude"           AS "signlatitude_longitude",
+               "sp"."signpost_url"                 AS "signpostUrl",
+               "sp"."bus_stop_type"                AS "busStopType",
+               "sp"."platform_code"                AS "platformCode",
+               "sp"."arrival_point"                AS "arrivalPoint",
+               "sp"."arrival_point_radius"         AS "arrivalPointRadius",
+               "l"."rosen_name"                    AS "rosenName",
+               "lr"."line_route_id"                AS "lineRouteId",
+               "lr"."line_route_code"              AS "lineRouteCode",
+               "lr"."service_start_date"           AS "lineRouteServiceStartDate",
+               "lr"."service_end_date"             AS "lineRouteServiceEndDate",
+               "lr"."line_route_name"              AS "lineRouteName",
+               "lr"."line_route_short_name"        AS "lineRouteShortName",
+               "lr"."line_route_number"            AS "lineRouteNumber",
+               "lr"."line_detail_service_division" AS "lineDetailServiceDivision",
+               "lr"."line_route_url"               AS "lineRouteUrl",
+               "lr"."line_route_color"             AS "lineRouteColor",
+               "lr"."line_route_text_color"        AS "lineRouteTextColor",
+               "lr"."line_route_remarks"           AS "lineRouteRemarks",
+               "lrbs"."line_route_bus_stop_id"     AS "lineRouteBusStopId",
+               "lrbs"."ride_alight_division"       AS "rideAlightDivision",
+               "lrbs"."drop_off_division"          AS "dropOffDivision",
+               "lrbs"."stop_headsign"              AS "stopHeadsign",
+               "lrbs"."shape_dist_traveled"        AS "shapeDistTraveled",
+               "lrbs"."stop_sequence"              AS "stopSequence",
+               "bs"."bus_service_id"               AS "busServiceId",
+               "bs"."bus_service_trip_id"          AS "busServiceTripId",
+               "bs"."bus_service_trip_headsign"    AS "busServiceTripHeadsign",
+               "bs"."bus_service_name"             AS "busServiceName",
+               "bs"."calendar_id"                  AS "calendarId",
+               "bs"."wheelchair_accessible_type"   AS "wheelchairAccessibleType",
+               "bs"."bikes_allowed_type"           AS "bikesAllowedType",
+               "bs"."bus_service_trip_desc"        AS "busServiceTripDesc",
+               "bs"."bus_service_trip_desc_symbol" AS "busServiceTripDescSymbol",
+               "bs"."office_id"                    AS "officeId",
+               "bs"."work_number"                  AS "workNumber",
+               "bs"."vehicle_id"                   AS "vehicleId",
+               "bd"."bus_stop_arrival_time"        AS "busStopArrivalTime",
+               "bd"."bus_stop_departure_time"      AS "busStopDepartureTime"
+          FROM "lines"                             AS "l"
+    INNER JOIN "agencies"                          AS "a"
+            ON "l"."del_flag"                      = 0
+           AND "a"."del_flag"                      = 0
+           AND "l"."available_flag"                = 1
+           AND "a"."business_corp_id"              = "l"."business_corp_id"
+    INNER JOIN "daiya_revisions"                   AS "d"
+            ON "d"."del_flag"                      = 0
+           AND "d"."rosen_id"                      = "l"."rosen_id"
+     LEFT JOIN "bus_services"                      AS "bs"
+            ON "bs"."del_flag"                     = 0
+           AND "bs"."daiya_revision_id"            = "d"."daiya_revision_id"
+        <if test="reportType == '05'">
+    INNER JOIN "calendars"                         AS "cal"
+            ON "cal"."calendar_id"                 = "bs"."calendar_id"
+        </if>
+     LEFT JOIN "bus_daiyas"                        AS "bd"
+            ON "bd"."del_flag"                     = 0
+           AND "bd"."bus_service_id"               = "bs"."bus_service_id"
+    INNER JOIN "line_route_bus_stops"              AS "lrbs"
+            ON "lrbs"."del_flag"                   = 0
+           AND "lrbs"."line_route_bus_stop_id"     = "bd"."line_route_bus_stop_id"
+    INNER JOIN "line_bus_stops"                    AS "lbs"
+            ON "lbs"."del_flag"                    = 0
+           AND "lbs"."rosen_bus_stop_id"           = "lrbs"."rosen_bus_stop_id"
+    INNER JOIN "line_routes" AS "lr"
+            ON "lr"."del_flag"                     = 0
+           AND "lr"."line_route_id"                = "lrbs"."line_route_id"
+    INNER JOIN "signposts" AS "sp"
+            ON "sp"."del_flag"                     = 0
+           AND "sp"."signpost_id"                  = "lrbs"."signpost_id"
+    INNER JOIN "bus_stops" AS "bst"
+            ON "bst"."del_flag"                    = 0
+           AND "bst"."bus_stop_id"                 = "sp"."bus_stop_id"
+         WHERE "a"."available_flag"                = 1
+        <if test="reportType == '05'">
+           AND "cal"."del_flag"                    = 0
+           AND "cal"."available_flag"              = 1
+        </if>
+        <if test="rosenId != null">
+           AND "l"."rosen_id"                      = #{rosenId}
+        </if>
+        <if test="businessCorpId != null">
+           AND "a"."business_corp_id"              = #{businessCorpId}
+        </if>
+        <if test="daiyaRevisionId != null">
+           AND "d"."daiya_revision_id"             = #{daiyaRevisionId}
+        </if>
+    </select>
+
+    <select id="getRouteTimetableListsForDownload" parameterType="maint.form.report.RouteTimetableExcelForm" resultType="maint.dto.plan.RouteTimetableListDownloadDto">
+        WITH "earliest_departure" AS (
+          SELECT "bs"."bus_service_id"
+                , MIN("bd"."bus_stop_departure_time") AS "earliest_time"
+            FROM "bus_services" "bs"
+      INNER JOIN "bus_daiyas" "bd"
+              ON "bd"."del_flag"       = 0
+             AND "bd"."bus_service_id" = "bs"."bus_service_id"
+           WHERE "bs"."del_flag"       = 0
+        GROUP BY "bs"."bus_service_id"
+        )
+
+        SELECT "t"."rosen_id"
+             , "t"."rosen_name"
+             , "t"."calendar_id"
+             , "t"."calendar_type"
+             , "t"."line_detail_service_division"
+             , "t"."sequence_no"
+             , "t"."bus_stop_id"
+             , "t"."bus_stop_name"
+             , "t"."line_route_id"
+             , "t"."line_route_name"
+             , "t"."bus_service_id"
+             , "t"."bus_service_name"
+             , "t"."bus_stop_departure_time"
+          FROM (
+                 SELECT DISTINCT "l"."rosen_id"
+                               , "l"."rosen_name"
+                               , "c"."calendar_id"
+                               , "c"."calendar_type"
+                               , "lr"."line_detail_service_division"
+                               , "lrbs"."stop_sequence"
+                               , "lbs"."sequence_no"
+                               , "bst"."bus_stop_id"
+                               , "bst"."bus_stop_name"
+                               , "lr"."line_route_id"
+                               , "lr"."line_route_name"
+                               , "bs"."bus_service_id"
+                               , "bs"."bus_service_name"
+                               , "bd"."bus_stop_departure_time"
+                               , "ed"."earliest_time"  AS "_order_earliest_time"
+                            FROM "lines" "l"
+                            JOIN "daiya_revisions" "dr"
+                              ON "dr"."del_flag"                 = 0
+                             AND "dr"."rosen_id"                 = "l"."rosen_id"
+                            JOIN "bus_services" "bs"
+                              ON "bs"."del_flag"                 = 0
+                             AND "bs"."daiya_revision_id"        = "dr"."daiya_revision_id"
+                            JOIN "earliest_departure" "ed"
+                              ON "ed"."bus_service_id"           = "bs"."bus_service_id"
+                            JOIN "bus_daiyas" "bd"
+                              ON "bd"."del_flag"                 = 0
+                             AND "bd"."bus_service_id"           = "bs"."bus_service_id"
+                            JOIN "line_route_bus_stops" "lrbs"
+                              ON "lrbs"."del_flag"               = 0
+                             AND "lrbs"."line_route_bus_stop_id" = "bd"."line_route_bus_stop_id"
+                            JOIN "line_routes" "lr"
+                              ON "lr"."del_flag"                 = 0
+                             AND "lr"."line_route_id"            = "lrbs"."line_route_id"
+                            JOIN "line_bus_stops" "lbs"
+                              ON "lbs"."del_flag"                = 0
+                             AND "lbs"."rosen_bus_stop_id"       = "lrbs"."rosen_bus_stop_id"
+                            JOIN "signposts" "sp"
+                              ON "sp"."del_flag"                 = 0
+                             AND "sp"."signpost_id"              = "lrbs"."signpost_id"
+                            JOIN "bus_stops" "bst"
+                              ON "bst"."del_flag"                = 0
+                             AND "bst"."bus_stop_id"             = "sp"."bus_stop_id"
+                            JOIN "calendars" "c"
+                              ON "c"."del_flag"                  = 0
+                             AND "c"."calendar_id"               = "bs"."calendar_id"
+                             AND "c"."available_flag"            = 1
+                           WHERE "l"."del_flag"                  = 0
+                             AND "l"."available_flag"            = 1
+                          <if test="businessCorpId != null">
+                             AND "l"."business_corp_id"          = #{businessCorpId}
+                          </if>
+                             AND "l"."rosen_id"                  = #{rosenId}
+                             AND "dr"."daiya_revision_id"        = #{daiyaRevisionId}
+             ) "t"
+        ORDER BY "t"."rosen_id"
+               , "t"."calendar_id"
+               , "t"."line_detail_service_division"
+               , "t"."_order_earliest_time"
+               , "t"."bus_stop_departure_time"
+               , "t"."stop_sequence"
+               , "t"."line_route_id";
+    </select>
+
+    <select id="getStaffReportListsForDownload" resultType="maint.dto.opeInfo.StaffReportListDownloadDto">
+    WITH "earliest_departure" AS (
+        SELECT "bs"."bus_service_id"
+             , MIN("bd"."bus_stop_departure_time") AS "earliest_time"
+        FROM "bus_services" "bs"
+                 JOIN "bus_daiyas" "bd"
+                      ON "bd"."del_flag" = 0
+                          AND "bd"."bus_service_id" = "bs"."bus_service_id"
+        WHERE "bs"."del_flag" = 0
+        GROUP BY "bs"."bus_service_id"
+    )
+    SELECT "t"."rosen_id"
+         , "t"."rosen_name"
+         , "t"."calendar_id"
+         , "t"."calendar_type"
+         , "t"."line_detail_service_division"
+         , "t"."work_number"
+         , "t"."bus_stop_id"
+         , "t"."bus_stop_name"
+         , "t"."line_route_id"
+         , "t"."line_route_name"
+         , "t"."bus_service_id"
+         , "t"."bus_service_name"
+         , "t"."bus_stop_departure_time"
+         , "t"."stop_sequence"
+    FROM (
+             SELECT DISTINCT "l"."rosen_id"
+                           , "l"."rosen_name"
+                           , "c"."calendar_id"
+                           , "c"."calendar_type"
+                           , "lr"."line_detail_service_division"
+                           , "bs"."work_number"
+                           , "bst"."bus_stop_id"
+                           , "bst"."bus_stop_name"
+                           , "lr"."line_route_id"
+                           , "lr"."line_route_name"
+                           , "bs"."bus_service_id"
+                           , "bs"."bus_service_name"
+                           , "bd"."bus_stop_departure_time"
+                           , "lrbs"."stop_sequence"
+                           , "ed"."earliest_time"  AS "_order_earliest_time"
+             FROM "lines" "l"
+                      JOIN "daiya_revisions" "dr"
+                           ON "dr"."del_flag"                 = 0
+                               AND "l"."rosen_id"                  = "dr"."rosen_id"
+                      JOIN "bus_services" "bs"
+                           ON "bs"."del_flag"                 = 0
+                               AND "bs"."daiya_revision_id"        = "dr"."daiya_revision_id"
+                      JOIN "earliest_departure" "ed"
+                           ON "ed"."bus_service_id"           = "bs"."bus_service_id"
+                      JOIN "bus_daiyas" "bd"
+                           ON "bd"."del_flag"                 = 0
+                               AND "bd"."bus_service_id"           = "bs"."bus_service_id"
+                      JOIN "line_route_bus_stops" "lrbs"
+                           ON "lrbs"."del_flag"               = 0
+                               AND "lrbs"."line_route_bus_stop_id" = "bd"."line_route_bus_stop_id"
+                      JOIN "line_routes" "lr"
+                           ON "lr"."del_flag"                 = 0
+                               AND "lr"."line_route_id"            = "lrbs"."line_route_id"
+                      JOIN "signposts" "sp"
+                           ON "sp"."del_flag"                 = 0
+                               AND "sp"."signpost_id"              = "lrbs"."signpost_id"
+                      JOIN "bus_stops" "bst"
+                           ON "bst"."del_flag"                = 0
+                               AND "bst"."bus_stop_id"             = "sp"."bus_stop_id"
+                      JOIN "calendars" "c"
+                           ON "c"."del_flag"                  = 0
+                               AND "c"."available_flag"            = 1
+                               AND "c"."calendar_id"               = "bs"."calendar_id"
+             WHERE "l"."del_flag"                  = 0
+               AND "l"."available_flag"            = 1
+             <if test="businessCorpId != null">
+               AND "l"."business_corp_id"          = #{businessCorpId}
+             </if>
+               AND "l"."rosen_id"                  = #{rosenId}
+               AND "dr"."daiya_revision_id"        = #{daiyaRevisionId}
+         ) "t"
+    ORDER BY "t"."rosen_id"
+           , "t"."calendar_id"
+           , "t"."line_detail_service_division"
+           , "t"."line_route_id"
+           , "t"."work_number"
+           , "t"."_order_earliest_time"
+           , "t"."bus_stop_departure_time"
+           , "t"."stop_sequence";
+    </select>
+
+    <select id="getStopMapListsForDownload" parameterType="maint.form.report.StopMapExcelForm" resultType="maint.dto.document.StopMapListDownloadDto">
+        SELECT DISTINCT ON ("bst"."bus_stop_id"
+                          , "sp_out"."signpost_id"
+                          , "sp_in"."signpost_id")
+             "bst"."bus_stop_id"
+             , "sp_out"."signpost_id"                            AS "outSignpostId"
+             , "bst"."bus_stop_name"
+             , CASE WHEN "lr_out"."line_detail_service_division" = 1
+                    THEN "sp_out"."signpost_name"
+                    END AS "outSignpostName"
+             , CASE WHEN "lr_in"."line_detail_service_division"  = 0
+                    THEN "sp_in"."signpost_name"
+                    END AS "inSignpostName"
+             , "sp_in"."signpost_id"                             AS "inSignpostId"
+             , CASE WHEN "lr_out"."line_detail_service_division" = 1
+                    THEN "sp_out"."address"
+                    END AS "outRouteAddress"
+             , CASE WHEN "lr_in"."line_detail_service_division"  = 0
+                    THEN "sp_in"."address"
+                    END AS "inRouteAddress"
+             , "bst"."latitude_longitude"
+          FROM "lines" "l"
+    INNER JOIN "line_routes" "lr_out"
+            ON "lr_out"."del_flag"                     = 0
+           AND "lr_out"."rosen_id"                     = "l"."rosen_id"
+           AND "lr_out"."line_detail_service_division" = 1
+    INNER JOIN "line_route_bus_stops" "lrbs_out"
+            ON "lrbs_out"."del_flag"                   = 0
+           AND "lrbs_out"."line_route_id"              = "lr_out"."line_route_id"
+    INNER JOIN "signposts" "sp_out"
+            ON "sp_out"."del_flag"                     = 0
+           AND "sp_out"."signpost_id"                  = "lrbs_out"."signpost_id"
+    INNER JOIN "bus_stops" "bst"
+            ON "bst"."del_flag"                        = 0
+           AND "bst"."bus_stop_id"                     = "sp_out"."bus_stop_id"
+     LEFT JOIN line_routes lr_in
+            ON lr_in.del_flag                          = 0
+           AND "lr_in"."rosen_id"                      = "l"."rosen_id"
+           AND "lr_in"."line_route_id"                 != "lr_out"."line_route_id"
+           AND lr_in.line_detail_service_division      = 0
+           AND "lr_in"."service_start_date"            &lt;= #{processingDate}
+           AND "lr_in"."service_end_date"              &gt;= #{processingDate}
+     LEFT JOIN "line_route_bus_stops" "lrbs_in"
+            ON "lrbs_in"."del_flag"                    = 0
+           AND "lrbs_in"."line_route_id"               = "lr_in"."line_route_id"
+     LEFT JOIN "signposts" "sp_in"
+            ON "sp_in"."del_flag"                      = 0
+           AND "sp_in"."bus_stop_id"                   = bst.bus_stop_id
+           AND "sp_in"."signpost_id"                   != sp_out.signpost_id
+           AND "sp_in"."signpost_id"                   = "lrbs_in"."signpost_id"
+         WHERE "l"."del_flag"                          = 0
+           AND "l"."available_flag"                    = 1
+        <if test="businessCorpId != null">
+           AND "l"."business_corp_id"                  = #{businessCorpId}
+        </if>
+        <if test="rosenId != null">
+           AND "l"."rosen_id"                          = #{rosenId}
+        </if>
+        <if test="processingDate != null">
+           AND "lr_out"."service_start_date"           &lt;= #{processingDate}
+        </if>
+        <if test="processingDate != null">
+           AND "lr_out"."service_end_date"             &gt;= #{processingDate}
+        </if>
+         ORDER BY "bst"."bus_stop_id"
+             , "sp_out"."signpost_id"
+             , "sp_in"."signpost_id" ASC
+    </select>
+
+    <select id="getFareReportListsSelectOption" resultType="maint.dto.plan.fareReport.FareReportListsSelectDto">
+        SELECT "cr"."service_start_date" AS "serviceStartDate"
+             , "cr"."rosen_id"           AS "rosenId"
+             , "cr"."charge_revision_id" AS "chargeRevisionId"
+          FROM "lines"                   AS "l"
+    INNER JOIN "charge_revisions"        AS "cr"
+            ON "cr"."del_flag"            = 0
+           AND "cr"."rosen_id"            = "l"."rosen_id"
+    INNER JOIN "agencies"                AS "a"
+            ON "a"."del_flag"             = 0
+           AND "a"."available_flag"       = 1
+           AND "a"."business_corp_id"     = "l"."business_corp_id"
+         WHERE "l"."del_flag"             = 0
+           AND "l"."available_flag"       = 1
+        <if test="businessCorpId != null">
+           AND "l"."business_corp_id"     = #{businessCorpId}
+        </if>
+         ORDER BY "cr"."service_start_date" DESC
+    </select>
+
+    <select id="getFareReportForDownload" parameterType="maint.form.fareReport.FareReportListsExcelForm" resultType="maint.dto.plan.fareReport.FareReportDownLoadDto">
+        SELECT DISTINCT "l"."rosen_name"                                     AS "rosenName"
+             , COALESCE("bst_from"."bus_stop_name", '均一運賃')      AS "busStopNameFrom"
+             , "bst_to"."bus_stop_name"                             AS "busStopNameTo"
+             , "lbs_from"."sequence_no"                             AS "sequenceNoFrom"
+             , "lbs_to"."sequence_no"                               AS "sequenceNoTo"
+             , COALESCE("lc"."uniform_charge", "lcd"."line_charge") AS "charge"
+             , "bst_from"."bus_stop_id"
+             , "bst_to"."bus_stop_id"
+          FROM "lines"                                              AS "l"
+    INNER JOIN "charge_revisions"                    AS "cr"
+            ON "cr"."del_flag"                       = 0
+           AND "cr"."rosen_id"                       = "l"."rosen_id"
+    INNER JOIN "line_charges"                        AS "lc"
+            ON "lc"."del_flag"                       = 0
+           AND "lc"."charge_revision_id"             = "cr"."charge_revision_id"
+     LEFT JOIN "line_charge_details"                 AS "lcd"
+            ON "lcd"."del_flag"                      = 0
+           AND "lcd"."line_charge_id"                = "lc"."line_charge_id"
+     LEFT JOIN "line_bus_stops"                      AS "lbs_from"
+            ON "lbs_from"."del_flag"                 = 0
+           AND "lbs_from"."ride_alight_division"    != 1
+           AND "lbs_from"."rosen_bus_stop_id"        = "lcd"."rosen_bus_stop_id_from"
+     LEFT JOIN "bus_stops"                           AS "bst_from"
+            ON "bst_from"."del_flag"                 = 0
+           AND "bst_from"."available_flag"           = 1
+           AND "bst_from"."bus_stop_id"              = "lbs_from"."bus_stop_id"
+     LEFT JOIN "line_bus_stops"                      AS "lbs_to"
+            ON "lbs_to"."del_flag"                   = 0
+           AND "lbs_to"."ride_alight_division"      != 0
+           AND "lbs_to"."rosen_bus_stop_id"          = "lcd"."rosen_bus_stop_id_to"
+           AND "lbs_to"."sequence_no"                &gt; "lbs_from"."sequence_no"
+     LEFT JOIN "bus_stops"                           AS "bst_to"
+            ON "bst_to"."del_flag"                   = 0
+           AND "bst_to"."available_flag"             = 1
+           AND "bst_to"."bus_stop_id"                = "lbs_to"."bus_stop_id"
+         WHERE "l"."del_flag"                        = 0
+           AND "l"."available_flag"                  = 1
+          <if test="businessCorpId != null">
+           AND "l"."business_corp_id"                = #{businessCorpId}
+          </if>
+           AND "cr"."charge_revision_id"             = #{chargeRevisionId}
+           AND "l"."rosen_id"                        = #{rosenId}
+         ORDER BY "lbs_from"."sequence_no"
+             , "lbs_to"."sequence_no"
+             , "bst_from"."bus_stop_id"
+             , "bst_to"."bus_stop_id"
+    </select>
+
+    <select id="getOperatingReportListsSelectOption" resultType="maint.dto.record.operatingReport.OperatingReportListsSelectDto">
+        SELECT "d"."service_start_date" AS "serviceStartDate"
+             , "d"."rosen_id"           AS "rosenId"
+             , "l"."business_corp_id"   AS "businessCorpId"
+          FROM "lines"                  AS "l"
+    INNER JOIN "agencies"               AS "a"
+            ON "a"."business_corp_id"    = "l"."business_corp_id"
+           AND "a"."del_flag"            = 0
+           AND "a"."available_flag"      = 1
+    INNER JOIN "daiya_revisions"        AS "d"
+            ON "l"."rosen_id"            = "d"."rosen_id"
+           AND "d"."del_flag"            = 0
+         WHERE "l"."del_flag"            = 0
+           AND "l"."available_flag"      = 1
+        <if test="businessCorpId != null">
+           AND "l"."business_corp_id"    = #{businessCorpId}
+        </if>
+      ORDER BY "d"."service_start_date" DESC
+    </select>
+
+    <select id="getOperatingReportDaiyasRegisterForDownload" parameterType="maint.form.operatingReport.OperatingReportListsExcelForm" resultType="maint.dto.record.operatingReport.OperatingReportDaiyasRegisterDownLoadDto">
+       SELECT "lr"."line_route_code"                                 AS "lineRouteCode"
+            , "lr"."line_route_name"                                           AS "lineRouteName"
+            , COUNT(*) FILTER (WHERE "dba"."sales_cancel_flg" = 1) AS "salesCancelFlg1Count"
+            , COUNT(*) FILTER (WHERE "dba"."sales_cancel_flg" = 0) AS "salesCancelFlg0Count"
+         FROM "lines"                        AS "l"
+   INNER JOIN "agencies"                     AS "c"
+           ON "c"."business_corp_id"          = "l"."business_corp_id"
+   INNER JOIN "daiya_revisions"              AS "d"
+           ON "d"."del_flag"                  = 0
+          AND "d"."rosen_id"                  = "l"."rosen_id"
+   INNER JOIN "bus_services"                 AS "bs"
+           ON "bs"."del_flag"                 = 0
+          AND "bs"."daiya_revision_id"        = "d"."daiya_revision_id"
+   INNER JOIN "line_routes"                  AS "lr"
+           ON "lr"."del_flag"                 = 0
+          AND "lr"."line_route_id"            = "bs"."line_route_id"
+   INNER JOIN "daily_bus_daiyas"             AS "dba"
+           ON "dba"."bus_service_id"          = "bs"."bus_service_id"
+        WHERE "l"."del_flag"                  = 0
+          AND "l"."available_flag"            = 1
+          AND "c"."del_flag"                  = 0
+          AND "c"."available_flag"            = 1
+          AND "dba"."del_flag"                = 0
+          AND dba.operation_cancel_flg = 0
+        <if test="rosenId != null">
+          AND "l"."rosen_id"                  = #{rosenId}
+        </if>
+        <if test="serviceStartDate != null">
+          AND "d"."service_start_date"        = CAST(#{serviceStartDate} AS date)
+        </if>
+        <if test="serviceStartMonth != null">
+          AND "dba"."service_date"        &gt;= CAST(#{serviceStartMonth} AS date)
+        </if>
+        <if test="serviceEndMonth != null">
+          AND "dba"."service_date"         &lt; CAST(#{serviceEndMonth} AS date)
+        </if>
+     GROUP BY "lr"."line_route_id"
+     ORDER BY "lr"."line_route_code"
+    </select>
+
+</mapper>

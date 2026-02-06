@@ -1,0 +1,43 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<head>
+  <!-- META SECTION -->
+  <title>エラー</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  </meta>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  </meta>
+  <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+  </link>
+  <!-- END META SECTION -->
+
+  <!-- CSS INCLUDE -->
+  <link rel="stylesheet" type="text/css" th:href="@{/css/default.css}">
+  </link>
+  <!-- EOF CSS INCLUDE -->
+</head>
+
+<body>
+  <div class="error-container">
+    <div class="error-code" th:text="${error_code}">404</div>
+    <div class="error-text" th:text="${error_text}">page not found</div>
+    <th:block th:if="${detail_message}">
+      <th:block th:each="str, stat : ${detail_message.split('\\r\\n|\\r|\\n', -1)}">
+        <div class="error-subtext">
+          <strong th:text="${str}"></strong>
+        </div>
+      </th:block>
+    </th:block>
+    <div class="error-actions">
+      <div class="row">
+        <div class="col-md-12">
+          <button class="btn btn-info btn-block btn-lg" onclick="document.location.href = '/';return false;">HOMEに戻る</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

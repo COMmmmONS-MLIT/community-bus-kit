@@ -1,0 +1,93 @@
+server:
+  port: '@server.port@'
+  tomcat:
+    max-http-form-post-size: 30MB
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      protocol-header: x-forwarded-proto
+
+spring:
+  main:
+    allow-circular-references: true
+  config:
+    import: "classpath:api.properties"
+
+  datasource:
+      url: '@jdbc.url@'
+      username: '@jdbc.username@'
+      password: '@jdbc.password@'
+      driver-class-name: org.postgresql.Driver
+      type: com.zaxxer.hikari.HikariDataSource
+      hikari:
+        connection-timeout: 30000
+        idle-timeout: 60000
+        max-lifetime: 120000
+        connection-test-query: SELECT 1
+        maximum-pool-size: '@maximum.active@'
+        minimum-idle: '@minimum.idle@'
+      tomcat:
+        removeAbandoned: true
+        remove-abandoned-timeout: 60
+        max-active: '@maximum.active@'
+        min-idle: '@minimum.idle@'
+
+  thymeleaf:
+    cache: '@thymeleaf.cache@'
+
+  messages:
+    basename: message,validation
+    cache-duration: 3600
+    encoding: UTF-8
+
+  data:
+    redis:
+      host: '@redis.host@'
+      password: '@redis.password@'
+      port: '@redis.port@'
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  web:
+    resources:
+      chain:
+        strategy:
+          content:
+            enabled: true
+            paths: /**
+
+mybatis:
+    mapper-locations: classpath*:/mapper/**/*.xml
+    type-aliases-package:
+      maint.entity
+      maint.dto
+    configuration:
+      map-underscore-to-camel-case: true
+
+image:
+  base-url: "@image.base.url@"
+  bucket-name: "@image.bucket.name@"
+  s3-configure-name: "@image.s3.configure.name@"
+  base-path: img/
+  s3-region: ap-northeast-1
+
+aws:
+  ses-profile: '@aws.ses.profile@'
+  ses-region: ap-northeast-1
+  from-name: '@aws.ses.from.name@'
+  from-email: '@aws.ses.from.email@'
+  system-admin-email: '@system.admin.email@'
+
+#Crypt properties
+crypto:
+  algorithm: Blowfish
+
+mail:
+  system-admin-email: '@system.admin.email@'
+
+google:
+  maps:
+    api:
+      key: '@google.map.api.key@'

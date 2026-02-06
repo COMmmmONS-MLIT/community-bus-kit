@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.UsersMapper">
+
+    <select id="getUserByLoginInfo" resultType="UsersEntity">
+        SELECT "user_id"
+             , "last_name"
+             , "first_name"
+             , "retirement_flag"
+             , "retirement_date"
+             , "email"
+             , "password"
+             , "password_changed_flag"
+             , "account_division"
+             , "business_corp_id"
+             , "operating_company_id"
+             , "perm_role_id"
+             , to_char("two_factor_auth_datetime", 'YYYY-MM-DD HH24:MI:SS') AS "two_factor_auth_datetime"
+        FROM "users"
+         WHERE "del_flag"        = 0
+           AND "retirement_flag" = 0
+           AND "email"           = #{email}
+    </select>
+
+    <select id="countUsersBySearch" resultType="java.lang.Long">
+        SELECT COUNT("user_id")
+        <include refid="fromWhereBySearch" />
+    </select>
+
+    <select id="isAccountLocked" resultType="boolean">
+    SELECT
+      CASE
+        WHEN "account_lock_at" IS NOT NULL
+          AND (
+            "account_lock_at"::timestamp + (
+              SELECT "code_value"::integer
+                FROM "code_master"
+               WHERE "del_flag"  = 0
+                 AND "main_code" = '001'
+                 AND "sub_code"  = '0002'
+            ) * INTERVAL '1 minute'
+          ) > NOW()::timestamp
+        THEN TRUE
+        ELSE FALSE
+      END
+     FROM "users"
+    WHERE "del_flag" = 0
+      AND "user_id"  = #{userId}
+    </select>
+
+    <select id="getUsersBySearch" resultType="usersDetailDto">
+        SELECT "user_id"
+             , "email"
+             , "last_name"
+             , "first_name"
+             , "retirement_flag"
+        <include refid="fromWhereBySearch" />
+      ORDER BY "user_id"
+         LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <select id="getUserByPk" resultType="usersDetailDto">
+      SELECT "user_id"
+            ,"email"
+            ,"last_name"
+            ,"first_name"
+            ,"password_changed_flag"
+            ,"account_division"
+            ,"business_corp_id"
+            ,"operating_company_id"
+            ,"perm_role_id"
+            ,"retirement_flag"
+            ,"retirement_date"
+            ,to_char("account_lock_at", 'YYYY-MM-DD HH24:MI:SS') AS "account_lock_at"
+            ,CASE
+                WHEN "account_lock_at" IS NOT NULL
+                    AND ("account_lock_at"::timestamp + (
+                     (SELECT "code_value"
+                        FROM "code_master"
+                       WHERE "del_flag" = 0
+                         AND "main_code" = '001'
+                         AND "sub_code"  = '0002')
+                     * INTERVAL '1 minute'
+                   )) > NOW()::timestamp
+            THEN 1
+            ELSE 0
+      END AS "lock_flag"
+        FROM "users"
+       WHERE "del_flag" = 0
+         AND "user_id"  = #{userId}
+    </select>
+
+    <select id="countUsersByEmail" resultType="java.lang.Integer">
+        SELECT COUNT("user_id")
+          FROM "users"
+         WHERE "del_flag"         = 0
+           AND "email"            = #{email}
+           AND "retirement_flag"  = 0
+        <if test="userId != null">
+           AND "user_id"         != #{userId}
+        </if>
+    </select>
+
+    <select id="getUserPasswordByPK" resultType="java.lang.String">
+        SELECT "password"
+          FROM "users"
+         WHERE "del_flag" = 0
+           AND "user_id"  = #{userId}
+    </select>
+
+    <insert id="registerUsers" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO "users" (
+               "email"
+             , "password"
+             , "password_changed_flag"
+             , "last_name"
+             , "first_name"
+             , "account_division"
+             , "business_corp_id"
+             , "operating_company_id"
+             , "perm_role_id"
+             , "retirement_flag"
+             , "auth_failure_count"
+             , "account_lock_at"
+        <if test="retirementFlag != null and retirementFlag.equals(1)">
+             , "retirement_date"
+        </if>
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{email}
+             , #{password}
+             , #{passwordChangedFlag}
+             , #{lastName}
+             , #{firstName}
+             , #{accountDivision}
+             , #{businessCorpId}
+             , #{operatingCompanyId}
+             , #{permRoleId}
+             , #{retirementFlag}
+             , 0
+             , null
+        <if test="retirementFlag eq 1">
+             , CURRENT_DATE
+        </if>
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateUsers">
+        UPDATE "users"
+           SET "email"                 = #{email}
+             , "last_name"             = #{lastName}
+             , "first_name"            = #{firstName}
+             , "account_division"      = #{accountDivision}
+             , "perm_role_id"          = #{permRoleId}
+             , "business_corp_id"      = #{businessCorpId}
+             , "operating_company_id"  = #{operatingCompanyId}
+             , "retirement_flag"       = #{retirementFlag}
+             , "password_changed_flag" = #{passwordChangedFlag}
+        <if test="password != null and password != ''">
+             , "password"              = #{password}
+        </if>
+        <if test="retirementFlag eq 0">
+             , "retirement_date"       = NULL
+        </if>
+        <if test="retirementFlag eq 1 and retirementDate eq null">
+             , "retirement_date"       = CURRENT_TIMESTAMP
+        </if>
+        <if test="lockFlag eq 1 or password != null and password != ''">
+            , "auth_failure_count"     = 0
+            , "account_lock_at"        = null
+        </if>
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"              = 0
+           AND "user_id"               = #{userId}
+    </update>
+
+    <update id="updateUserPassword">
+        UPDATE "users"
+           SET "password"              = #{password}
+             , "password_changed_flag" = 1
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"              = 0
+           AND "user_id"               = #{userId}
+    </update>
+
+    <sql id="fromWhereBySearch">
+        FROM "users"
+       WHERE "del_flag"           = 0
+        <if test="email != null and email != ''">
+            AND "email"        LIKE #{likeSearchEmail}
+        </if>
+        <if test="lastName != null and lastName != ''">
+            AND "last_name"    LIKE #{likeSearchLastName}
+        </if>
+        <if test="firstName != null and firstName != ''">
+            AND "first_name"   LIKE #{likeSearchFirstName}
+        </if>
+        <if test="retirementFlag != null">
+            AND "retirement_flag" = #{retirementFlag}
+        </if>
+        <if test="accountDivision == '02'">
+            AND "business_corp_id" = #{businessCorpId}
+        </if>
+    </sql>
+
+    <update id="updateUserTwoFactorAuthInfo">
+        UPDATE "users"
+           SET "two_factor_auth_datetime"   = CURRENT_TIMESTAMP
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"                    = 0
+           AND "user_id"                     = #{userId}
+    </update>
+
+    <update id="updateAuthFailureCount" parameterType="maint.entity.UsersEntity">
+     UPDATE "users"
+        SET "auth_failure_count" = "auth_failure_count" + 1
+           ,"account_lock_at"    =
+                CASE
+                    WHEN ("auth_failure_count" + 1) &gt;= (
+                        SELECT "code_value"::int
+                          FROM "code_master"
+                         WHERE "del_flag"  = 0
+                           AND "main_code" = '001'
+                           AND "sub_code"  = '0001'
+                    )
+                        THEN CURRENT_TIMESTAMP
+                    ELSE "account_lock_at"
+                    END
+        WHERE "del_flag"         = 0
+          AND "user_id"          = #{userId}
+    </update>
+
+    <update id="updateUserInfoOnLoginSuccess" parameterType="maint.entity.UsersEntity">
+     UPDATE "users"
+        SET "auth_failure_count" = 0
+           ,"last_login_at"      = CURRENT_TIMESTAMP,
+            "account_lock_at"    = NULL
+      WHERE "del_flag"           = 0
+        AND "retirement_flag"    = 0
+        AND "user_id"            = #{userId}
+    </update>
+
+</mapper>

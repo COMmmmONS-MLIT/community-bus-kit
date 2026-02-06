@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.CalendarCancelDatesMapper">
+
+    <select id="getFutureCancelDatesByCalendarId" resultType="java.lang.String">
+        SELECT "cd"."operation_cancel_date"
+          FROM "calendar_cancel_dates" "cd"
+          JOIN "calendars" "c"
+            ON "c"."del_flag"                  = 0
+           AND "c"."available_flag"            = 1
+           AND "c"."business_corp_id"          = #{businessCorpId}
+           AND "c"."calendar_id"               = "cd"."calendar_id"
+         WHERE "cd"."del_flag"                 = 0
+           AND "cd"."operation_cancel_date" &gt; CURRENT_DATE
+           AND "cd"."calendar_id"              = #{calendarId}
+    </select>
+
+    <select id="getCancelDateByCalendarId" resultType="CalendarCancelDateDto">
+        SELECT "calendar_cancel_date_id"
+             , to_char("operation_cancel_date", 'YYMMDD') AS "operation_cancel_date"
+          FROM "calendar_cancel_dates"
+         WHERE "del_flag"    = 0
+           AND "calendar_id" = #{calendarId}
+    </select>
+
+    <select id="getCalendarCancelDatesList" resultType="java.lang.String">
+        SELECT TO_CHAR("ccd"."operation_cancel_date", 'YYYYMMDD') AS "operationCancelDate"
+          FROM "calendar_cancel_dates"                            AS "ccd"
+         WHERE "ccd"."del_flag"                                    = 0
+           AND "ccd"."calendar_id"                                 = #{calendarId, jdbcType=INTEGER}
+      ORDER BY "ccd"."operation_cancel_date" ASC
+    </select>
+
+    <insert id="registerCalendarCancelDate" useGeneratedKeys="true" keyProperty="calendarCancelDateId">
+        INSERT INTO "calendar_cancel_dates" (
+               "calendar_id"
+             , "operation_cancel_date"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+               #{calendarId}
+             , CAST(#{operationCancelDate} AS date)
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="deleteCancelDate">
+        UPDATE "calendar_cancel_dates"
+           SET "del_flag"                = #{calendarCancelDateId}
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"                = 0
+           AND "calendar_cancel_date_id" = #{calendarCancelDateId}
+    </update>
+
+</mapper>

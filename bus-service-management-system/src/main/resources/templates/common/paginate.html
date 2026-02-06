@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<th:block th:fragment="pagination(url,pager)" th:if="${pager} neq null and ${pager.totalListSize} neq null">
+	<div class="dataTables_info">
+		<span th:text="${pager.dspCurrentCount}"></span>
+	</div>
+	<div class="dataTables_paginate paging_simple_numbers" th:if="${pager.totalListSize} neq 0">
+		<a class="paginate_button previous" th:onclick="${pager.currentPageNo gt 1}? 'return true': 'return false'"
+			th:href="@{${url} + ${pager.currentPageNo - 1} + '/'}">Previous</a>
+		<!--  START LOOP -->
+		<span> <a class="paginate_button" th:each="page : ${#numbers.sequence(pager.displayMinPage, pager.displayMaxPage)}"
+			th:classappend="${page eq pager.currentPageNo} ? current : ''" th:href="@{${url} + ${page} + '/'}" th:text="${page}">1</a>
+		</span>
+		<!--  END LOOP -->
+		<a class="paginate_button next" th:onclick="${pager.maxPage gt pager.currentPageNo}?  '': 'return false'"
+			th:href="@{${url} + ${pager.currentPageNo + 1} + '/'}">Next</a>
+	</div>
+</th:block>
+
+</html>

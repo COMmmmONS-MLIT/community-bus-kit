@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.LineChargesMapper">
+
+    <select id="getLineChargesByRevisionId" resultType="LineChargeIdDivisionDto">
+        SELECT "line_charge_id"
+             , "line_charge_division"
+          FROM "line_charges"
+         WHERE "del_flag"           = 0
+           AND "charge_revision_id" = #{chargeRevisionId}
+    </select>
+
+    <update id="deleteLineCharge">
+        UPDATE "line_charges"
+           SET "del_flag"       = "line_charge_id"
+      <include refid="maint.mapper.CommonMapper.updateCommon"/>
+         WHERE "del_flag"       = 0
+           AND "line_charge_id" = #{lineChargeId}
+    </update>
+
+    <select id="countLineChargesBySearch" resultType="java.lang.Long">
+        SELECT COUNT("cr"."charge_revision_id")
+        <include refid="fromWhereBySearch" />
+    </select>
+
+    <select id="getLineChargesBySearch" resultType="LineChargeDto">
+        SELECT "lc"."line_charge_id"
+             , "cr"."charge_revision_id"
+             , "l"."rosen_name"
+             , "cr"."service_start_date"
+             , "cr"."service_end_date"
+             , "cr"."revision_reason"
+        <include refid="fromWhereBySearch" />
+      ORDER BY "cr"."service_start_date" DESC
+             , "cr"."charge_revision_id"
+         LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <sql id="fromWhereBySearch">
+        FROM "line_charges" "lc"
+        RIGHT JOIN "charge_revisions" "cr"
+        ON "cr"."del_flag"                = 0
+        AND "lc"."del_flag"          = 0
+        AND "cr"."charge_revision_id"        = "lc"."charge_revision_id"
+        JOIN "lines" "l"
+        ON "l"."del_flag" = 0
+        AND "l"."available_flag" = 1
+        AND "l"."rosen_id" = "cr"."rosen_id"
+        JOIN "agencies" "a"
+        ON "a"."del_flag" = 0
+        AND "a"."available_flag" = 1
+        AND "a"."business_corp_id" = "l"."business_corp_id"
+        WHERE "a"."business_corp_id" = #{businessCorpId}
+        AND "l"."business_corp_id" = #{businessCorpId}
+        <if test="revisionReason != null and revisionReason != ''">
+            AND "cr"."revision_reason"     LIKE #{likeSearchRevisionReason}
+        </if>
+        <if test="rosenId != null and rosenId != ''">
+            AND "l"."rosen_id"                = #{rosenId}
+        </if>
+        <if test="serviceStartDate != null and serviceStartDate != ''">
+            AND "cr"."service_start_date" &gt;= CAST(#{serviceStartDate} AS date)
+        </if>
+        <if test="serviceEndDate != null and serviceEndDate != ''">
+            AND "cr"."service_end_date"    &lt;= CAST(#{serviceEndDate} AS date)
+        </if>
+    </sql>
+
+    <insert id="registerLineCharge" useGeneratedKeys="true" keyProperty="lineChargeId">
+        INSERT INTO "line_charges" (
+        "charge_revision_id"
+        , "line_charge_division"
+        , "uniform_charge"
+        , "uniform_ic_price"
+        , "uniform_transfer_type"
+        , "payment_method"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+        VALUES (
+        #{chargeRevisionId}
+        , #{lineChargeDivision}
+        , #{uniformCharge}
+        , #{uniformIcPrice}
+        , #{uniformTransferType}
+        , #{paymentMethod}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="updateLineCharge">
+        UPDATE "line_charges"
+        SET "charge_revision_id"    = #{chargeRevisionId}
+        , "line_charge_division"  = #{lineChargeDivision}
+        , "uniform_charge"        = #{uniformCharge}
+        , "uniform_ic_price"      = #{uniformIcPrice}
+        , "uniform_transfer_type" = #{uniformTransferType}
+        , "payment_method"        = #{paymentMethod}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "del_flag"              = 0
+        AND "line_charge_id"        = #{lineChargeId}
+    </update>
+
+    <insert id="insertLineCharge" parameterType="LineChargesInfoReportListsExcelEntity" useGeneratedKeys="true" keyProperty="lineChargeId">
+        INSERT INTO "line_charges" (
+                    "charge_revision_id"
+                  , "line_charge_division"
+                  , "payment_method"
+                  , "uniform_charge"
+                  , "uniform_ic_price"
+                  , "uniform_transfer_type"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        )
+           VALUES (
+                  CAST(#{chargeRevisionId} AS INTEGER)
+                , CAST(#{lineChargeDivision} AS SMALLINT)
+                , CAST(#{paymentMethod} AS SMALLINT)
+                , #{uniformCharge}
+                , #{uniformIcPrice}
+                , CAST(#{uniformTransferType} AS SMALLINT)
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+</mapper>

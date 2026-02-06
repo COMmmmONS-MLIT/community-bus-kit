@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='祝日カレンダー管理'">
+<head>
+<link href='/css/fullcalendar/core/main.min.css' rel='stylesheet' />
+<link href='/css/fullcalendar/daygrid/main.min.css' rel='stylesheet' />
+<link href='/css/fullcalendar/fullcalendar.css' rel='stylesheet' />
+</head>
+<body>
+    <!-- start: contents -->
+    <div layout:fragment="main_contents">
+        <!-- PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrap">
+            <div class="row">
+                <div class="col-md-12">
+                    <form class="form-horizontal" method="post" enctype="multipart/form-data" th:action="@{/operation/holidayCalendar/register/}">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <strong>祝日カレンダー</strong>
+                                </h3>
+                                <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('holidayCalendar-help', this)" >内閣府のサイトから、... ＞ </button>
+                                <div class="form-group">
+                                    <div class="alert alert-info" id="holidayCalendar-help"
+                                         style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                        内閣府のサイトから、祝日のCSVファイルをダウンロードしてください。　<br/>
+                                        <a href="https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html" target="_blank">https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- START メッセージ表示部 -->
+                            <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                            <!-- END メッセージ表示部 -->
+                            <div class="panel-body">
+                                <div class="col-md-12">
+                                    <div id="alert_holder"></div>
+                                      <div class="calendar-upload-row" th:if="${writeFlag}" style="display: flex; align-items:center; gap:10px; flex-wrap:nowrap;">
+                                          <span class="item-label" style="white-space:nowrap; font-weight:600;">内閣府祝日登録</span>
+                                          <input type="file" id="csvInput" name="file" class="hidden-file" accept=".csv" style="display:none;">
+                                          <label for="csvInput" class="btn btn-default" style="margin-bottom:0; white-space:nowrap; width:8%;">CSV選択</label>
+                                          <input type="text" id="csvFileName" class="form-control file-name"  style="width:30% !important; flex:0 0 auto;" readonly>
+                                          <button type="submit" id="legendUploadBtn" class="btn btn-success" style="width:8%;">UPLOAD</button>
+                                          <span class="text-danger" style="white-space:nowrap; margin-left:8px;">※操作日以降の祝日情報が入れ替えになります</span>
+                                      </div>
+                                    <div class="calendar-legend" aria-label="カレンダー凡例">
+                                      <span class="legend-item">
+                                        <span class="legend-color" style="background:#FFFFFF"></span> 平日
+                                      </span>
+                                      <span class="legend-item">
+                                        <span class="legend-color" style="background:#EAF4FF"></span> 土曜日
+                                      </span>
+                                      <span class="legend-item">
+                                        <span class="legend-color" style="background:#FFEAEA"></span> 日・祝日
+                                      </span>
+                                    </div>
+                                    <div class="calendar">
+                                        <div id="first-calendar" style="flex: left; width: 48%"></div>
+                                        <div id="second-calendar" style="flex: right; width: 48%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <style>
+                .calendar{
+                    display: flex;
+                    flex-wrap: nowrap;
+                    gap: 16px;
+                    align-items: flex-start;
+                    width: 100%;
+                }
+                #first-calendar,
+                #second-calendar{
+                    flex: 1 1 0;
+                    min-width: 0;
+                }
+                /* 縦スクロールを作らない */
+                .calendar .fc{
+                    height: auto !important;
+                }
+                .calendar .fc .fc-scroller{
+                    overflow-y: visible !important;
+                    height: auto !important;
+                    max-height: none !important;
+                }
+            </style>
+        </div>
+        <!-- END PAGE CONTENT WRAPPER -->
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+        <script src='/js/plugins/fullcalendar/core/main.min.js'></script>
+        <script src='/js/plugins/fullcalendar/daygrid/main.min.js'></script>
+        <script src='/js/plugins/fullcalendar/interaction/main.min.js'></script>
+        <script type="text/javascript" th:src="@{/js/operation/holidayCalendars/detail.js}"></script>
+        <script type="text/javascript" th:inline="javascript">
+            const $lastMonth = [[${lastMonth}]];
+            const $currentMonth = [[${currentMonth}]];
+            const $nextMonth = [[${nextMonth}]];
+            const $twoMonthsLater = [[${twoMonthsLater}]];
+            const $writeFlag = [[${writeFlag}]];
+        </script>
+    </div>
+</body>
+</html>

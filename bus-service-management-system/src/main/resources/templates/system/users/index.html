@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='アカウント管理'">
+<body>
+    <!-- start: contents -->
+    <div layout:fragment="main_contents" th:object="${usersSearchForm}">
+        <!-- PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrap">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <form method="post" th:action="@{#}" class="form-horizontal">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <strong>アカウント一覧</strong>
+                                </h3>
+                            </div>
+                            <!-- START メッセージ表示部 -->
+                            <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                            <!-- END メッセージ表示部 -->
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">ログインID</span></label>
+                                            <div class="col-md-9">
+                                                <div class="input-group col-md-12 div-flex">
+                                                    <input type="text" th:field="*{searchEmail}" class="form-control" maxlength="256" style="width: 300px;"
+                                                        th:classappend="${#fields.hasErrors('searchEmail')} ? 'error' : ''" />
+                                                    <div><span class="help-block text-danger" style="width: 100px;">※前方一致</span></div>
+                                                </div>
+                                                <span th:if="${#fields.hasErrors('searchEmail')}" th:errors="*{searchEmail}" class="text-danger" ></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">利用区分</span></label>
+                                            <div class="col-md-9">
+                                                <div class="radio col-md-12">
+                                                    <input type="radio" name="searchUsageDivision" id="usageDivision__0__" value="0"
+                                                           th:checked="*{searchUsageDivision eq 0}" />
+                                                    <label class="inner-title" for="usageDivision__0__" >利用中</label>
+                                                    <input type="radio" name="searchUsageDivision" id="usageDivision__1__" value="1"
+                                                           th:checked="*{searchUsageDivision eq 1}" />
+                                                    <label class="inner-title" for="usageDivision__1__">利用不可</label>
+                                                </div>
+                                                <span th:if="${#fields.hasErrors('searchUsageDivision')}" th:errors="*{searchUsageDivision}" class="text-danger" ></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">氏名（姓）</span></label>
+                                            <div class="col-md-9">
+                                                <div class="input-group col-md-12 div-flex">
+                                                    <input type="text" th:field="*{searchLastName}" class="form-control" maxlength="100" style="width: 300px;"
+                                                    th:classappend="${#fields.hasErrors('searchLastName')} ? 'error' : ''" />
+                                                    <div><span class="help-block text-danger" style="width: 100px;">※部分一致</span></div>
+                                                </div>
+                                                <span th:if="${#fields.hasErrors('searchLastName')}" th:errors="*{searchLastName}" class="text-danger" ></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">氏名（名）</span></label>
+                                            <div class="col-md-9">
+                                                <div class="input-group col-md-12 div-flex">
+                                                    <input type="text" th:field="*{searchFirstName}" class="form-control" maxlength="100" style="width: 300px;"
+                                                           th:classappend="${#fields.hasErrors('searchFirstName')} ? 'error' : ''" />
+                                                    <div><span class="help-block text-danger" style="width: 100px;">※部分一致</span></div>
+                                                </div>
+                                                <span th:if="${#fields.hasErrors('searchFirstName')}" th:errors="*{searchFirstName}" class="text-danger" ></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-footer">
+                                <button th:if="${writeFlag}" type="button" class="btn btn-success btn-default btn-submit" onclick="location.href='/system/users/detail/'">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>新規登録
+                                </button>
+                                <div style="display: flex;" class="pull-right">                                    
+                                    <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/system/users/}">
+                                        <i class="fa fa-search" aria-hidden="true"></i>検索
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr role="row">
+                                        <th style="width: 60px;">ID</th>
+                                        <th>ログインID</th>
+                                        <th>アカウント名</th>
+                                        <th style="width: 70px;">利用区分</th>
+                                        <th style="width: 80px;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody th:if="${pager} neq null" style="word-break: break-all;">
+                                    <tr role="row" class="odd" th:each="user : ${pager.list}">
+                                        <td th:text="${user.userId}">1</td>
+                                        <td th:text="${user.email}">test@test.co.jp</td>
+                                        <td th:text="${user.lastName + ' ' + user.firstName}">バステスター</td>
+                                        <td th:text="${user.retirementFlag}? '利用不可':'利用中'">在職</td>
+                                        <td>
+                                            <form th:if="${writeFlag}" method="post" th:action="@{/system/users/detail/}">
+                                                <input type="hidden" name="userId" th:value="${user.userId}" />
+                                                <input type="hidden" name="page" th:value="*{page}" />
+                                                <button type="submit" class="btn btn-info btn-sm double-click">変更</button>
+                                            </form>
+                                            <form th:if="${!writeFlag}" method="post" th:action="@{/system/users/detail/content/}">
+                                                <input type="hidden" name="userId" th:value="${user.userId}" />
+                                                <input type="hidden" name="page" th:value="*{page}" />
+                                                <button type="submit" class="btn btn-info btn-sm double-click">確認</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div th:replace="~{common/paginate :: pagination('/system/users/',${pager})}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

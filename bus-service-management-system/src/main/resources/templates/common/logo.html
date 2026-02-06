@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<!--<head th:fragment="common_head(title)" th:remove="tag">
+<link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon"/>
+<link th:replace="~{common/style :: common_style}" />
+<meta th:replace="~{common/meta :: common_meta}" />
+<title th:text="${title}">TITLE</title>
+</head>-->
+
+<th:block th:fragment="menu-logo">
+	<a th:href="@{/}"><img th:src="@{/img/t-logo02.png}" class="headerimg" style="height: 75px;"/></a>
+</th:block>
+
+<th:block th:fragment="index-logo">
+	<img class="logoimg" th:src="@{/img/t-logo01.png}" style="width:300px;"/>
+</th:block>
+
+</html>

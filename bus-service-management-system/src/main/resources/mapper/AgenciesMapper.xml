@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.AgenciesMapper">
+
+    <select id="getAllAgenciesForSelectOption" resultType="AgencySelectDto">
+        SELECT "business_corp_id"
+             , "name"
+          FROM "agencies"
+         WHERE "del_flag"       = 0
+           AND "available_flag" = 1
+    </select>
+
+    <select id="getBusinessCorpNameByBusinessCorpId" resultType="String">
+        SELECT "name"
+          FROM "agencies"
+         WHERE "del_flag"           = 0
+           AND "business_corp_id"   = #{businessCorpId}
+    </select>
+    
+    <select id="countAgencies" resultType="java.lang.Long">
+        SELECT COUNT("business_corp_id")
+          FROM "agencies"
+         WHERE "del_flag" = 0
+        <if test="name != null and name != ''">
+            AND "name" LIKE #{likeSearchName}
+        </if>
+        <if test="operationCompanyNo != null and operationCompanyNo != ''">
+            AND "operation_company_no" = #{operationCompanyNo}
+        </if>
+        <if test="availableFlag != null and availableFlag != '0'">
+            AND "available_flag" = #{availableFlag}
+        </if>
+        <if test="businessCorpId != null and businessCorpId != '0'">
+            AND "business_corp_id" = #{businessCorpId}
+        </if>
+    </select>
+
+    <select id="getAgencies" resultType="AgenciesEntity">
+        SELECT "business_corp_id"
+             , "name"
+             , "disp_name"
+             , "kana_name"
+             , "en_name"
+             , "department_name"
+             , "user"
+             , "phone_number"
+             , "mail_address"
+             , "time_table_url"
+             , "fare_url"
+             , "operation_company_no"
+             , "transportation_type"
+             , "provider_organization_name"
+             , "provider_organization_url"
+             , "provider_organization_contact_email"
+             , "provider_organization_contact_url"
+             , "available_flag"
+          FROM "agencies"
+         WHERE "del_flag"          = 0
+        <if test="name != null and name != ''">
+           AND "name" LIKE #{likeSearchName}
+        </if>
+        <if test="operationCompanyNo != null and operationCompanyNo != ''">
+            AND "operation_company_no" = #{operationCompanyNo}
+        </if>
+        <if test="availableFlag != null and availableFlag != '0'">
+            AND "available_flag" = #{availableFlag}
+        </if>
+        <if test="businessCorpId != null and businessCorpId != '0'">
+            AND "business_corp_id" = #{businessCorpId}
+        </if>
+      ORDER BY "business_corp_id"
+         LIMIT #{displayNum}
+        OFFSET #{startRowNum}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO "agencies" (
+          "name"
+        , "disp_name"
+        , "kana_name"
+        , "en_name"
+        , "department_name"
+        , "user"
+        , "phone_number"
+        , "mail_address"
+        , "time_table_url"
+        , "fare_url"
+        , "operation_company_no"
+        , "transportation_type"
+        , "provider_organization_name"
+        , "provider_organization_url"
+        , "provider_organization_contact_email"
+        , "provider_organization_contact_url"
+        , "available_flag"
+        , "access_key"
+        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+        ) VALUES (
+         #{name}
+        ,#{dispName}
+        ,#{kanaName}
+        ,#{enName}
+        ,#{departmentName}
+        ,#{user}
+        ,#{phoneNumber}
+        ,#{mailAddress}
+        ,#{timeTableUrl}
+        ,#{fareUrl}
+        ,#{operationCompanyNo}
+        ,#{transportationType}
+        ,#{providerOrganizationName}
+        ,#{providerOrganizationUrl}
+        ,#{providerOrganizationContactEmail}
+        ,#{providerOrganizationContactUrl}
+        ,#{availableFlag}
+        ,#{accessKey}
+        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE "agencies"
+        SET "name"                     = #{name}
+        , "disp_name"                  = #{dispName}
+        , "kana_name"                  = #{kanaName}
+        , "en_name"                    = #{enName}
+        , "department_name"            = #{departmentName}
+        , "user"                       = #{user}
+        , "phone_number"               = #{phoneNumber}
+        , "mail_address"               = #{mailAddress}
+        , "time_table_url"             = #{timeTableUrl}
+        , "fare_url"                   = #{fareUrl}
+        , "operation_company_no"       = #{operationCompanyNo}
+        , "transportation_type"        = #{transportationType}
+        , "provider_organization_name" = #{providerOrganizationName}
+        , "provider_organization_url"  = #{providerOrganizationUrl}
+        , "provider_organization_contact_email" = #{providerOrganizationContactEmail}
+        , "provider_organization_contact_url"  = #{providerOrganizationContactUrl}
+        , "available_flag"             = #{availableFlag}
+        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "business_corp_id"       = #{businessCorpId}
+    </update>
+
+    <select id="getAgencyByPkId" resultType="AgenciesEntity">
+        SELECT "business_corp_id"
+        , "name"
+        , "disp_name"
+        , "kana_name"
+        , "en_name"
+        , "department_name"
+        , "user"
+        , "phone_number"
+        , "mail_address"
+        , "time_table_url"
+        , "fare_url"
+        , "operation_company_no"
+        , "transportation_type"
+        , "provider_organization_name"
+        , "provider_organization_url"
+        , "provider_organization_contact_email"
+        , "provider_organization_contact_url"
+        , "available_flag"
+        , "access_key"
+        FROM "agencies"
+        WHERE "del_flag"       = 0
+        AND "business_corp_id" = #{businessCorpId}
+    </select>
+
+    <select id="isDupleOperationCompanyNo" resultType="boolean">
+        SELECT EXISTS (SELECT 1
+        FROM "agencies"
+        WHERE "del_flag"            = 0
+        <if test="businessCorpId != null">
+            AND "business_corp_id" != #{businessCorpId}
+        </if>
+        AND "operation_company_no"  = #{operationCompanyNo}
+        )
+    </select>
+
+    <select id="isUsedAgency" resultType="boolean">
+        SELECT EXISTS (SELECT 1
+        FROM "agencies" "a"
+        JOIN "users" "u"
+          ON "u"."business_corp_id"   = "a"."business_corp_id"
+         AND "u"."del_flag"           = 0
+         AND "u"."retirement_flag"    = 0
+       WHERE "a"."del_flag"           = 0
+         AND "a"."business_corp_id"   = #{businessCorpId}
+        )
+    </select>
+
+    <select id="countBusinessActive" resultType="int">
+        SELECT COUNT(1)
+          FROM "agencies"             AS "bc"
+         WHERE "bc"."del_flag"         = 0
+           AND "bc"."available_flag"   = 1
+           AND "bc"."business_corp_id" = CAST(#{businessCorpId} AS INTEGER)
+    </select>
+
+    <select id="getAgencyInfoList" resultType="maint.dto.integrate.gtfsReport.GtfsAgencyInfoDto">
+        SELECT "disp_name"
+             , "en_name"
+             , "fare_url"
+             , "kana_name"
+             , "mail_address"
+             , "operation_company_no"
+             , "phone_number"
+             , "provider_organization_url"
+             , "name"
+          FROM "agencies"
+         WHERE "del_flag"         = 0
+           AND "available_flag"   = 1
+           AND "business_corp_id" = #{businessCorpId}
+    </select>
+
+</mapper>

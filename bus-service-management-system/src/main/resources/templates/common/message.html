@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
+<div th:fragment="common_message_box(type,messages)">
+  <div id="messageBox" class="panel-heading panel-message" th:style="${messages} eq null or ${#lists.size(messages)} eq 0 ? 'display : none' : ''">
+    <div class="col-md-12 tasks ui-sortable" id="tasks">
+      <div th:class="'task-item task-'+${type}">
+        <div class="task-text modal-message" th:each="message : ${messages}" th:utext="${message}"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:fragment="common_modal_message_form_success">
+    <ul id="modalSuccessMsgBox" class="modalMsg alert-success alert" th:style="${successMsgList} eq null or ${#lists.size(successMsgList)} eq 0 ? 'display : none' : ''">
+        <li th:each="successMsg : ${successMsgList}" th:utext="${successMsg}" />
+    </ul>
+</div>
+
+<div th:fragment="common_modal_message_form_error">
+    <ul id="modalErrorMsgBox" class="modalMsg alert alert-danger alert-dismissible" th:style="${errorMsgList} eq null or ${#lists.size(errorMsgList)} eq 0 ? 'display : none' : ''">
+        <li th:each="errorMsg : ${errorMsgList}" th:utext="${errorMsg}" />
+    </ul>
+</div>
+
+<div th:fragment="common_message_form_error(errorMsgList)" th:remove="tag">
+    <ul class="alert alert-danger text-left small" th:style="${errorMsgList} neq null and ${#lists.size(errorMsgList)} > 0 ? '' : 'display: none;'">
+        <li th:each="errorMsg : ${errorMsgList}" th:utext="${errorMsg}" />
+    </ul>
+</div>
+
+</html>

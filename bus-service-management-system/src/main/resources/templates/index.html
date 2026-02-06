@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+	th:with="title='TOP'">
+<head>
+    <meta charset="UTF-8">
+    <title>バス業務システム - ワークフロー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <th:block th:insert="~{index/workflow :: workflow_style}"></th:block>
+</head>
+
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents">
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <th:block th:replace="~{index/workflow :: workflow_content}"></th:block>
+</div>
+<!-- end: contents -->
+</body>
+
+</html>

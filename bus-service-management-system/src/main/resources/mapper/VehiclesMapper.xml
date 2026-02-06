@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.VehiclesMapper">
+
+    <select id="getVehiclesAllLinesForSelectOption" parameterType="map" resultType="VehiclesDetailDto">
+        SELECT "a"."vehicle_id"
+             , "a"."vehicle_name"
+          FROM "vehicles" "a"
+    INNER JOIN "operating_companies" "b"
+            ON "b"."del_flag"             = 0
+           AND "b"."available_flag"       = 1
+           AND "b"."operating_company_id" = "a"."operating_company_id"
+    INNER JOIN "agencies" "c"
+            ON "c"."del_flag"             = 0
+           AND "c"."available_flag"       = 1
+           AND "c"."business_corp_id"     = "b"."business_corp_id"
+         WHERE "a"."del_flag"             = 0
+           AND "c"."business_corp_id"     = #{businessCorpId}
+    </select>
+
+    <select id="getVehiclesBySearch" resultType="VehiclesDetailDto">
+         SELECT "a"."available_flag"
+              , "a"."gps_serial"
+              , "a"."operating_company_id"
+              , "a"."vehicle_id"
+              , "a"."vehicle_name"
+              , "a"."japan_positioning_flag"
+              , "b"."operating_name"
+        <include refid="fromWhereBySearch"/>
+       ORDER BY "a"."vehicle_id"
+          LIMIT #{displayNum}
+         OFFSET #{startRowNum}
+    </select>
+
+    <update id="updateVehicles">
+       UPDATE "vehicles"
+          SET "operating_company_id"  = #{operatingCompanyId}
+            , "vehicle_name"          = #{vehicleName}
+            , "gps_serial"            = #{gpsSerial}
+            , "available_flag"        = #{availableFlag}
+            , "japan_positioning_flag"= #{japanPositioningFlag}
+            <include refid="maint.mapper.CommonMapper.updateCommon"/>
+        WHERE "del_flag"              = 0
+          AND "vehicle_id"            = #{vehicleId}
+    </update>
+
+    <select id="getVehiclesByPk" parameterType="map" resultType="VehiclesDetailDto">
+        SELECT "a"."vehicle_id"
+             , "a"."operating_company_id"
+             , "b"."operating_name"
+             , "a"."vehicle_name"
+             , "a"."gps_serial"
+             , "a"."available_flag"
+             , "a"."japan_positioning_flag"
+          FROM "vehicles" "a"
+    INNER JOIN "operating_companies" "b"
+            ON "b"."del_flag"             = 0
+           AND "b"."available_flag"       = 1
+           AND "b"."operating_company_id" = "a"."operating_company_id"
+    INNER JOIN "agencies" "c"
+            ON "c"."del_flag"             = 0
+           AND "c"."available_flag"       = 1
+           AND "c"."business_corp_id"     = "b"."business_corp_id"
+         WHERE "a"."del_flag"             = 0
+           AND "a"."vehicle_id"           = #{vehicleId}
+           AND "c"."business_corp_id"     = #{businessCorpId}
+    </select>
+
+    <select id="getVehicleOptions" resultType="VehicleOptionsDto">
+        SELECT "v"."vehicle_id"
+             , "v"."vehicle_name"
+          FROM "vehicles" "v"
+          JOIN "operating_companies" "oc"
+            ON "oc"."del_flag" = 0
+           AND "oc"."available_flag"       = 1
+         <if test="session.operatingCompanyId != null">
+           AND "oc"."operating_company_id" = #{session.operatingCompanyId}
+         </if>
+           AND "oc"."operating_company_id" = "v"."operating_company_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"              = 0
+           AND "a"."available_flag"        = 1
+           AND "a"."business_corp_id"      = #{session.businessCorpId}
+           AND "a"."business_corp_id"      = "oc"."business_corp_id"
+         WHERE "v"."del_flag"              = 0
+           AND "v"."available_flag"        = 1
+    </select>
+
+    <select id="getLatestVehicleTracking" resultType="VehicleTrackingLocationDto">
+        SELECT "vt"."vehicle_tracking_id"
+             , "vt"."created_datetime"
+             , "vt"."latitude_longitude"
+          FROM "vehicles" "v"
+          JOIN "operating_companies" "oc"
+            ON "oc"."del_flag"             = 0
+           AND "oc"."available_flag"       = 1
+         <if test="session.operatingCompanyId != null">
+           AND "oc"."operating_company_id" = #{session.operatingCompanyId}
+         </if>
+           AND "oc"."operating_company_id" = "v"."operating_company_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"              = 0
+           AND "a"."available_flag"        = 1
+           AND "a"."business_corp_id"      = #{session.businessCorpId}
+           AND "a"."business_corp_id"      = "oc"."business_corp_id"
+          JOIN "vehicle_tracking" "vt"
+            ON "vt"."del_flag"             = 0
+           AND "vt"."gps_serial"           = "v"."gps_serial"
+         WHERE "v"."del_flag"              = 0
+           AND "v"."available_flag"        = 1
+           AND "v"."vehicle_id"            = #{vehicleId}
+      ORDER BY "vt"."created_datetime" DESC
+         LIMIT 1;
+    </select>
+
+    <select id="countVehicles" resultType="java.lang.Long">
+        SELECT COUNT("a"."vehicle_id")
+        <include refid="fromWhereBySearch"/>
+    </select>
+
+    <insert id="registerVehicles" useGeneratedKeys="true" keyProperty="operatingCompanyId">
+    INSERT INTO "vehicles" (
+                "operating_company_id"
+              , "vehicle_name"
+              , "gps_serial"
+              , "available_flag"
+              , "japan_positioning_flag"
+            <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
+            )
+            VALUES (
+                #{operatingCompanyId}
+              , #{vehicleName}
+              , #{gpsSerial}
+              , #{availableFlag}
+              , #{japanPositioningFlag}
+            <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
+            )
+    </insert>
+
+
+    <sql id="fromWhereBySearch">
+       FROM "vehicles" "a"
+ INNER JOIN "operating_companies" "b"
+        ON  "b"."available_flag"          = 1
+        AND "b"."del_flag"                = 0
+        AND "b"."operating_company_id"    = "a"."operating_company_id"
+ INNER JOIN "agencies" "c"
+        ON  "c"."available_flag"          = 1
+        AND "c"."del_flag"                = 0
+        AND "c"."business_corp_id"        = "b"."business_corp_id"
+      WHERE "a"."del_flag"                = 0
+        AND "c"."business_corp_id"        = #{businessCorpId}
+       <if test="operatingCompanyId != null">
+          AND "a"."operating_company_id"  = #{operatingCompanyId}
+       </if>
+       <if test="vehicleName != null and vehicleName != ''">
+        AND "a"."vehicle_name"         LIKE #{likeVehicleName}
+       </if>
+       <if test="availableFlag != null">
+         AND "a"."available_flag"         = #{availableFlag}
+       </if>
+    </sql>
+
+</mapper>

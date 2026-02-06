@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<!--<footer th:fragment="common_footer" th:remove="tag"> Copyright © <span th:text="${#dates.year(#dates.createNow())}"></span> Base Project All Rights Reserved. </footer>-->
+
+<footer th:fragment="common_footer" id="footer" class="py-4 bg-light mt-auto" style="text-align: center;">
+    <div class="container-fluid px-4">
+        <div class="align-items-center justify-content-between small">
+            <div class="text-muted">Copyright &copy; <span th:text="${#dates.year(#dates.createNow())}"></span> Will Smart co.,Ltd. All Rights Reserved.</div>
+        </div>
+    </div>
+</footer>
+</html>

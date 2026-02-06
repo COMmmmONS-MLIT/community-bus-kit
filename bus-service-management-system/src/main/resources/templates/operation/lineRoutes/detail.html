@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout}" th:with="title='系統管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${displayForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" class="form-horizontal" th:action="@{/operation/lineRoutes/detail/confirm/}">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong th:text="系統__*{dispMode.text}__">系統登録</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <input type="hidden" th:field="*{lineRouteId}">
+                            <input type="hidden" id="dispLineBusStopsFlag" th:value="${dispLineBusStopsFlag}">
+                            <input type="hidden" name="dispMode" th:value="${displayForm.dispMode}">
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">路線名</span></label>
+                                <div class="col-md-9" style="width: 300px !important; text-align:center;">
+                                    <select class="form-control select2" th:field="*{rosenId}" th:disabled="${displayForm.dispMode} eq ${T(maint.enums.DispMode).UPDATE_MODE}" th:classappend="${#fields.hasErrors('rosenId')} ? 'error' : ''">
+                                        <option value="">------------</option>
+                                        <option th:each="lineList : ${selectableLines}" th:value="${lineList.rosenId}" th:text="${lineList.rosenName}"></option>
+                                    </select>
+                                    <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" class="text-danger" />
+                                </div>
+                                <input th:if="${displayForm.dispMode} eq ${T(maint.enums.DispMode).UPDATE_MODE}" type="hidden" name="rosenId" th:value="${displayForm.rosenId}">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">往復区分</span></label>
+                                <div class="col-md-9">
+                                    <div class="col-md-12 radio">
+                                        <input type="radio" id="dsp1" name="lineDetailServiceDivision"
+                                               th:checked="*{lineDetailServiceDivision} eq null or *{lineDetailServiceDivision} eq 1"
+                                               value="1"/>
+                                        <label class="inner-title" for="dsp1">上り運行</label>
+                                        <input type="radio" id="dsp2" name="lineDetailServiceDivision"
+                                               th:checked="*{lineDetailServiceDivision} eq 0" value="0"/>
+                                        <label class="inner-title" for="dsp2">下り運行</label>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineDetailServiceDivision')}" th:errors="*{lineDetailServiceDivision}"
+                                       style="color:red"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">系統コード</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteCode}" maxlength="10" class="form-control"
+                                               style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteCode')} ? 'error' : ''"/>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteCode')}" th:errors="*{lineRouteCode}"
+                                       style="color:red"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統番号</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteShortName}" maxlength="20" class="form-control"
+                                               style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteShortName')} ? 'error' : ''"/>
+                                        <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('lineRouteShortName-help', this)" >バス車両の前面の行先... ＞ </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteShortName')}" th:errors="*{lineRouteShortName}"
+                                       style="color:red"></p>
+                                    <div class="form-group">
+                                        <div class="alert alert-info" id="lineRouteShortName-help"
+                                             style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                            バス車両の前面の行先表示やバス停に表記された、路線を識別するための番号<br/>
+                                            コミュニティバスの場合は、次の路線名に設定<br/>
+                                            Googleでは、系統番号、路線名称のいずれか片方のみ表示される（系統番号が優先）
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統番号名称</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteNumber}" maxlength="50" class="form-control"
+                                               style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteNumber')} ? 'error' : ''"/>
+                                        <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('lineRouteNumber-help', this)" >WEBサイト、バス停... ＞ </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteNumber')}" th:errors="*{lineRouteNumber}"
+                                       style="color:red"></p>
+                                    <div class="form-group">
+                                        <div class="alert alert-info" id="lineRouteNumber-help"
+                                             style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                            WEBサイト、バス停、路線図などに明記された正式な路線名。<br/>
+                                            コミュニティバスの場合　愛称、系統番号、路線名を設定することを推奨<br/>
+                                            例）ふれあいバス 1 南北線、まちなかバス 東部線
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統番号名称 英語</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteNumberEn}" maxlength="100" class="form-control"
+                                               style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteNumberEn')} ? 'error' : ''"/>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteNumberEn')}" th:errors="*{lineRouteNumberEn}"
+                                       style="color:red"></p>
+                                </div>
+                            </div>
+                            <div th:if="*{dispMode.value} eq '1'" class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="badge badge-danger require-txt">必須</span> <span class="form-item-name">運行期間</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="date" max="9999-12" th:field="*{serviceStartDate}"
+                                               class="form-control" style="width: 120px; display:none;"
+                                               th:disabled="${isServiceStartDateChangeAllowed == null ? false : !isServiceStartDateChangeAllowed}"
+                                               th:classappend="${#fields.hasErrors('serviceStartDate') or #fields.hasErrors('validDateRange') or #fields.hasErrors('validServiceStartDate')} ? 'error' : ''"/>
+                                        <span class="dateToClass"
+                                              style="width: 50px; padding-left: 16px; margin-top: 6px;">〜</span>
+                                        <input type="date" max="9999-12" th:field="*{serviceEndDate}"
+                                               class="form-control dateToClass" style="width: 120px;"
+                                               th:classappend="${#fields.hasErrors('serviceEndDate') or #fields.hasErrors('validDateRange')} ? 'error' : ''"/>
+                                    </div>
+                                    <span style="color: red; font-weight: bold; display:block; margin-top:8px;" >利用期間終了日未入力時、基本値が登録されます。(9999/12/31)</span>
+                                    <input th:if="${isServiceStartDateChangeAllowed == null ? false : !isServiceStartDateChangeAllowed}" type="hidden" name="serviceStartDate" th:value="${displayForm.serviceStartDate}">
+                                    <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}"
+                                       class="text-danger" style="color:red !important;" />
+                                    <p th:if="${#fields.hasErrors('serviceEndDate')}" th:errors="*{serviceEndDate}"
+                                       class="text-danger" style="color:red !important;" />
+                                    <p th:if="${#fields.hasErrors('validDateRange')}" th:errors="*{validDateRange}"
+                                       class="text-danger" style="color:red !important;" />
+                                    <p th:if="${#fields.hasErrors('validServiceStartDate')}" th:errors="*{validServiceStartDate}"
+                                       class="text-danger" style="color:red !important;" />
+                                </div>
+                            </div>
+                            <input th:if="*{dispMode.value} eq '0'" type="hidden" th:field="*{serviceStartDate}">
+                            <input th:if="*{dispMode.value} eq '0'" type="hidden" th:field="*{serviceEndDate}">
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">系統名称</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteName}" maxlength="50" class="form-control"
+                                               style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteName')} ? 'error' : ''"/>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteName')}" th:errors="*{lineRouteName}"
+                                       style="color:red"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">主な経由地</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{mainStopoverPoint}" maxlength="50"
+                                               class="form-control" style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('mainStopoverPoint')} ? 'error' : ''"/>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('mainStopoverPoint')}" th:errors="*{mainStopoverPoint}"
+                                       style="color:red"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統URL</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteUrl}" maxlength="256"
+                                               class="form-control" style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteUrl')} ? 'error' : ''"/>
+                                        <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('lineRouteUrl-help', this)" >路線別時刻表などこの... ＞ </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteUrl')}" th:errors="*{lineRouteUrl}"
+                                       style="color:red"></p>
+                                    <div class="form-group">
+                                        <div class="alert alert-info" id="lineRouteUrl-help"
+                                             style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                            路線別時刻表などこの系統の情報を示すページがある場合に指定
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統背景色</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteColor}" maxlength="6"
+                                               class="form-control" style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteColor')} ? 'error' : ''"/>
+                                        <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('lineRouteColor-help', this)" >RGBの値を入力　例... ＞ </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteColor')}" th:errors="*{lineRouteColor}"
+                                       style="color:red"></p>
+                                    <div class="form-group">
+                                        <div class="alert alert-info" id="lineRouteColor-help"
+                                             style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                            RGBの値を入力　例）赤の場合 FF0000
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統文字色</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteTextColor}" maxlength="6"
+                                               class="form-control" style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteTextColor')} ? 'error' : ''"/>
+                                        <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('lineRouteTextColor-help', this)" >RGBの値を入力　例... ＞ </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteTextColor')}" th:errors="*{lineRouteTextColor}"
+                                       style="color:red"></p>
+                                    <div class="form-group">
+                                        <div class="alert alert-info" id="lineRouteTextColor-help"
+                                             style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                            RGBの値を入力　例）白の場合 FFFFFF
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="form-item-name">系統備考</span></label>
+                                <div class="col-md-9">
+                                    <div class="input-group col-md-10 div-flex">
+                                        <input type="text" th:field="*{lineRouteRemarks}" maxlength="50"
+                                               class="form-control" style="width: 600px;"
+                                               th:classappend="${#fields.hasErrors('lineRouteRemarks')} ? 'error' : ''"/>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('lineRouteRemarks')}" th:errors="*{lineRouteRemarks}"
+                                       style="color:red"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="width: 200px;"><span
+                                        class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">利用区分</span></label>
+                                <div class="col-md-9">
+                                    <div class="col-md-12 radio">
+                                        <input type="radio" id="r-dsp1" name="availableFlag"
+                                               th:checked="*{availableFlag} eq null or *{availableFlag} eq 1"
+                                               value="1"/>
+                                        <label class="inner-title" for="r-dsp1">利用中</label>
+                                        <input type="radio" id="r-dsp2" name="availableFlag"
+                                               th:checked="*{availableFlag} eq 0" value="0"/>
+                                        <label class="inner-title" for="r-dsp2">利用不可</label>
+                                        <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('availableFlag-help', this)" >この系統を利用できる... ＞ </button>
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}"
+                                       style="color:red"></p>
+                                    <div class="form-group">
+                                        <div class="alert alert-info" id="availableFlag-help"
+                                             style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                            この系統を利用できるかどうかの区分・・・使用しなくなった場合は「利用不可」を選択。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-1" style="text-align: left !important;"> <span
+                                        class="form-item-name">路線停留所登録一覧</span></label>
+                            </div>
+                            <div>
+                                <table class="table table-bordered" style="width: 90%;">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 10%;">登録順</th>
+                                        <th style="width: 60%;">停留所名</th>
+                                        <th style="width: 10%">乗降区分</th>
+                                        <th style="width: 20%">追加</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="busStopTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-1"><span
+                                        class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">登録停留所</span></label>
+                                <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('lineRouteBusStop-help', this)" >この系統が所属する停... ＞ </button>
+                            </div>
+                            <div class="form-group">
+                                <div class="alert alert-info" id="lineRouteBusStop-help"
+                                     style="display:none; margin:10px 0 0 15px; max-width:600px;">
+                                    この系統が所属する停留所を　路線停留所登録一覧から選択。<br/>
+                                    起点から終点まで順番に並んでいる必要あり。
+                                </div>
+                            </div>
+                            <div th:if="*{#lists.isEmpty(lineRouteBusStopList)}">
+                                <table class="table table-bordered" style="width: 100%;">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 5%;">登録順</th>
+                                        <th style="width: 10%;">停留所名</th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            停留所行先
+                                            <button type="button" class="btn btn-default btn-xs" onclick="toggleHelp('busStopName-help', this)"
+                                                    style="width:50px; height:30px; padding:2px 8px; white-space:nowrap; overflow:hidden; vertical-align:middle; font-size:11px;">説明＞</button>
+                                          </span>
+                                            <div class="form-group">
+                                                <div class="alert alert-info" id="busStopName-help"
+                                                     style="display:none; margin:8px auto 0;  width:90%;">
+                                                    通常は１停留所名に行先を登録すればよい。<br/>
+                                                    行先や経由地を途中で変えたい場合は、変えたい地点の停留所に登録。<br/>
+                                                    空欄の場合は、上記に定義されている行先が自動で採用される。
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            停留所行先 英語
+                                          </span>
+                                        </th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            乗降区分
+                                          </span>
+                                        </th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            通算距離
+                                            <button type="button" class="btn btn-default btn-xs" onclick="toggleHelp('shapeDistTraveled-help', this)"
+                                                    style="width:50px; height:30px; padding:2px 8px; white-space:nowrap; overflow:hidden; vertical-align:middle; font-size:11px;">説明＞</button>
+                                          </span>
+                                            <div class="form-group">
+                                                <div class="alert alert-info" id="shapeDistTraveled-help"
+                                                     style="display:none; margin:8px auto 0;  width:90%;">
+                                                    起点停留所からの積算距離
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th style="width: 5%">削除</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="registerBusStopTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div th:unless="*{#lists.isEmpty(lineRouteBusStopList)}">
+                                <div th:unless="${#lists.isEmpty(lineRouteBusStopErrorMsgList)}" style="color:red"
+                                     th:utext="${#strings.arrayJoin(lineRouteBusStopErrorMsgList, '<br/>')}">
+                                </div>
+                                <table class="table table-bordered" style="width: 100%;">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 5%;">登録順</th>
+                                        <th style="width: 10%;">停留所名</th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            停留所行先
+                                            <button type="button" class="btn btn-default btn-xs" onclick="toggleHelp('busStopName-help', this)"
+                                                    style="width:50px; height:30px; padding:2px 8px; white-space:nowrap; overflow:hidden; vertical-align:middle; font-size:11px;">説明＞</button>
+                                          </span>
+                                            <div class="form-group">
+                                                <div class="alert alert-info" id="busStopName-help"
+                                                     style="display:none; margin:8px auto 0;  width:90%;">
+                                                    通常は１停留所名に行先を登録すればよい。<br/>
+                                                    行先や経由地を途中で変えたい場合は、変えたい地点の停留所に登録。<br/>
+                                                    空欄の場合は、上記に定義されている行先が自動で採用される。
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            停留所行先 英語
+                                          </span>
+                                        </th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            乗降区分
+                                          </span>
+                                        </th>
+                                        <th style="width:20%;">
+                                          <span style="display:inline-flex; align-items:center; gap:6px;">
+                                            通算距離
+                                            <button type="button" class="btn btn-default btn-xs" onclick="toggleHelp('shapeDistTraveled-help', this)"
+                                                    style="width:50px; height:30px; padding:2px 8px; white-space:nowrap; overflow:hidden; vertical-align:middle; font-size:11px;">説明＞</button>
+                                          </span>
+                                            <div class="form-group">
+                                                <div class="alert alert-info" id="shapeDistTraveled-help"
+                                                     style="display:none; margin:8px auto 0;  width:90%;">
+                                                    起点停留所からの積算距離
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th style="width: 5%">削除</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody class="registerBusStopTableBody">
+                                    <tr th:each="list, stat : *{lineRouteBusStopList}">
+                                        <input type="hidden" th:if="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}" th:name="lineRouteBusStopList[__${stat.index}__].lineRouteBusStopId" th:value="${list.lineRouteBusStopId}">
+                                        <td style="text-align:center;">
+                                            <span th:text="${list.sequenceNo} != null ? ${list.sequenceNo} : ${stat.index} + 1">1</span>
+                                            <input type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].sequenceNo"
+                                                   th:value="${list.sequenceNo}">
+                                        </td>
+                                        <td>
+                                            <span th:text="${list.busStopName}">停留所名</span>
+                                            <input type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].rosenBusStopId" th:value="${list.rosenBusStopId}">
+                                            <input type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].busStopName" th:value="${list.busStopName}">
+                                            <input type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].signpostId" th:value="${list.signpostId}">
+                                        </td>
+                                        <td>
+                                            <input th:disabled="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}" maxlength="50" style="width: 100%" type="text" th:name="lineRouteBusStopList[__${stat.index}__].stopHeadsign" th:value="${list.stopHeadsign}">
+                                            <p th:if="${#fields.hasErrors('lineRouteBusStopList[' + stat.index + '].stopHeadsign')}" th:errors="*{lineRouteBusStopList[__${stat.index}__].stopHeadsign}" style="color:red"></p>
+                                            <input th:if="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}" type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].stopHeadsign" th:value="${list.stopHeadsign}">
+                                        </td>
+                                        <td>
+                                            <input th:disabled="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}" maxlength="100" style="width: 100%" type="text" th:name="lineRouteBusStopList[__${stat.index}__].stopHeadsignEn" th:value="${list.stopHeadsignEn}">
+                                            <p th:if="${#fields.hasErrors('lineRouteBusStopList[' + stat.index + '].stopHeadsignEn')}" th:errors="*{lineRouteBusStopList[__${stat.index}__].stopHeadsignEn}" style="color:red"></p>
+                                            <input th:if="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}" type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].stopHeadsignEn" th:value="${list.stopHeadsignEn}">
+                                        </td>
+                                        <td class="input-center">
+                                            <th:block th:with="divisionValue=*{lineDetailServiceDivision}, rideAlightList=${T(maint.enums.RideAlightDivision).getListByServiceDivision(divisionValue)}">
+                                                <div th:each="division, idx : ${rideAlightList}"
+                                                     style="display: inline-block; margin-right: 10px;">
+                                                    <label>
+                                                        <input type="radio"
+                                                               th:name="lineRouteBusStopList[__${stat.index}__].rideAlightDivision"
+                                                               th:value="${division.value}"
+                                                               th:checked="${division.value} == ${list.rideAlightDivision}"
+                                                               th:disabled="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}"/>
+                                                        [[${division.text}]]
+                                                    </label>
+                                                </div>
+                                            </th:block>
+                                            <input type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].rideAlightDivision" th:value="${list.rideAlightDivision}">
+                                            <input type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].originalRideAlightDivision" th:value="${list.originalRideAlightDivision}">
+                                        </td>
+                                        <td class="input-center">
+                                            <input type="text" style="width: 100px;" maxlength="7" th:name="lineRouteBusStopList[__${stat.index}__].shapeDistTraveled" th:value="${list.shapeDistTraveled}" th:disabled="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}"/>
+                                            <input th:if="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}" type="hidden" th:name="lineRouteBusStopList[__${stat.index}__].shapeDistTraveled" th:value="${list.shapeDistTraveled}"/>
+                                        </td>
+                                        <td class="input-center">
+                                            <input type="button" class="btn-gray" value="削除" style="width: 100px;" th:disabled="${list.lineRouteBusStopId != null and list.lineRouteBusStopId != 0}"/>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                            <div class="pull-right">
+                                <input type="button" value="戻る" class="btn btn-default"
+                                       th:onclick="'location.href = \'/operation/lineRoutes/' + *{page} + '/\';'" />
+                                <input type="submit" value="確認" class="btn btn-primary pull-right double-click" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- END PAGE CONTENT WRAPPER -->
+    <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:src="@{/js/operation/lineRoutes/detail.js}"></script>
+    <style>
+        /* 偶数行の背景色 */
+        .table tbody tr:nth-child(even) {
+            background-color: #f9f1e6;
+        }
+        /* bodyを「画面高」or「内容高」で正しく伸ばす */
+        body.body-calendar-detail .page-container{
+            display: flex;
+            align-items: stretch;
+            min-height: 100vh;
+        }
+        /* sidebar を親の高さに追従させる */
+        body.body-calendar-detail .page-container .page-sidebar{
+            height: auto !important;
+            align-self: stretch;
+        }
+    </style>
+</div>
+<!-- end: contents -->
+</body>
+</html>

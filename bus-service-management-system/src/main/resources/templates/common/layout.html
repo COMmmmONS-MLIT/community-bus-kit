@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+<link th:replace="~{common/common :: common_head('__${title}__')}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/css/select2/4.0.5/select2.min.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/css/default_pc.css}" />
+</head>
+
+<body>
+    <!-- START PAGE CONTAINER -->
+    <div class="page-container">
+
+        <!-- START PAGE SIDEBAR -->
+        <th:block th:insert="~{common/menu :: common_menu}"></th:block>
+        <!-- END PAGE SIDEBAR -->
+
+        <!-- PAGE CONTENT -->
+        <div class="page-content top_layout">
+            <!-- START X-NAVIGATION VERTICAL -->
+            <ul class="x-navigation x-navigation-horizontal x-navigation-panel">
+                <!-- TOGGLE NAVIGATION -->
+                <li class="xn-icon-button top-firstbtn"><a href="#" class="x-navigation-minimize"> <span class="fa fa-dedent"></span>
+                </a></li>
+                <!-- END TOGGLE NAVIGATION -->
+                <li th:if="${#authentication.principal.getComHdMaxWidth()}" class="pull-right top-company">
+                    <div style="padding: 16px 10px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px;">
+                        <span class="fa fa-user"></span><span style="line-height: 14px; margin-left: 10px;">ようこそ [[${#authentication.principal.getUserName()}]] さん</span>
+                    </div>
+                </li>
+                <div th:if="${#authentication.principal.getAccountDivision()} eq ${T(maint.enums.AccountDivision).SYSTEM_ADMIN.getValue()}">
+                    <li>
+                        <div style="padding: 9.5px 1px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <select id="selectAgency" class="form-control" style="width: 100% !important;">
+                                <option value="">------------</option>
+                                <option th:each="agency : ${#authentication.principal.getAgencies()}" th:value="${agency.businessCorpId}" th:text="${agency.name}" th:selected="${agency.businessCorpId == #authentication.principal.getBusinessCorpId()}"></option>
+                            </select>
+                        </div>
+                    </li>
+                    <li>
+                        <div style="padding: 9.5px 1px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            <button type="button" class="btn btn-primary" onclick="javascript:changeAgency();">変更</button>
+                        </div>
+                    </li>
+                    <input type="hidden" id="topUrlByMenu" th:value="${#authentication.principal.getTopUrlByMenu()}">
+                    <input type="hidden" id="businessCorpId" th:value="${#authentication.principal.getBusinessCorpId()}">
+                </div>
+                <!-- SIGN OUT -->
+                <li class="xn-icon-button pull-right top-sign-out"><a href="#" onclick="javascript:openChangePasswordModal();return false;" class="mb-control" data-toggle="modal" data-target="#password-change-modal"> <span class="fa fa-lock"></span>
+                </a><input type="hidden" th:value="${passChangeFlag}" id="passChangeFlag"></li>
+                <li class="xn-icon-button pull-right top-sign-out"><a class="mb-control" data-box="#mb-signout"> <span class="fa fa-sign-out"></span>
+                </a></li>
+                <!-- END SIGN OUT -->
+            </ul>
+            <div th:insert="~{common/logout :: common_logout}" th:remove="tag"></div>
+            <!-- END X-NAVIGATION VERTICAL -->
+            <th:block layout:fragment="main_contents" th:remove="tag">
+                <p>ここにコンテンツを表示</p>
+            </th:block>
+            <div th:insert="~{common/modal :: passChangeDialog}" th:remove="tag"></div>
+        </div>
+        <!-- END PAGE CONTENT -->
+    </div>
+    <!-- END PAGE CONTAINER -->
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+</body>

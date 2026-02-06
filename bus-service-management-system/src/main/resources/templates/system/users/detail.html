@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='アカウント管理'">
+<body>
+    <!-- start: contents -->
+    <div layout:fragment="main_contents" th:object="${usersDetailForm}">
+        <!-- PAGE CONTENT WRAPPER -->
+        <div class="page-content-wrap">
+            <div class="row">
+                <div class="col-md-12">
+                    <form method="post" class="form-horizontal" id="confirmForm" th:action="@{/system/users/detail/confirm/}">
+                        <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                        <input type="hidden" th:field="*{page}">
+                        <input type="hidden" th:field="*{userId}">
+                        <input type="hidden" th:field="*{dispMode}">
+                        <input type="hidden" th:field="*{accountLockAt}">
+                        <input type="hidden" th:field="*{dispMode.value}">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <strong th:text="アカウント__*{dispMode.text}__">アカウント登録</strong>
+                                </h3>
+                            </div>
+                            <!-- START メッセージ表示部 -->
+                            <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                            <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                            <!-- END メッセージ表示部 -->
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">ログインID</span></label>
+                                    <div class="col-md-10">
+                                        <div class="input-group col-md-11 div-flex">
+                                            <input th:disabled="*{dispMode.value} neq '0'" type="text" name="email" maxlength="256" th:value="*{email}" class="form-control"
+                                                style="width: 300px;" th:classappend="${#fields.hasErrors('email')} ? 'error' : ''" />
+                                            <input th:if="*{dispMode.value} neq '0'" type="hidden" name="email" th:value="*{email}">
+                                            <div><span class="help-block text-danger" style="width: 100px;">※Email形式</span></div>
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span th:if="*{dispMode.value} eq '0'" class="badge badge-danger require-txt">必須</span> <span
+                                        class="form-item-name">パスワード</span></label>
+                                    <div class="col-md-9 radio">
+                                        <div class="input-group col-md-12">
+                                            <div class="checkbox">
+                                                <input type="checkbox" id="pwdChgFlag" th:field="*{pwdChgFlag}"/>
+                                                <label for="pwdChgFlag" class="inner-title">ログイン時変更必須</label>
+                                            </div>
+                                            <div style="display: grid;">
+                                                <div class="div-flex">
+                                                    <input type="text" th:field="*{password}"
+                                                           th:disabled="*{pwdSendMailFlag} eq null or ${T(maint.enums.PwdSendMail).SEND_MAIL.getValue()} eq *{pwdSendMailFlag}"
+                                                           class="form-control" maxlength="29" style="width: 200px;"
+                                                           th:classappend="${#fields.hasErrors('password')} or ${#fields.hasErrors('notBlankPasswordForRegister')} ? 'error' : ''" />
+                                                    <div><span class="help-block text-danger">※8桁以上30桁未満・英大小/数字/記号3種以上・ID不可</span></div>
+                                                </div>
+                                                <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger" />
+                                                <p th:if="${#fields.hasErrors('notBlankPasswordForRegister')}" th:errors="*{notBlankPasswordForRegister}" class="text-danger" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">姓</span></label>
+                                    <div class="col-md-9">
+                                        <div class="input-group col-md-12 div-flex">
+                                            <input type="text" th:field="*{lastName}" class="form-control" style="width: 300px;" maxlength="50"
+                                                th:classappend="${#fields.hasErrors('lastName')} ? 'error' : ''" />
+                                            <div><span class="help-block text-danger" style="width: 100px;">※50文字まで</span></div>
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">名</span></label>
+                                    <div class="col-md-9">
+                                        <div class="input-group col-md-12 div-flex">
+                                            <input type="text" th:field="*{firstName}" class="form-control" style="width: 300px;" maxlength="50"
+                                                   th:classappend="${#fields.hasErrors('firstName')} ? 'error' : ''" />
+                                            <div><span class="help-block text-danger" style="width: 100px;">※50文字まで</span></div>
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">アカウント区分</span></label>
+                                    <div class="col-md-10">
+                                        <div class="col-md-12 radio">
+                                            <th:block th:each="account, p : ${T(maint.enums.AccountDivision).values()}">
+                                                <input type="radio" name="accountDivision" th:id="accountDivision__${account.value}__" th:value="${account.value}"
+                                                       th:checked="${account.value} eq *{accountDivision}" th:disabled="${accountDivision} eq '02'"/>
+                                                <label class="inner-title" th:text="${account.text}" th:for="accountDivision__${account.value}__"></label>
+                                            </th:block>
+                                            <p th:if="${#fields.hasErrors('accountDivision')}" th:errors="*{accountDivision}" class="text-danger" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">事業者</span></label>
+                                    <div class="col-md-9">
+                                        <select id="agencySelect" class="form-control select2" th:field="*{agencyId}" th:disabled="${accountDivision} eq '02'"
+                                                th:classappend="${#fields.hasErrors('agencyId')} ? 'error' : ''">
+                                            <option value="">------------</option>
+                                            <option th:each="agencyList : ${agencyList}" th:value="${agencyList.businessCorpId}" th:text="${agencyList.name}"></option>
+                                        </select>
+                                        <p th:if="${#fields.hasErrors('agencyId')}" th:errors="*{agencyId}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="form-item-name">運行会社</span></label>
+                                    <div class="col-md-9">
+                                        <select id="operatingCompanySelect" class="form-control select2" th:field="*{operatingCompanyId}" th:disabled="${isAgencyWithOperatingCompany}"
+                                                th:attr="data-selected=*{operatingCompanyId}" th:classappend="${#fields.hasErrors('operatingCompanyId')} ? 'error' : ''">
+                                            <option value="">------------</option>
+                                        </select>
+                                        <p th:if="${#fields.hasErrors('operatingCompanyId')}" th:errors="*{operatingCompanyId}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">権限</span></label>
+                                    <div class="col-md-9">
+                                        <select class="form-control select2" th:field="*{permRoleId}" th:classappend="${#fields.hasErrors('permRoleId')} ? 'error' : ''">
+                                            <option value="">------------</option>
+                                            <option th:each="permRole : ${permRoles}" th:value="${permRole.permRoleId}" th:text="${permRole.permRoleName}"></option>
+                                        </select>
+                                        <p th:if="${#fields.hasErrors('permRoleId')}" th:errors="*{permRoleId}" class="text-danger" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">利用区分</span></label>
+                                    <div class="col-md-10">
+                                        <div class="col-md-12 radio">
+                                            <input type="radio" name="usageDivision" id="usageDivision__0__" value="0"
+                                                   th:checked="*{usageDivision eq 0}" />
+                                            <label class="inner-title" for="usageDivision__0__" >利用中</label>
+                                            <input type="radio" name="usageDivision" id="usageDivision__1__" value="1"
+                                                   th:checked="*{usageDivision eq 1}" />
+                                            <label class="inner-title" for="usageDivision__1__">利用不可</label>
+                                            <p th:if="${#fields.hasErrors('usageDivision')}" th:errors="*{usageDivision}" class="text-danger" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group" th:if="*{dispMode.value} eq '1' and *{accountLockAt} != null and *{accountLockAt} != ''">
+                                    <label class="col-md-1 control-label">
+                                        <span class="form-item-name">ロック時間</span>
+                                    </label>
+                                    <div class="col-md-10">
+                                        <div class="input-group col-md-12 div-flex">
+                                            <input class="form-control" type="text" th:field="*{accountLockAt}" max="9999-12-31" th:classappend="${#fields.hasErrors('accountLockAt')} ? 'error' : ''" style="width: 170px;" disabled/>
+                                        </div>
+                                        <p th:if="${#fields.hasErrors('accountLockAt')}" th:errors="*{accountLockAt}" class="text-danger"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group" th:if="*{dispMode.value} eq '1' and *{accountLockAt} != null and *{accountLockAt} != ''">
+                                    <label class="col-md-1 control-label">
+                                        <span class="form-item-name">ロック解除</span>
+                                    </label>
+                                    <div class="col-md-10">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" id="unlock" th:field="*{lockFlag}" th:checked="*{lockFlag}" />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <div class="pull-right">
+                                    <a th:href="'/system/users/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
+                                    <button type="button" id="confirm" class="btn btn-primary pull-right double-click">確認</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:insert="~{common/modal :: passReissueDialog}" th:remove="tag"></div>
+                    </form>
+                    <form th:if="*{dispMode.value} eq '1'" id="passwordReissueForm" method="post" th:action="@{/system/users/detail/password/reissue/}">
+                        <input type="hidden" name="userId" th:value="*{userId}">
+                    </form>
+                </div>
+            </div>
+            <th:block th:insert="~{common/script :: common_script}"></th:block>
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                var allOperatingCompanies = /*[[${operatingCompanyList}]]*/ [];
+                /*]]>*/
+            </script>
+            <script th:src="@{/js/system/users/detail.js}"></script>
+        </div>
+        <!-- END PAGE CONTENT WRAPPER -->
+    </div>
+    <!-- end: contents -->
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}"
+      th:with="title='棒ダイヤ一覧'">
+<body class="body-display-daiyas">
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${displayDaiyasSearchForm}">
+    <!-- PAGE CONTENT WRAPPER -->
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <form method="post" th:action="@{#}" class="form-horizontal">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <strong>棒ダイヤ一覧</strong>
+                            </h3>
+                        </div>
+                        <!-- START メッセージ表示部 -->
+                        <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+                        <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+                        <!-- END メッセージ表示部 -->
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label" style="min-width: 140px"><span
+                                                class="badge badge-danger"></span> <span
+                                                class="badge badge-danger require-txt">必須</span>
+                                            <span class="form-item-name">路線</span></label>
+                                        <div class="col-md-9">
+                                            <div class="input-group col-md-12 div-flex"
+                                                 style="width: 100%; max-width: 300px; text-align:center;">
+                                            <select class="form-control select2" th:field="*{rosenId}"
+                                                        th:classappend="${#fields.hasErrors('rosenId')} ? 'error' : ''">
+                                                    <option value="">------------</option>
+                                                    <option th:each="lineList : ${linesList}"
+                                                            th:value="${lineList.rosenId}"
+                                                            th:text="${lineList.rosenName}"></option>
+                                                </select>
+                                            </div>
+                                            <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}"
+                                               class="text-danger"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label"><span class="badge badge-danger"></span>
+                                            <span class="badge badge-danger require-txt">必須</span>
+                                            <span class="form-item-name">運行日</span></label>
+                                        <div class="col-md-9">
+                                            <div class="input-group col-md-10 div-flex">
+                                                <input type="date" max="9999-12" th:field="*{serviceDate}"
+                                                       class="form-control" style="width: 130px;"
+                                                       th:classappend="${#fields.hasErrors('serviceDate')} ? 'error' : ''"/>
+                                            </div>
+                                            <p th:if="${#fields.hasErrors('serviceDate')}"
+                                               th:errors="*{serviceDate}" class="text-danger"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="col-md-1 control-label" style="min-width: 140px"><span
+                                                class="badge badge-danger"></span> <span
+                                                class="form-item-name">仕業番号</span></label>
+                                        <div class="col-md-9">
+                                            <div class="input-group col-md-12 div-flex">
+                                                <input type="text" th:field="*{workNumber}" class="form-control"
+                                                       maxlength="20" style="width: 300px;"
+                                                       th:classappend="${#fields.hasErrors('workNumber')} ? 'error' : ''"/>
+                                            </div>
+                                            <p th:if="${#fields.hasErrors('workNumber')}" th:errors="*{workNumber}"
+                                               class="text-danger"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <div style="display: flex;" class="pull-right">
+                                <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
+                                        th:formaction="@{/operation/displayDaiyas/}">
+                                    <i class="fa fa-search" aria-hidden="true"></i>検索
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div th:if="${grouped != null and !grouped.isEmpty()}"
+                             style="display: flex; align-items: flex-start;">
+                            <!-- 左側固定の仕業番号テーブル -->
+                            <table class="table table-bordered work-table">
+                                <thead>
+                                <tr>
+                                    <th>仕業番号</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="entry : ${grouped}">
+                                    <tr>
+                                        <td style="border: none;"></td>
+                                    </tr> <!-- 出発時刻 -->
+                                    <tr>
+                                        <td th:text="${entry.key}"></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none;"></td>
+                                    </tr> <!-- 到着時刻 -->
+                                </th:block>
+                                </tbody>
+                            </table>
+
+                            <!-- スクロール可能なタイムライン -->
+                            <div style="white-space: nowrap;">
+                                <table class="table table-bordered timeline-table" style="text-align: center;">
+                                    <thead>
+                                    <tr>
+                                        <th th:colspan="${totalMinutes}">運行ダイヤ</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="entry : ${grouped}">
+                                        <!-- 出発時刻 -->
+                                        <tr>
+                                            <td th:each="depLabel : ${departureTimeLabelsMap[entry.key]}"
+                                                style="border: none;" th:text="${depLabel}"></td>
+                                        </tr>
+
+                                        <!-- 色付け -->
+                                        <tr>
+                                            <td th:each="color : ${colorsMap[entry.key]}"
+                                                th:style="${color != ''} ? 'background-color:' + ${color} : ''"></td>
+                                        </tr>
+
+                                        <!-- 到着時刻 -->
+                                        <tr>
+                                            <td th:each="arrLabel : ${arrivalTimeLabelsMap[entry.key]}"
+                                                style="border: none;" th:text="${arrLabel}"></td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style>
+            .table td, .table th {
+                width: 1px !important;
+                min-width: 1px !important;
+                max-width: 1px !important;
+                padding: 1px !important;
+                height: 20px !important;
+            }
+
+            /* 仕業番号テーブル用のスタイルを追加 */
+            .work-number-table {
+                table-layout: fixed;
+            }
+
+            .work-number-table th,
+            .work-number-table td {
+                width: 100px !important;
+                min-width: 100px !important;
+                max-width: 100px !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        </style>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
+    </div>
+</div>
+<!-- END PAGE CONTENT WRAPPER -->
+</body>
+</html>

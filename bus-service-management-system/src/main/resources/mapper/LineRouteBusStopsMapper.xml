@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.LineRouteBusStopsMapper">
+
+    <select id="countActiveStopsByLineRoute" parameterType="map" resultType="int">
+        SELECT COUNT(1)
+          FROM "line_route_bus_stops" AS "r"
+         WHERE "r"."del_flag"         = 0
+           AND "r"."line_route_id"    = CAST(#{lineRouteId} AS BIGINT)
+    </select>
+
+    <select id="getStopsInfoList" parameterType="maint.form.gtfsReport.GtfsReportListsExcelForm">
+        SELECT DISTINCT ON ("bs"."bus_stop_id")
+               "bs"."bus_stop_code"
+             , "bs"."bus_stop_en_name"
+             , "bs"."bus_stop_kana_name"
+             , "bs"."bus_stop_name"
+             , "bs"."bus_stop_type"
+             , "bs"."bus_stop_url"
+             , "bs"."latitude_longitude"
+             , "sp"."signpost_branch_number"
+             , "sp"."signpost_en_name"
+             , "sp"."signpost_kana_name"
+          FROM "line_route_bus_stops" AS "lrbs"
+    INNER JOIN "line_routes" AS "lr"
+            ON "lr"."del_flag"                 = 0
+           AND "lr"."line_route_id"            = "lrbs"."line_route_id"
+           AND "lr"."rosen_id" IN
+        <foreach collection="rosenIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    INNER JOIN "signposts" AS "sp"
+            ON "sp"."del_flag"                 = 0
+           AND "sp"."available_flag"           = 1
+           AND "sp"."signpost_id"              = "lrbs"."signpost_id"
+    INNER JOIN "bus_stops" AS "bs"
+            ON "bs"."del_flag"                 = 0
+           AND "bs"."available_flag"           = 1
+           AND "bs"."indoor_bus_terminal_flag" = 1
+           AND "bs"."bus_stop_id"              = "sp"."bus_stop_id"
+         WHERE "lrbs"."del_flag"               = 0
+      ORDER BY "bs"."bus_stop_id" ASC
+             , "sp"."signpost_id" ASC
+    </select>
+
+    <select id="getStopsOtherInfoList" resultType="maint.dto.integrate.gtfsReport.GtfsStopsOtherInfoDto">
+        SELECT DISTINCT ON ("sp"."signpost_id")
+               "bs"."bus_stop_code"              AS "busStopCode"
+             , "lrbs"."signpost_id"               AS "signpostId"
+             , "sp"."bus_stop_id"                AS "busStopId"
+             , "sp"."bus_stop_type"              AS "busStopType"
+             , "sp"."latitude_longitude"         AS "latitudeLongitude"
+             , "sp"."platform_code"              AS "platformCode"
+             , "sp"."signpost_branch_number"     AS "signpostBranchNumber"
+             , "sp"."signpost_code"              AS "signpostCode"
+             , "sp"."signpost_desc"              AS "signpostDesc"
+             , "sp"."signpost_id"                AS "signpostId"
+             , "sp"."signpost_name"              AS "signpostName"
+             , "sp"."signpost_kana_name"         AS "signpostKanaName"
+             , "sp"."signpost_en_name"           AS "signpostEnName"
+             , "sp"."signpost_sub_name"          AS "signpostSubName"
+             , "sp"."signpost_url"               AS "signpostUrl"
+             , "sp"."wheelchair_accessible_type" AS "wheelchairAccessibleType"
+          FROM "line_route_bus_stops"            AS "lrbs"
+    INNER JOIN "line_routes"                     AS "lr"
+            ON "lr"."del_flag"                    = 0
+           AND "lr"."line_route_id"               = "lrbs"."line_route_id"
+           AND "lr"."rosen_id" IN
+        <foreach collection="rosenIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    INNER JOIN "signposts"                       AS "sp"
+            ON  "sp"."del_flag"                   = 0
+           AND "sp"."available_flag"              = 1
+           AND "sp"."signpost_id"                 = "lrbs"."signpost_id"
+    INNER JOIN "bus_stops"                       AS "bs"
+            ON  "bs"."del_flag"                   = 0
+           AND "bs"."available_flag"              = 1
+           AND "bs"."bus_stop_id"                 = "sp"."bus_stop_id"
+         WHERE "lrbs"."del_flag"                  = 0
+      ORDER BY "sp"."signpost_id"               ASC
+    </select>
+
+    <select id="findLineRouteStopSequence" resultType="maint.dto.operation.importBusServices.FindLineRouteStopSequenceDto">
+        SELECT "lrbs"."line_route_bus_stop_id" AS "lineRouteBusStopId",
+               "lr"."line_route_id"            AS "lineRouteId"
+          FROM "line_route_bus_stops"          AS "lrbs"
+    INNER JOIN "line_routes"                   AS "lr"
+            ON "lr"."del_flag"                  = 0
+           AND "lr"."line_route_id"             = "lrbs"."line_route_id"
+    INNER JOIN "lines"                         AS "l"
+            ON "l"."del_flag"                   = 0
+           AND "l"."available_flag"             = 1
+           AND "l"."rosen_id"                   = "lr"."rosen_id"
+    INNER JOIN "daiya_revisions"               AS "d"
+            ON "d"."del_flag"                   = 0
+           AND "d"."rosen_id"                   = "l"."rosen_id"
+    INNER JOIN "agencies"                      AS "a"
+            ON "a"."available_flag"             = 1
+           AND "a"."available_flag"             = 1
+           AND "a"."business_corp_id"           = "l"."business_corp_id"
+         WHERE "d"."daiya_revision_id"          = CAST(#{daiyaRevisionId} AS BIGINT)
+           AND "a"."business_corp_id"           = CAST(#{businessCorpId} AS BIGINT)
+      ORDER BY "lrbs"."line_route_id"
+             , "lrbs"."stop_sequence"
+    </select>
+
+    <insert id="insert" parameterType="java.util.List">
+        INSERT INTO "line_route_bus_stops" (
+        "line_route_id",
+        "rosen_bus_stop_id",
+        "signpost_id",
+        "ride_alight_division",
+        "drop_off_division",
+        "shape_dist_traveled",
+        "stop_sequence",
+        "stop_headsign",
+        "stop_headsign_en",
+        "created_user",
+        "created_at",
+        "updated_user",
+        "updated_at"
+        )
+        VALUES
+        <foreach collection="lineRouteBusStopsEntity" item="item" separator=",">
+            (
+            #{item.lineRouteId},
+            #{item.rosenBusStopId},
+            #{item.signpostId},
+            #{item.rideAlightDivision},
+            #{item.dropOffDivision},
+            #{item.shapeDistTraveled},
+            #{item.stopSequence},
+            #{item.stopHeadsign},
+            #{item.stopHeadsignEn},
+            #{item.session.userId},
+            CURRENT_TIMESTAMP,
+            #{item.session.userId},
+            CURRENT_TIMESTAMP
+            )
+        </foreach>
+    </insert>
+
+</mapper>

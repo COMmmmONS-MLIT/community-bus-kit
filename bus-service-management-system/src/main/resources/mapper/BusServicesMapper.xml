@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="maint.mapper.BusServicesMapper">
+
+    <select id="getBusServicesByBusinessCorpId" resultType="BusServiceInfoDto">
+        SELECT "bs"."bus_service_id"
+             , "bs"."calendar_id"
+             , "bs"."vehicle_id"
+             , "dr"."service_start_date"
+             , "dr"."service_end_date"
+          FROM "bus_services" "bs"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"               = 0
+           AND "dr"."daiya_revision_id"      = "bs"."daiya_revision_id"
+           AND "dr"."service_start_date" &lt;= (CURRENT_DATE + INTERVAL '1 month')::date
+           AND "dr"."service_end_date"    &gt; CURRENT_DATE
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "dr"."rosen_id"
+          JOIN "line_routes" "lr"
+            ON "lr"."del_flag"               = 0
+           AND "lr"."available_flag"         = 1
+           AND "lr"."line_route_id"          = "bs"."line_route_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+           AND "a"."business_corp_id"        = #{businessCorpId}
+         WHERE "bs"."del_flag"               = 0
+      ORDER BY "bs"."bus_service_id"
+    </select>
+
+    <select id="getBusServiceOptions" resultType="BusServiceOptionsDto">
+        SELECT "bs"."bus_service_id"
+             , "bs"."bus_service_name"
+          FROM "bus_services" "bs"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"               = 0
+           AND "dr"."daiya_revision_id"      = "bs"."daiya_revision_id"
+        <if test="serviceDate != null and serviceDate != ''">
+           AND "dr"."service_start_date" &lt;= CAST(#{serviceDate} AS date)
+           AND "dr"."service_end_date"   &gt;= CAST(#{serviceDate} AS date)
+        </if>
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "dr"."rosen_id"
+           AND "l"."business_corp_id"        = #{businessCorpId}
+        <if test="rosenId != null and rosenId != ''">
+           AND "l"."rosen_id"                = #{rosenId}
+        </if>
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+         WHERE "bs"."del_flag"               = 0
+      ORDER BY "bs"."bus_service_id"
+    </select>
+
+    <select id="getCalendarDayTypeList" resultType="maint.dto.integrate.gtfsReport.GtfsCalendarDayTypeDto">
+        SELECT DISTINCT ON ("cal"."calendar_id")
+               "cal"."calendar_type" AS "calendarType"
+             , "cal"."calendar_id"
+             , "cal"."week_designatable_flag"
+             , "cal"."week_designation_type"
+             , "dr"."service_start_date"
+             , "dr"."service_end_date"
+             , COALESCE(
+                "cd0"."day_week_type",
+                "cd1"."day_week_type",
+                "cd2"."day_week_type",
+                "cd3"."day_week_type",
+                "cd4"."day_week_type",
+                "cd5"."day_week_type",
+                "cd6"."day_week_type",
+                "cd7"."day_week_type"
+               ) AS "day_week_type"
+             , CASE WHEN "cd0"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType1Flag"
+             , CASE WHEN "cd1"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType2Flag"
+             , CASE WHEN "cd2"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType3Flag"
+             , CASE WHEN "cd3"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType4Flag"
+             , CASE WHEN "cd4"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType5Flag"
+             , CASE WHEN "cd5"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType6Flag"
+             , CASE WHEN "cd6"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType7Flag"
+             , CASE WHEN "cd7"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "HolidaysFlag"
+             , CASE
+                   WHEN (
+                            "cd1"."calendar_detail_id" IS NOT NULL OR
+                            "cd2"."calendar_detail_id" IS NOT NULL OR
+                            "cd3"."calendar_detail_id" IS NOT NULL OR
+                            "cd4"."calendar_detail_id" IS NOT NULL OR
+                            "cd5"."calendar_detail_id" IS NOT NULL
+                            )
+                       AND (
+                            "cd0"."calendar_detail_id" IS NULL AND
+                            "cd6"."calendar_detail_id" IS NULL AND
+                            "cd7"."calendar_detail_id" IS NULL
+                            )
+                       THEN '平日（月～金）'
+                   WHEN (
+                            "cd0"."calendar_detail_id" IS NOT NULL OR
+                            "cd6"."calendar_detail_id" IS NOT NULL OR
+                            "cd7"."calendar_detail_id" IS NOT NULL
+                            )
+                       AND (
+                            "cd1"."calendar_detail_id" IS NULL AND
+                            "cd2"."calendar_detail_id" IS NULL AND
+                            "cd3"."calendar_detail_id" IS NULL AND
+                            "cd4"."calendar_detail_id" IS NULL AND
+                            "cd5"."calendar_detail_id" IS NULL
+                            )
+                       THEN '土曜・日曜・祝日'
+                   WHEN (
+                            "cd1"."calendar_detail_id" IS NOT NULL OR
+                            "cd2"."calendar_detail_id" IS NOT NULL OR
+                            "cd3"."calendar_detail_id" IS NOT NULL OR
+                            "cd4"."calendar_detail_id" IS NOT NULL OR
+                            "cd5"."calendar_detail_id" IS NOT NULL
+                            )
+                       AND (
+                            "cd0"."calendar_detail_id" IS NOT NULL OR
+                            "cd6"."calendar_detail_id" IS NOT NULL OR
+                            "cd7"."calendar_detail_id" IS NOT NULL
+                            )
+                       THEN '平日・土曜・日曜・祝日'
+                   ELSE '運行なし'
+           END                            AS "service_id"
+          FROM "bus_services"             AS "bsrv"
+    INNER JOIN "calendars"                AS "cal"
+            ON "cal"."del_flag"            = 0
+           AND "cal"."calendar_id"         = "bsrv"."calendar_id"
+    INNER JOIN "daiya_revisions"          AS "dr"
+            ON "dr"."del_flag"             = 0
+           AND "dr"."daiya_revision_id"    = "bsrv"."daiya_revision_id"
+     LEFT JOIN "calendar_details"         AS "cd0"
+            ON "cd0"."del_flag"            = 0
+           AND "cd0"."calendar_id"         = "cal"."calendar_id"
+           AND "cd0"."day_week_type"       = '1'
+     LEFT JOIN "calendar_details"         AS "cd1"
+            ON "cd1"."del_flag"            = 0
+           AND "cd1"."calendar_id"         = "cal"."calendar_id"
+           AND "cd1"."day_week_type"       = '2'
+     LEFT JOIN "calendar_details"         AS "cd2"
+            ON "cd2"."del_flag"            = 0
+           AND "cd2"."calendar_id"         = "cal"."calendar_id"
+           AND "cd2"."day_week_type"       = '3'
+     LEFT JOIN "calendar_details"         AS "cd3"
+            ON "cd3"."del_flag"            = 0
+           AND "cd3"."calendar_id"         = "cal"."calendar_id"
+           AND "cd3"."day_week_type"       = '4'
+     LEFT JOIN "calendar_details"         AS "cd4"
+            ON "cd4"."del_flag"            = 0
+           AND "cd4"."calendar_id"         = "cal"."calendar_id"
+           AND "cd4"."day_week_type"       = '5'
+     LEFT JOIN "calendar_details"         AS "cd5"
+            ON "cd5"."del_flag"            = 0
+           AND "cd5"."calendar_id"         = "cal"."calendar_id"
+           AND "cd5"."day_week_type"       = '6'
+     LEFT JOIN "calendar_details"         AS "cd6"
+            ON "cd6"."del_flag"            = 0
+           AND "cd6"."calendar_id"         = "cal"."calendar_id"
+           AND "cd6"."day_week_type"       = '7'
+     LEFT JOIN "calendar_details"         AS "cd7"
+            ON "cd7"."del_flag"            = 0
+           AND "cd7"."calendar_id"         = "cal"."calendar_id"
+           AND "cd7"."day_week_type"       = '10'
+         WHERE "bsrv"."del_flag"           = 0
+           AND "bsrv"."daiya_revision_id" IN
+        <foreach collection="daiyaRevisionIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+      ORDER BY "cal"."calendar_id" ASC
+    </select>
+
+    <select id="getBusServiceTripList" resultType="maint.dto.integrate.gtfsReport.GtfsBusServiceTripDto">
+        SELECT "l"."rosen_code"                                                              AS "rosenCode"
+             , "bd"."bus_service_id"                                                         AS "busServiceId"
+             , to_char(to_timestamp("bd"."bus_stop_arrival_time",   'HH24MI'), 'HH24:MI:SS') AS "busStopArrivalTime"
+             , to_char(to_timestamp("bd"."bus_stop_departure_time", 'HH24MI'), 'HH24:MI:SS') AS "busStopDepartureTime"
+             , "bs"."bus_stop_code"                                                          AS "busStopCode"
+             , "bsrv"."bikes_allowed_type"                                                   AS "bikesAllowedType"
+             , "bsrv"."block_id"                                                             AS "blockId"
+             , "bsrv"."bus_service_id"                                                       AS "busServiceId"
+             , "bsrv"."bus_service_name"                                                     AS "busServiceName"
+             , "bsrv"."bus_service_trip_desc"                                                AS "busServiceTripDesc"
+             , "bsrv"."bus_service_trip_desc_symbol"                                         AS "busServiceTripDescSymbol"
+             , "bsrv"."bus_service_trip_headsign"                                            AS "busServiceTripHeadsign"
+             , "bsrv"."bus_service_trip_id"                                                  AS "busServiceTripId"
+             , "bsrv"."calendar_id"                                                          AS "calendarId"
+             , "bsrv"."daiya_revision_id"                                                    AS "daiyaRevisionId"
+             , "bsrv"."del_flag"                                                             AS "delFlag"
+             , "bsrv"."line_route_id"                                                        AS "lineRouteId"
+             , "lr"."line_route_code"                                                        AS "lineRouteCode"
+             , "bsrv"."shape_id"                                                             AS "shapeId"
+             , "bsrv"."wheelchair_accessible_type"                                           AS "wheelchairAccessibleType"
+             , "cal"."calendar_id"                                                           AS "calendarId"
+             , "cal"."calendar_type"                                                         AS "calendarType"
+             , "lr"."line_detail_service_division"                                           AS "lineDetailServiceDivision"
+             , "lrbs"."drop_off_division"                                                    AS "dropOffDivision"
+             , "lrbs"."ride_alight_division"                                                 AS "rideAlightDivision"
+             , "lrbs"."shape_dist_traveled"                                                  AS "shapeDistTraveled"
+             , "lrbs"."stop_headsign"                                                        AS "stopHeadsign"
+             , "lrbs"."stop_headsign_en"                                                     AS "stopHeadsignEn"
+             , "lrbs"."stop_sequence"                                                        AS "stopSequence"
+             , "oc"."mail_address"                                                           AS "mailAddress"
+             , "oc"."operating_company_id"                                                   AS "operatingCompanyId"
+             , "oc"."operating_name"                                                         AS "operatingName"
+             , "oc"."phone_number"                                                           AS "phoneNumber"
+             , "oc"."url"                                                                    AS "url"
+             , "sp"."signpost_branch_number"                                                 AS "signpostBranchNumber"
+          FROM "bus_services"                                                                AS "bsrv"
+    INNER JOIN "bus_daiyas"                                                                  AS "bd"
+            ON "bd"."del_flag"                                                                = 0
+           AND "bd"."bus_service_id"                                                          = "bsrv"."bus_service_id"
+    INNER JOIN "line_route_bus_stops"                                                        AS "lrbs"
+            ON "lrbs"."del_flag"                                                              = 0
+           AND "lrbs"."line_route_bus_stop_id"                                                = "bd"."line_route_bus_stop_id"
+    INNER JOIN "line_routes"                                                                 AS "lr"
+            ON  "lr"."del_flag"                                                               = 0
+           AND "lr"."line_route_id"                                                           = "lrbs"."line_route_id"
+    INNER JOIN "lines"                                                                       AS "l"
+            ON "l"."del_flag"                                                                 = 0
+           AND "l"."available_flag"                                                           = 1
+           AND "l"."rosen_id"                                                                 = "lr"."rosen_id"
+    INNER JOIN "signposts"                                                                   AS "sp"
+            ON  "sp"."del_flag"                                                               = 0
+           AND "sp"."signpost_id"                                                             = "lrbs"."signpost_id"
+    INNER JOIN "bus_stops"                                                                   AS "bs"
+            ON  "bs"."del_flag"                                                               = 0
+           AND "bs"."bus_stop_id"                                                             = "sp"."bus_stop_id"
+    INNER JOIN "calendars"                                                                   AS "cal"
+            ON  "cal"."del_flag"                                                              = 0
+           AND "cal"."calendar_id"                                                            = "bsrv"."calendar_id"
+     LEFT JOIN "offices"                                                                     AS "ofc"
+            ON  "ofc"."del_flag"                                                              = 0
+           AND "ofc"."available_flag"                                                         = 1
+           AND "ofc"."office_id"                                                              = "bsrv"."office_id"
+     LEFT JOIN "operating_companies"                                                         AS "oc"
+            ON  "oc"."del_flag"                                                               = 0
+           AND "oc"."available_flag"                                                          = 1
+           AND "oc"."operating_company_id"                                                    = "ofc"."operating_company_id"
+         WHERE "bsrv"."del_flag"                                                              = 0
+           AND "bsrv"."daiya_revision_id" IN
+        <foreach collection="daiyaRevisionIdList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+     ORDER BY "l"."rosen_id"         ASC
+            , "lr"."line_route_id"   ASC
+            , "bsrv"."bus_service_id"  ASC
+            , "lrbs"."stop_sequence" ASC
+    </select>
+
+    <select id="getBusServicesByBusServiceId" resultType="BusServiceInfoDto">
+        SELECT "bs"."bus_service_id"
+             , "bs"."calendar_id"
+             , "bs"."vehicle_id"
+             , "dr"."service_start_date"
+             , "dr"."service_end_date"
+          FROM "bus_services" "bs"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"               = 0
+           AND "dr"."daiya_revision_id"      = "bs"."daiya_revision_id"
+           AND "dr"."service_start_date" &lt;= (CURRENT_DATE + INTERVAL '1 month')::date
+           AND "dr"."service_end_date"    &gt; CURRENT_DATE
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "dr"."rosen_id"
+          JOIN "line_routes" "lr"
+            ON "lr"."del_flag"               = 0
+           AND "lr"."available_flag"         = 1
+           AND "lr"."line_route_id"          = "bs"."line_route_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = #{businessCorpId}
+        <if test="busServiceIdList != null">
+           AND "bs"."bus_service_id" IN
+            <foreach collection="busServiceIdList" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+         WHERE "bs"."del_flag"               = 0
+      ORDER BY "bs"."bus_service_id"
+    </select>
+
+    <select id="getBusServicesByCalendarId" resultType="BusServiceInfoDto">
+        SELECT "bs"."bus_service_id"
+             , "bs"."calendar_id"
+             , "bs"."vehicle_id"
+             , "dr"."service_start_date"
+             , "dr"."service_end_date"
+          FROM "bus_services" "bs"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"               = 0
+           AND "dr"."daiya_revision_id"      = "bs"."daiya_revision_id"
+           AND "dr"."service_end_date"    &gt; CURRENT_DATE
+          JOIN "lines" "l"
+            ON "l"."del_flag"                = 0
+           AND "l"."available_flag"          = 1
+           AND "l"."rosen_id"                = "dr"."rosen_id"
+          JOIN "line_routes" "lr"
+            ON "lr"."del_flag"               = 0
+           AND "lr"."available_flag"         = 1
+           AND "lr"."line_route_id"          = "bs"."line_route_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                = 0
+           AND "a"."available_flag"          = 1
+           AND "a"."business_corp_id"        = "l"."business_corp_id"
+           AND "a"."business_corp_id"        = #{businessCorpId}
+         WHERE "bs"."del_flag"               = 0
+           AND "bs"."calendar_id"            = #{calendarId}
+      ORDER BY "bs"."bus_service_id"
+    </select>
+
+    <select id="countBusServiceTripIdByRevisionId" resultType="int">
+        SELECT COUNT(1)
+          FROM "bus_services" "bs"
+          JOIN "daiya_revisions" "dr"
+            ON "dr"."del_flag"              = 0
+           AND "dr"."daiya_revision_id"     = "bs"."daiya_revision_id"
+           AND "dr"."service_start_date" &gt; CURRENT_DATE
+         WHERE "bs"."del_flag"              = 0
+           AND "bs"."daiya_revision_id"     = CAST(#{daiyaRevisionId} AS INTEGER)
+           AND "bs"."bus_service_trip_id"   = #{busServiceTripId}
+        <if test="busServiceId != null and busServiceId != ''">
+           AND "bs"."bus_service_id"       != CAST(#{busServiceId} AS INTEGER)
+        </if>
+    </select>
+
+    <insert id="insertBusService" useGeneratedKeys="true" keyProperty="busServiceId" keyColumn="bus_service_id">
+        INSERT INTO "bus_services" (
+               "daiya_revision_id"
+             , "line_route_id"
+             , "bus_service_trip_id"
+             , "bus_service_trip_headsign"
+             , "bus_service_name"
+             , "calendar_id"
+             , "wheelchair_accessible_type"
+             , "bikes_allowed_type"
+             , "bus_service_trip_desc"
+             , "bus_service_trip_desc_symbol"
+             , "office_id"
+             , "work_number"
+             , "block_id"
+             , "vehicle_id"
+             , "del_flag"
+             , "created_user"
+             , "created_at"
+             , "updated_user"
+             , "updated_at"
+          ) VALUES (
+              #{daiyaRevisionId}
+            , #{lineRouteId}
+            , #{busServiceTripId}
+            , #{busServiceTripHeadsign}
+            , #{busServiceName}
+            , #{calendarId}
+            , #{wheelchairAccessibleType}
+            , #{bikesAllowedType}
+            , #{busServiceTripDesc}
+            , #{busServiceTripDescSymbol}
+            , #{officeId}
+            , #{workNumber}
+            , #{blockId}
+            , #{vehicleId}
+            , 0
+            , #{session.userId}
+            , CURRENT_TIMESTAMP
+            , #{session.userId}
+            , CURRENT_TIMESTAMP
+          )
+    </insert>
+
+    <update id="updateBusService">
+        UPDATE "bus_services"
+           SET "daiya_revision_id"           = #{daiyaRevisionId},
+               "bus_service_trip_id"         = #{busServiceTripId},
+               "bus_service_trip_headsign"   = #{busServiceTripHeadsign},
+               "bus_service_name"            = #{busServiceName},
+               "calendar_id"                 = #{calendarId},
+               "wheelchair_accessible_type"  = #{wheelchairAccessibleType},
+               "bikes_allowed_type"          = #{bikesAllowedType},
+               "bus_service_trip_desc"       = #{busServiceTripDesc},
+               "bus_service_trip_desc_symbol"= #{busServiceTripDescSymbol},
+               "office_id"                   = #{officeId},
+               "work_number"                 = #{workNumber},
+               "block_id"                    = #{blockId},
+               "vehicle_id"                  = #{vehicleId},
+               "updated_user"                = #{session.userId},
+               "updated_at"                  = CURRENT_TIMESTAMP
+         WHERE "del_flag"                    = 0
+           AND "bus_service_id"              = #{busServiceId}
+           AND "daiya_revision_id"           = #{daiyaRevisionId}
+    </update>
+
+    <insert id="insertBusServiceForImport" useGeneratedKeys="true" keyProperty="busServiceId">
+        INSERT INTO "bus_services" (
+               "daiya_revision_id"
+             , "line_route_id"
+             , "bus_service_trip_id"
+             , "bus_service_name"
+             , "calendar_id"
+             , "created_user"
+             , "updated_user"
+      ) VALUES
+             (
+               #{daiyaRevisionId,jdbcType=VARCHAR},
+               #{lineRouteId,jdbcType=VARCHAR},
+               #{busServiceTripId,jdbcType=VARCHAR},
+               #{busServiceName,jdbcType=VARCHAR},
+               #{calendarId,jdbcType=VARCHAR},
+               #{createdUser,jdbcType=VARCHAR},
+               #{updatedUser,jdbcType=VARCHAR}
+              )
+    </insert>
+</mapper>

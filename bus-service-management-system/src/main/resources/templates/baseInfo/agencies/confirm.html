@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{common/layout}" th:with="title='事業者管理'">
+<body>
+<!-- start: contents -->
+<div layout:fragment="main_contents" th:object="${agenciesDetailForm}">
+	<!-- PAGE CONTENT WRAPPER -->
+	<div class="page-content-wrap">
+		<div class="row">
+			<div class="col-md-12">
+				<form method="post" class="form-horizontal" th:action="@{/baseInfo/agencies/detail/confirm/}">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">
+								<strong th:text="事業者__*{dispMode.text}__確認">事業者確認</strong>
+							</h3>
+						</div>
+						<!-- START メッセージ表示部 -->
+						<div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
+						<div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
+						<div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
+						<!-- END メッセージ表示部 -->
+						<div class="panel-body">
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">事業者名・<br>自治体名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{name}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('name')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">事業者名・<br>自治体表示名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{dispName}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('dispName')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('dispName')}" th:errors="*{dispName}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">事業者名・<br>自治体名 かな</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{kanaName}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('kanaName')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('kanaName')}" th:errors="*{kanaName}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">事業者名・<br>自治体名 英語</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{enName}" maxlength="200" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('enName')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('enName')}" th:errors="*{enName}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">部署名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{departmentName}" maxlength="100" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('departmentName')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('departmentName')}" th:errors="*{departmentName}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">担当者名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{user}" maxlength="50" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('user')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('user')}" th:errors="*{user}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">電話番号</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{phoneNumber}" maxlength="15" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('phoneNumber')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">連絡先メール</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{mailAddress}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('mailAddress')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('mailAddress')}" th:errors="*{mailAddress}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">路線図、<br>時刻表URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{timeTableUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('timeTableUrl')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('timeTableUrl')}" th:errors="*{timeTableUrl}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">運賃情報URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{fareUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('fareUrl')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('fareUrl')}" th:errors="*{fareUrl}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">法人番号</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{operationCompanyNo}" maxlength="13" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('operationCompanyNo')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('operationCompanyNo')}" th:errors="*{operationCompanyNo}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">交通種別</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{transportationType}" maxlength="4" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('transportationType')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('transportationType')}" th:errors="*{transportationType}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">提供組織名</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationName}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationName')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationName')}" th:errors="*{providerOrganizationName}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">提供組織URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationUrl')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationUrl')}" th:errors="*{providerOrganizationUrl}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">提供組織連絡先メール</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationContactEmail}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationContactEmail')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationContactEmail')}" th:errors="*{providerOrganizationContactEmail}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">提供組織連絡先URL</span></label>
+								<div class="col-md-9">
+									<div class="input-group col-md-10 div-flex">
+										<input type="text" th:field="*{providerOrganizationContactUrl}" maxlength="256" class="form-control" style="width: 600px;"
+											   th:classappend="${#fields.hasErrors('providerOrganizationContactUrl')} ? 'error' : ''" disabled/>
+									</div>
+									<p th:if="${#fields.hasErrors('providerOrganizationContactUrl')}" th:errors="*{providerOrganizationContactUrl}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="control-label col-md-1" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span
+										class="form-item-name">利用区分</span></label>
+								<div class="col-md-9">
+									<div class="col-md-12 radio">
+										<input type="radio" id="r-dsp1" name="availableFlag" th:checked="*{availableFlag} eq null or *{availableFlag} eq 1" value="1" disabled/>
+										<label class="inner-title" for="r-dsp1" disabled>利用中</label>
+										<input type="radio" id="r-dsp2" name="availableFlag" th:checked="*{availableFlag} eq 0" value="0" disabled/>
+										<label class="inner-title" for="r-dsp2" disabled>利用不可</label>
+									</div>
+									<p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}" class="text-danger" />
+								</div>
+							</div>
+							<div class="form-group" th:if="${displayForm.dispMode} == ${T(maint.enums.DispMode).UPDATE_MODE} or ${displayForm.dispMode} == ${T(maint.enums.DispMode).CONTENT_MODE}">
+								<label class="control-label col-md-1" style="width: 200px;"><span
+										class="form-item-name">アクセスキー</span></label>
+								<div class="input-group col-md-10 div-flex" style="align-items: flex-end;">
+									[[*{accessKey}]]
+								</div>
+								<input type="hidden" name="accessKey" th:value="*{accessKey}">
+							</div>
+						</div>
+						<div class="panel-footer">
+							<form class="form-horizontal" method="post" th:action="@{#}">
+								<input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+								<input type="hidden" name="businessCorpId" th:value="*{businessCorpId}">
+								<input type="hidden" th:field="*{page}">
+								<div class="pull-right">
+									<a th:if="*{dispMode.value} eq '3'" th:href="'/baseInfo/agencies/' + *{page} + '/'" class=" btn btn-default">戻る</a>
+									<button th:if="*{dispMode.value} neq '3'" th:formaction="@{/baseInfo/agencies/detail/back/}"
+											class="btn btn-default double-click">戻る</button>
+									<button th:if="*{dispMode.value} neq '3'" class="btn btn-primary double-click"
+											th:formaction="@{/baseInfo/agencies/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録':'変更'">登録</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- END PAGE CONTENT WRAPPER -->
+	<th:block th:insert="~{common/script :: common_script}"></th:block>
+</div>
+<!-- end: contents -->
+</body>
+</html>
