@@ -40,6 +40,7 @@ AmazonSSMManagedInstanceCore
 ```
 
 - Security Groupで22番ポートは開放しない
+- Roleを付与した後に接続を反映させるには、EC2の再起動が必要。
 
 ---
 
@@ -73,19 +74,105 @@ AmazonSSMManagedInstanceCore
 
 | 項目 | 設定 |
 |---|---|
-| パブリックアクセスブロック | **有効（ON）** |
+| パブリックアクセスブロック | **無効（OFF）** |
 | バージョニング | 有効（推奨） |
 | 暗号化 | SSE-S3 |
 
-※ 検証用途でも **公開バケットは作成しない**
-
+### ポリシー作成例：
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowPublicDownload",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::example/*"
+    },
+    {
+      "Sid": "AllowPutOnlyFromSpecificVPC",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::example/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:sourceVpce": "vpce-xxxxxxx"
+        }
+      }
+    }
+  ]
+}
+```
+注意：
+- このバケットはパブリックアクセスが有効のため、全てのユーザーがオブジェクトを参照できます。
+- 不要なオブジェクトや機密情報を含めないよう注意してください。
+- バケット内のデータは誰でもダウンロード可能であることを理解してください。
+- 将来的に特定のユーザーやサービスのみアクセスを許可する場合は、バケットポリシーやIAMロールで制御してください。
 ---
 
 ## 1.5 GPSトラッカー受信（Lambda）
 
 - Runtime：Java 17
 - 実行方式：Function URL
-- 認証方式：AWS_IAM（推奨）
+- 認証方式：リクエストのボディに含まれる accessKey を DB で照合して認証
+
+### Lambda用IAM設定
+
+- Lambdaに以下IAM Roleを付与
+
+```
+AWSLambdaVPCAccessExecutionRole
+```
+- Lambda関数は固定IPアドレスを持たないため、プライベートサブネット内のリソース（DB）にアクセスする場合は、Lambda関数を対象のVPCに接続する必要があります。
+- この場合、IAMロールには VPCアクセス用の権限 が必要になります（上記の AWSLambdaVPCAccessExecutionRole がこれを含みます）。
+
+---
+
+## 1.6 EC2用IAM設定（最小権限）
+
+### ポリシー作成例
+
+- S3アップロード用
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": "arn:aws:s3:::example-bucket/*"
+        }
+    ]
+}
+```
+- SESメール送信用
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+### IAMユーザ作成（アクセスキー用）
+
+- IAMユーザ作成
+- 作成したポリシーをアタッチ
+- アクセスキー（Access Key ID / Secret Access Key）を作成
+
+※ サーバ内で認証プロファイル設定用に使用
 
 ---
 
@@ -135,6 +222,22 @@ sudo dnf install -y cronie
 sudo systemctl enable --now crond
 ```
 
+## 2.6 AWS CLI プロファイル設定
+
+各機能に対応する IAM ユーザの Access Key ID と Secret Access Key を使って、プロファイルを作成します。
+
+AWS CLI プロファイル設定（SES 用）：
+
+```bash
+sudo aws configure --profile wst-ses-user
+```
+
+AWS CLI プロファイル設定（S3 用）：
+
+```bash
+sudo aws configure --profile s3user
+```
+
 ---
 
 # 3. pom.xml 設定（環境依存・重要）
@@ -160,7 +263,7 @@ sudo systemctl enable --now crond
 **用途**
 - 環境（検証 / 利用者環境）ごとに設定を切り替える
 
-**修正理由**
+**補足**
 - DB接続先、S3バケット名、メール送信元を切り替えるため
 
 ---
@@ -171,7 +274,7 @@ sudo systemctl enable --now crond
 <s3.bucket.name>xxxx-oss-bus</s3.bucket.name>
 ```
 
-**修正理由**
+**補足**
 - S3バケット名は AWS全体で一意
 - OSSのサンプル値はそのまま使用できない
 
@@ -183,26 +286,48 @@ sudo systemctl enable --now crond
 <aws.ses.from.email>noreply@example.com</aws.ses.from.email>
 ```
 
-**修正理由**
+**補足**
 - SESでは送信元の検証が必須
 - 未検証アドレスでは送信不可
 
 ---
 
-## 3.4 AWS リージョン（必要に応じて）
+## 3.4 ビルド成果物名（任意）
 
 ```xml
-<aws.region>ap-northeast-1</aws.region>
+<artifactId>bus-service-management-system</artifactId>
 ```
 
 ---
 
-## 3.5 ビルド成果物名（任意）
+## 3.5 DB接続先
 
 ```xml
-<finalName>bus-service-management-system</finalName>
+<jdbc.url><![CDATA[jdbc:postgresql://x.x.x.x:5432/xxxx]]></jdbc.url>
+<jdbc.username>xxxx</jdbc.username>
+<jdbc.password>xxxx</jdbc.password>
+```
+---
+
+## 3.6 Redis接続先
+
+```xml
+<redis.host>localhost</redis.host>
 ```
 
+**補足**
+- サーバ内部で使用する場合は、localhostのままで問題ありません。
+- 外部サービス（例：ElastiCache）を利用する場合は、ホスト名・パスワード・ポート番号を適宜修正してください。
+---
+
+## 3.7 log出力先
+
+```xml
+<mvn.log.dir>/var/log/xxxx</mvn.log.dir>
+```
+
+**重要**
+- 事前にログ出力の為のディレクトリをサーバ内に必ず作成してください。
 ---
 
 ### 記載しない設定について（重要）
@@ -210,11 +335,6 @@ sudo systemctl enable --now crond
 以下は **pom.xml に記載しません**。
 
 - AWS Access Key / Secret Key
-- DBパスワード
-- APIトークン
-
-※ SSM Parameter Store / Secrets Manager の利用を前提とします
-
 ---
 
 # 4. WEBサーバ構築（検証向け）
@@ -228,29 +348,183 @@ sudo systemctl enable --now redis6
 
 ---
 
-## 4.2 PostgreSQL（安全な最小構成）
+## 4.2 PostgreSQL
 
 ```bash
 sudo dnf install -y postgresql16-server
 ```
+データベース初期化（日本語ロケール設定）：
 
-### セキュリティ設定
+```bash
+sudo su - postgres
 
+initdb --locale=ja_JP.UTF-8 -E UTF8
+
+exit
+```
+サービス起動・自動起動設定：
+
+```bash
+sudo systemctl start postgresql
+
+sudo systemctl enable postgresql
+```
+### テーブル・初期データ作成sqlの実行
+
+SQLスクリプトファイル `create_table.sql` と `insert_default_data.sql` は `src/main/resources/backup` フォルダに配置されています。
+これらのファイルを対象に実行してください。
+
+※ psql のプロンプト上で実行してください。
+
+DB作成（pom確認）：
+```bash
+CREATE DATABASE mlit_community_bus_kit;
+```
+
+スクリプトファイル実行例：
+```bash
+\i /bus-service-management-system/src/main/resources/backup/create_table.sql
+```
+
+### セキュリティ設定例
+- postgresql.conf：
+```
+listen_addresses = '*'
+```
 - password_encryption = scram-sha-256
 - pg_hba.conf：
 
 ```
-hostssl all app_user 10.0.0.0/24 scram-sha-256
+host all app_user 10.0.0.0/24 scram-sha-256
 ```
-
+- 設定反映の為再起動：
+```
+sudo systemctl restart postgresql
+```
 ※ trust 認証は使用しない
 
+※ 本検証環境ではSSL接続を使用していません。本番環境ではセキュリティを確保するため、**SSL接続を検討してください**。
+
+※ サンプルはそのまま使用できません。環境や用途に応じて適宜変更してご利用ください。
+
+---
+
+## 4.3 アプリケーション設定
+
+### ソースファイルのコンパイル
+```bash
+cd [SRC_BASE]
+sudo [MAVEN_PATH] clean package -P [PROFILE_ID]
+```
+**補足**
+- `[SRC_BASE]`：ソースコード配置ディレクトリ
+- `[MAVEN_PATH]`：maven 配置ディレクトリ
+- `[PROFILE_ID]`：`pom.xml` に定義されている Maven Profile ID
+- 環境別（dev / stg / prod）で Profile を切り替えることを推奨します
+
+---
+### アプリケーション起動（例）
+
+```bash
+sudo java -jar target/bus-service-management-system.jar
+```
+
+または Profile 指定：
+
+```bash
+sudo java -jar target/bus-service-management-system.jar --spring.profiles.active=prod
+```
+
+## 4.4 バックアップ・レストアシェル設定
+
+### バックアップ用フォルダ作成
+```bash
+sudo mkdir -p /opt/backup/scripts
+sudo mkdir -p /opt/backup/postgres
+sudo mkdir -p /opt/backup/log
+```
+### バックアップ用シェルスクリプト実行
+バックアップ用のシェルスクリプト `output-db-backup-batch.sh` は、`src/main/resources/backup` フォルダに配置されています。  
+/opt/backup/scripts/ に移行させ、実行してください。
+
+※ 作成したデータベース名に合わせて、各スクリプト内の {DB_NAME} を修正してください。
+
+dump生成例：
+```bash
+dumpfile_20260205190103.dump
+```
+エラーログ確認例：
+```bash
+cat /opt/backup/log/output-db-backup-batch.sh_YYYYMMDD.log
+```
+
+### レストア用シェルスクリプト実行
+レストア用のシェルスクリプト `restore-db-batch.sh` は、`src/main/resources/backup` フォルダに配置されています。  
+/opt/backup/scripts/ に移行させ、実行してください。
+
+レストア実行例：
+```bash
+sudo bash restore-db-batch.sh /opt/backup/postgres/dumpfile_20251110061728.dump
+```
+エラーログ確認例：
+```bash
+cat /opt/backup/log/restore-db-batch_YYYYMMDD.log
+```
+
+### 推奨・注意事項：
+
+- バックアップバッチは定期実行のため cronでの自動化 を推奨します。
+- 現状は ローカル保存のみ のため、運用上は S3などの外部ストレージへの退避 + ライフサイクル設定 を追加検討してください。
+- バックアップデータは 暗号化 を行うことを推奨します。
+- 定期的に レストアテスト（整合性検証） を行い、バックアップの有効性を確認してください。
+- バックアップ失敗時には通知が届く仕組みを用意することを推奨します。
 ---
 
 # 5. バッチサーバ構築
 
-- Java JARをcronで定期実行
-- 成果物はS3へ出力
+## 5.1 アプリケーション設定
+
+### ソースファイルのコンパイル
+```bash
+cd [SRC_BASE]
+sudo [MAVEN_PATH] clean package -P [PROFILE_ID]
+```
+**補足**
+- `[SRC_BASE]`：ソースコード配置ディレクトリ
+- `[MAVEN_PATH]`：maven 配置ディレクトリ
+- `[PROFILE_ID]`：`pom.xml` に定義されている Maven Profile ID
+- 環境別（dev / stg / prod）で Profile を切り替えることを推奨します
+
+---
+### バッチ起動（例）
+
+```bash
+sudo java -jar target/output-gtfs-rt-batch-jar-with-dependencies.jar
+```
+
+または Profile 指定：
+
+```bash
+sudo java -jar target/output-gtfs-rt-batch-jar-with-dependencies.jar --spring.profiles.active=prod
+```
+
+**補足**
+
+- ビルド成功後は、各バッチ処理を実行して成果物を確認してください。
+
+    GTFS-RT作成バッチの場合：
+
+     ・ S3バケット内に事業者IDごとのフォルダが作成されているか確認
+
+     ・ ファイルが正しくアップロードされているか確認
+
+      ※ 対象レコードが存在しない場合はファイルは作成されません
+
+    日毎便ダイヤ作成バッチの場合：
+
+     ・ 日毎便ダイヤのテーブルを確認し、更新日が今日のデータが正しく作成されているか確認
+
+- cronでの自動化を推奨します。
 
 ---
 
