@@ -1,12 +1,12 @@
-# コミュニティバスキット
+# コミュニティバス運行支援キット
 
-![overview.png](src/docs/images/overview.png)
+![overview.png](bus-service-management-system/src/docs/images/overview.png)
 
 ## 更新履歴
 
 | 更新日時 | リリース | 更新内容 |
 |---|---|---|
-| 2026/2/3 | 1st Release | 初版リリース |
+| 2026/2/27 | 1st Release | 初版リリース |
 
 ---
 
@@ -18,7 +18,7 @@
 
 ---
 
-## 2. 「コミュニティバスキット」について
+## 2. 「コミュニティバスキット開発プロジェクト」について
 
 [「コミュニティバスキット開発プロジェクト」](https://www.mlit.go.jp/commmmons/projectreport/11_01/)では、少数台で運行されるコミュニティバスにおいて、運行計画の管理、実績集計、GTFSデータ整備、行政機関への届出対応等の業務を効率化・高度化することを目的として、本システムを開発しました。
 
@@ -34,7 +34,7 @@
 
 ## 3. 利用手順
 
-本システムの構築手順及び利用手順については[利用チュートリアル](https://www.test2.go.jp/)を参照してください。
+本システムの[構築手順](./devMan.md)及び利用手順については[利用チュートリアル](https://www.test2.go.jp/)を参照してください。
 
 ---
 
@@ -234,6 +234,7 @@
 ---
 
 ## 10. 参考資料
+- コミュニティバスキット開発プロジェクト　プロジェクトレポート
+    - #1　https://www.mlit.go.jp/commmmons/projectreport/11_01/
 
-- 技術検証レポート: https://www.test.go.jp/
-- COMmmmONS WebサイトのPROJECT REPORTページ: https://www.test.go.jp/
+- 技術検証レポート: （2026年3月公開予定）
