@@ -1,6 +1,6 @@
 # コミュニティバスキット
 
-![overview.png](bus-service-management-system/src/docs/images/overview.png)
+![overview.png](src/docs/images/overview.png)
 
 ## 更新履歴
 
@@ -12,17 +12,23 @@
 
 ## 1. 概要
 
-本リポジトリでは、中小規模のコミュニティバス事業者向けの運行支援を目的とし、運行計画管理やGTFS出力機能などを提供するコミュニティバス運行支援キットのOSSソースコードを公開しています。
+本リポジトリでは、国土交通省が推進する[Project LINKS](https://www.mlit.go.jp/links/)及び地域交通DXプロジェクト[COMmmmONS（コモンズ）](https://www.mlit.go.jp/commmmons/)が連携した2025年度の取組である「コミュニティバスキット開発プロジェクト」について、その成果物である「コミュニティバスキット」のソースコードを公開しています。
+
+「コミュニティバスキット」は、中小規模のコミュニティバス事業者や自治体を対象に、運行計画管理、運行実績集計、車両動態管理、GTFS（Schedule/RT）出力等を一体的に支援するOSS型の運行支援システムです。
 
 ---
 
 ## 2. 「コミュニティバスキット」について
 
-「コミュニティバスキット」は、自治体や中小規模のバス事業者が運行するコミュニティバスを対象に、運行計画の作成・管理、運行実績の集計、車両の動態管理、およびGTFS（Schedule/RT）データの作成・出力を一体的に支援することを目的としたOSSです。  
-本ユースケースでは、少数台の車両で運行されるコミュニティバスにおいて、従来は手作業や個別ツールに依存していた業務をデジタル化・効率化し、公共交通に関する情報提供や行政機関への申請・報告に必要なデータ整備を容易にすることを目指しています。  
-本キットはSaaSとしての利用も想定しつつ、各自治体・事業者の運用や提出様式の違いに柔軟に対応できるよう、外部システムとの連携やデータ入出力部分を拡張・改変可能な構成としています。
+[「コミュニティバスキット開発プロジェクト」](https://www.mlit.go.jp/commmmons/projectreport/11_01/)では、少数台で運行されるコミュニティバスにおいて、運行計画の管理、実績集計、GTFSデータ整備、行政機関への届出対応等の業務を効率化・高度化することを目的として、本システムを開発しました。
 
-本システムの詳細については[技術検証レポート](https://www.test.go.jp/)を参照してください。
+現在、多くの中小規模事業者や自治体では、運行情報や実績情報が分散管理されていることや、GTFSデータの整備・更新に専門的知識を要することが課題となっています。
+こうした現状を踏まえ、日常業務の延長線上でデータを整備・活用できる環境を提供することで、地域交通情報の可視化および情報公開の促進を支援します。
+
+本システムは、国土交通省が推進する公共交通データ標準化の取組と整合する形で、[GTFS-JP](https://www.mlit.go.jp/sogoseisaku/transport/sosei_transport_tk_000067.html)に対応したデータ出力機能を備えています。
+また、自治体ごとに異なる申請様式や運用形態に柔軟に対応できるよう、OSSとして公開し、改変・拡張が可能な構成としています。
+
+本システムの技術的な詳細については、技術検証レポート（2026年3月公開予定）を参照してください。
 
 ---
 
@@ -90,28 +96,126 @@
 
 ## 7. 本リポジトリのフォルダ構成
 
+本リポジトリ（community-bus-kit）直下には、以下のサブプロジェクト／コンポーネントが配置されています。
+
 | フォルダ名 | 詳細 |
 |---|---|
-| src/ | ソース一式（アプリ本体・リソース） |
-| src/builds/ | ビルド・環境別の設定ファイル |
-| src/docs/ | ドキュメント・画像など（README等で参照する資料） |
+| bus-service-management-system | Webアプリケーション（運行計画管理・運行管理・実績集計・GTFS出力 等） |
+| daily-bus-daiya-batch | 日毎便ダイヤ作成バッチ |
+| output-gtfs-rt-batch | GTFS-RT出力バッチ |
+| oss-bus-gps-tracker-import-lambda | GPSトラッカー取込Lambda |
+
+### 7.1 Webアプリケーション（bus-service-management-system）
+
+| フォルダ名 | 詳細 |
+|---|---|
+| src/ | ソース一式 |
+| src/builds/ | ビルド・環境別の設定ファイル一式 |
+| src/builds/config/ | 環境別設定（application.yml / logback 等） |
+| src/docs/ | ドキュメント・画像など（READMEで参照する資料） |
+| src/docs/images/ | README等で参照する画像 |
 | src/main/ | アプリケーション本体 |
-| src/main/java/ | Javaソースコード（Spring Boot） |
+| src/main/java/ | Javaソースコード |
 | src/main/java/maint/ | アプリのルートパッケージ |
-| src/main/java/maint/controller/ | Controller層（画面/機能の入口） |
-| src/main/java/maint/service/ | Service層（業務ロジック） |
-| src/main/java/maint/mapper/ | MyBatis Mapper（DBアクセスのインターフェース） |
-| src/main/java/maint/entity/ | Entity（DBテーブル対応モデル） |
-| src/main/java/maint/dto/ | DTO（画面/API/帳票向けデータ） |
-| src/main/java/maint/form/ | Form（画面入力・検索条件など） |
 | src/main/java/maint/config/ | 設定（セキュリティ/エラーハンドリング等） |
+| src/main/java/maint/constants/ | 定数定義 |
+| src/main/java/maint/controller/ | Controller層（画面/機能の入口） |
+| src/main/java/maint/doc/ | 帳票（Excel）入出力関連 |
+| src/main/java/maint/dto/ | DTO（画面/帳票向けデータ） |
+| src/main/java/maint/entity/ | Entity（DBテーブル対応モデル） |
+| src/main/java/maint/enums/ | Enum定義 |
+| src/main/java/maint/exception/ | 例外定義 |
+| src/main/java/maint/form/ | Form（画面入力・検索条件など） |
+| src/main/java/maint/handler/ | 各種ハンドラー |
+| src/main/java/maint/mapper/ | MyBatis Mapper（DBアクセスのインターフェース） |
+| src/main/java/maint/message/ | メッセージ関連 |
+| src/main/java/maint/properties/ | プロパティ定義/バインド用 |
+| src/main/java/maint/provider/ | 認証/ユーザー情報等のProvider |
+| src/main/java/maint/service/ | Service層（業務ロジック） |
+| src/main/java/maint/session/ | セッション管理 |
+| src/main/java/maint/utils/ | ユーティリティ |
 | src/main/java/maint/validation/ | バリデーション（独自Validator/アノテーション等） |
-| src/main/resources/ | リソース（設定・テンプレート・静的ファイル・SQL定義等） |
+| src/main/resources/ | リソース一式（設定・テンプレート・静的ファイル・SQL定義等） |
 | src/main/resources/templates/ | 画面テンプレート（Thymeleaf） |
 | src/main/resources/static/ | 静的ファイル（JS/CSS/画像/フォント等） |
 | src/main/resources/mapper/ | MyBatis Mapper XML（SQL定義） |
 | src/main/resources/excel/ | Excelテンプレート（帳票出力/取込用） |
 | src/main/resources/mail/ | メールテンプレート（FreeMarker） |
+| src/main/resources/META-INF/ | Spring設定メタ情報 |
+| src/test/ | テスト一式 |
+| src/test/java/ | テストコード |
+| src/test/java/maint/ | アプリケーションテスト |
+
+### 7.2 日毎便ダイヤ作成バッチ（daily-bus-daiya-batch）
+
+| フォルダ名 | 詳細 |
+|---|---|
+| src/ | ソース一式 |
+| src/build/ | ビルド・環境別の設定ファイル一式 |
+| src/build/bin/ | 実行・運用補助用スクリプト等（起動/停止など） |
+| src/build/config/ | 環境別設定（DB接続、ログ設定等） |
+| src/main/ | バッチアプリケーション本体 |
+| src/main/java/ | Javaソースコード |
+| src/main/java/jp/co/bus/batch/ | バッチ処理のルートパッケージ |
+| src/main/java/jp/co/bus/batch/constants/ | 定数定義 |
+| src/main/java/jp/co/bus/batch/dao/ | DAO（DBアクセス） |
+| src/main/java/jp/co/bus/batch/dto/ | DTO（入出力データ） |
+| src/main/java/jp/co/bus/batch/enums/ | Enum定義 |
+| src/main/java/jp/co/bus/batch/exception/ | 例外定義 |
+| src/main/java/jp/co/bus/batch/factory/ | Factory（生成・組み立て） |
+| src/main/java/jp/co/bus/batch/properties/ | 設定値の取り扱い |
+| src/main/java/jp/co/bus/batch/service/ | 業務ロジック |
+| src/main/java/jp/co/bus/batch/utils/ | ユーティリティ |
+| src/main/java/jp/co/bus/batch/Main.java | バッチ実行エントリポイント |
+| src/main/resources/ | リソース一式（設定・Mapper等） |
+
+### 7.3 GTFS-RT出力バッチ（output-gtfs-rt-batch）
+
+| フォルダ名 | 詳細 |
+|---|---|
+| src/ | ソース一式 |
+| src/build/ | ビルド・環境別の設定ファイル一式 |
+| src/build/bin/ | 実行・運用補助用スクリプト等（起動/停止など） |
+| src/build/config/ | 環境別設定（DB接続、S3出力先、ログ設定等） |
+| src/main/ | バッチアプリケーション本体 |
+| src/main/java/ | Javaソースコード |
+| src/main/java/jp/co/bus/batch/ | バッチ処理のルートパッケージ |
+| src/main/java/jp/co/bus/batch/constants/ | 定数定義 |
+| src/main/java/jp/co/bus/batch/dao/ | DAO（DBアクセス） |
+| src/main/java/jp/co/bus/batch/dto/ | DTO（入出力データ） |
+| src/main/java/jp/co/bus/batch/enums/ | Enum定義 |
+| src/main/java/jp/co/bus/batch/exception/ | 例外定義 |
+| src/main/java/jp/co/bus/batch/factory/ | Factory（生成・組み立て） |
+| src/main/java/jp/co/bus/batch/properties/ | 設定値の取り扱い |
+| src/main/java/jp/co/bus/batch/service/ | 業務ロジック |
+| src/main/java/jp/co/bus/batch/utils/ | ユーティリティ |
+| src/main/java/jp/co/bus/batch/Main.java | バッチ実行エントリポイント |
+| src/main/resources/ | リソース一式（設定・Mapper等） |
+
+### 7.4 GPSトラッカー取込Lambda（oss-bus-gps-tracker-import-lambda）
+
+| フォルダ名 | 詳細                  |
+|---|---------------------|
+| src/ | ソース一式               |
+| src/build/ | ビルド・環境別の設定ファイル一式    |
+| src/build/config/ | 環境別設定（DB接続、外部連携設定等） |
+| src/main/ | Lambda関数本体          |
+| src/main/java/ | Javaソースコード          |
+| src/main/java/communitybus/ | ルートパッケージ            |
+| src/main/java/communitybus/lambda/ | Lambda本体            |
+| src/main/java/communitybus/lambda/constants/ | 定数定義                |
+| src/main/java/communitybus/lambda/dao/ | DAO（DBアクセス）         |
+| src/main/java/communitybus/lambda/dto/ | DTO（入出力データ）         |
+| src/main/java/communitybus/lambda/entity/ | Entity（DBモデル）       |
+| src/main/java/communitybus/lambda/enums/ | Enum定義              |
+| src/main/java/communitybus/lambda/exception/ | 例外定義                |
+| src/main/java/communitybus/lambda/factory/ | Factory（生成・組み立て）    |
+| src/main/java/communitybus/lambda/properties/ | 設定値の取り扱い            |
+| src/main/java/communitybus/lambda/response/ | レスポンスモデル            |
+| src/main/java/communitybus/lambda/service/ | 業務ロジック              |
+| src/main/java/communitybus/lambda/utils/ | ユーティリティ             |
+| src/main/java/communitybus/lambda/LambdaRequestHandler.java | Lambdaエントリポイント      |
+| src/main/resources/ | リソース一式（設定・Mapper等）        |
 
 ---
 
