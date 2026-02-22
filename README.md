@@ -43,26 +43,34 @@
 ### ①運行計画作成
 - 運行会社、車両、停留所、路線、系統、便ダイヤ、在庫、運賃など、運行計画に必要な各種データを総合的に管理します。
 - 各データは入力フォームから登録できるほか、停留所など一部のデータについては地図上で位置を確認しながらプロットすることが可能です。
+<img width="852" height="804" alt="image" src="https://github.com/user-attachments/assets/5e987914-e1df-41b5-b908-a32502e08bad" />
+
 
 ### ②運行管理
 - 車両に搭載されたGPSトラッカーなどの外部デバイスから車両動態情報を取得し、運行中の車両位置を把握することができます。
 - 取得した動態情報は、後続の実績集計やGTFS-RT出力にも活用されます。
+<img width="859" height="675" alt="image" src="https://github.com/user-attachments/assets/e5aa9828-a7a4-4912-99ef-2ae296204b2a" />
+
 
 ### ③実績集計
 - 運行実績や売上実績など、日々の運行により発生する各種実績データを蓄積・管理します。
 - これにより、路線・系統単位での運行状況の把握や、行政機関への報告に必要な基礎データを整理することができます。
+<img width="860" height="390" alt="image" src="https://github.com/user-attachments/assets/c4180298-5e13-4f4b-9fe4-dc566c8a361d" />
 
 ### ④GTFS出力
 - 運行計画で作成した静的データをGTFS-Scheduleとして、また運行管理で取得した動態情報をGTFS-RTとしてエクスポートすることができます。
 - GTFS-RTについては、必要十分な情報を保持できていることを前提とし、公共交通情報提供への活用を想定しています。
+<img width="866" height="389" alt="image" src="https://github.com/user-attachments/assets/65d70100-8b08-418d-9ea8-94d67f8c9107" />
 
 ### ⑤データインポート機能
 - 収入情報など、外部システムや別管理されているデータをインポートすることが可能です。
 - また、路線図、時刻表、運賃表など、通常はフォーム入力で登録する各種データについても、CSV等を用いた一括インポートに対応しています。
+<img width="859" height="356" alt="image" src="https://github.com/user-attachments/assets/ebfa7f04-0d31-472b-a414-6a1d61d8b30e" />
 
 ### ⑥届出・申請書類作成支援
 - 省庁や各自治体向けの届出申請書類、補助金・助成金申請書類の作成に利用できるデータ一覧をエクスポートします。
 - 申請書類のフォーマットは自治体ごとに異なるため、本システムでは特定の様式に限定した帳票作成は行わず、利用者がカスタマイズしやすい形でデータを出力することを前提としています。
+<img width="862" height="261" alt="image" src="https://github.com/user-attachments/assets/30606b0d-a3d0-4c2b-9bb0-d2fbbb50a865" />
 
 ---
 
