@@ -26,9 +26,7 @@ public class ReportListsExcelForm extends BaseForm {
   private Long busStopId;
   /** 停留所名 */
   private String busStopName;
-  /** 利用開始年月 */
-  @NotBlank
-  private String serviceStartDate;
+
   /** 利用終了年月 */
   private String serviceEndDate;
   /** 緯度 */
@@ -129,13 +127,20 @@ public class ReportListsExcelForm extends BaseForm {
   private String busStopDepartureTime;
   /** ダウンロード区分 */
   private Integer downloadDivisionFlag = 1;
+
   /** 路線ID */
   @NotNull
   private Long rosenId;
+
   /** 運行会社ID */
   private Long operatingCompanyId;
+
   /** 出力一覧タイプ */
   @NotBlank
   private String reportType;
+
+  /** 利用開始年月 */
+  @NotBlank
+  private String serviceStartDate;
 
 }

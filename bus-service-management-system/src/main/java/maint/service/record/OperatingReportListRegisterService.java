@@ -70,11 +70,12 @@ public class OperatingReportListRegisterService extends BaseService {
   public ResponseEntity<?> getOperatingReportDaiyasRegisterInfo(OperatingReportListsExcelForm form)
       throws Exception {
     // sql実行のためyyyy-MM-dd形に変更
+    String originServiceStartMonth = form.getServiceStartMonth();
+    String originServiceEndMonth = form.getServiceEndMonth();
     form.setServiceStartMonth(form.getServiceStartMonth() + "-01");
     String nextMonth = YearMonth.parse(form.getServiceEndMonth()).plusMonths(1)
         .format(DateTimeFormatter.ofPattern("yyyy-MM"));
     form.setServiceEndMonth((nextMonth) + "-01");
-
 
     // テンプレートを読み込み 作業用のBookを作成
     Resource resource = resourceLoader.getResource(
@@ -97,6 +98,12 @@ public class OperatingReportListRegisterService extends BaseService {
       // ダウンロードするExcelを書き込み
       ByteArrayOutputStream os = new ByteArrayOutputStream();
       workExcel.getSXSSFWorkbook().write(os);
+
+      // 検索に使った開始月と終了月の文字列の状態を戻す
+      form.setServiceStartMonth(originServiceStartMonth);
+      form.setServiceEndMonth(originServiceEndMonth);
+
+      // Excelのリターン
       return excelDownloadProc(os.toByteArray());
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);

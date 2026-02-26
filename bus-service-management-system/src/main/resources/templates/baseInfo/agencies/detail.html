@@ -258,10 +258,11 @@
 										class="form-item-name">利用区分</span></label>
 								<div class="col-md-9">
 									<div class="col-md-12 radio">
-										<input type="radio" id="r-dsp1" name="availableFlag" th:checked="*{availableFlag} eq null or *{availableFlag} eq 1" value="1" />
-										<label class="inner-title" for="r-dsp1">利用中</label>
-										<input type="radio" id="r-dsp2" name="availableFlag" th:checked="*{availableFlag} eq 0" value="0" />
-										<label class="inner-title" for="r-dsp2">利用不可</label>
+										<th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+											<input type="radio" name="availableFlag" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+												   th:checked="${flg.value} == (*{availableFlag} != null ? *{availableFlag} : '1')" th:classappend="${#fields.hasErrors('availableFlag')} ? 'error' : ''"/>
+											<label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}"></label>
+										</th:block>
 										<button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('availableFlag-help', this)">この事業者を利用でき... ＞ </button>
 									</div>
 									<p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}" style="color:red" ></p>
@@ -287,7 +288,7 @@
 							<div class="pull-right">
 								<input type="button" value="戻る" class="btn btn-default"
 									   th:onclick="'location.href = \'/baseInfo/agencies/' + *{page} + '/\';'" />
-								<input type="submit" value="確認" class="btn btn-primary pull-right double-click" />
+								<button type="button" class="btn btn-primary pull-right double-click">確認</button>
 							</div>
 						</div>
 					</div>

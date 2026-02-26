@@ -114,64 +114,64 @@
             parameterType="maint.dto.planDaiya.dailyBusDaiyas.SearchDailyBusDaiyasDto"
             resultType="maint.dto.operation.busDaiyas.BusServicesOptionDto">
         SELECT "bs"."bus_service_id"
-        , "bs"."bus_service_name"
-        FROM "lines" AS "l"
-        INNER JOIN "agencies" AS "a"
-        ON "a"."del_flag" = 0
-        AND "a"."available_flag" = 1
-        AND "a"."business_corp_id" = "l"."business_corp_id"
-        INNER JOIN "daiya_revisions" AS "dr"
-        ON "dr"."del_flag" = 0
-        AND "dr"."rosen_id" = "l"."rosen_id"
-        INNER JOIN "bus_services" AS "bs"
-        ON "bs"."del_flag" = 0
-        AND "bs"."daiya_revision_id" = "dr"."daiya_revision_id"
-        INNER JOIN "bus_daiyas" AS "bd"
-        ON "bd"."del_flag" = 0
-        AND "bd"."bus_service_id" = "bs"."bus_service_id"
-        AND "bd"."bus_stop_departure_time" = (
-        SELECT MIN("bd1"."bus_stop_departure_time")
-        FROM "bus_daiyas" AS "bd1"
-        WHERE "bd1"."del_flag" = 0
-        AND "bd1"."bus_service_id" = "bd"."bus_service_id"
-        )
-        LEFT JOIN "offices" AS "o"
-        ON "o"."del_flag" = 0
-        AND "o"."available_flag" = 1
-        AND "o"."office_id" = "bs"."office_id"
-        LEFT JOIN "operating_companies" AS "oc"
-        ON "oc"."del_flag" = 0
-        AND "oc"."available_flag" = 1
-        AND "oc"."operating_company_id" = "o"."operating_company_id"
-        WHERE "l"."del_flag" = 0
-        AND "l"."available_flag" = 1
-        AND "l"."business_corp_id" = #{businessCorpId}
-        AND EXISTS (
-        SELECT 1
-        FROM "daily_bus_daiyas" AS "dbd"
-        WHERE "dbd"."del_flag" = 0
-        AND "dbd"."bus_service_id" = "bs"."bus_service_id"
+             , "bs"."bus_service_name"
+             , "bs"."bus_service_trip_id"
+          FROM "lines" AS "l"
+    INNER JOIN "agencies" AS "a"
+            ON "a"."del_flag" = 0
+           AND "a"."available_flag" = 1
+           AND "a"."business_corp_id" = "l"."business_corp_id"
+    INNER JOIN "daiya_revisions" AS "dr"
+            ON "dr"."del_flag" = 0
+           AND "dr"."rosen_id" = "l"."rosen_id"
+    INNER JOIN "bus_services" AS "bs"
+            ON "bs"."del_flag" = 0
+           AND "bs"."daiya_revision_id" = "dr"."daiya_revision_id"
+    INNER JOIN (
+                SELECT "bd1"."bus_service_id"
+                     , MIN("bd1"."bus_stop_departure_time") AS "bus_stop_departure_time"
+                  FROM "bus_daiyas" AS "bd1"
+                 WHERE "bd1"."del_flag" = 0
+              GROUP BY "bd1"."bus_service_id"
+             ) AS "bd"
+            ON "bd"."bus_service_id" = "bs"."bus_service_id"
+     LEFT JOIN "offices" AS "o"
+            ON "o"."del_flag" = 0
+           AND "o"."available_flag" = 1
+           AND "o"."office_id" = "bs"."office_id"
+     LEFT JOIN "operating_companies" AS "oc"
+            ON "oc"."del_flag" = 0
+           AND "oc"."available_flag" = 1
+           AND "oc"."operating_company_id" = "o"."operating_company_id"
+         WHERE "l"."del_flag" = 0
+           AND "l"."available_flag" = 1
+           AND "l"."business_corp_id" = #{businessCorpId}
+           AND EXISTS (
+                       SELECT 1
+                         FROM "daily_bus_daiyas" AS "dbd"
+                        WHERE "dbd"."del_flag" = 0
+                          AND "dbd"."bus_service_id" = "bs"."bus_service_id"
         <if test="salesCancelFlg != null and salesCancelFlg != ''">
-            AND "dbd"."sales_cancel_flg" = #{salesCancelFlg}
+                          AND "dbd"."sales_cancel_flg" = #{salesCancelFlg}
         </if>
         <if test="serviceStartDate != null and serviceStartDate != ''">
-            AND "dbd"."service_date" &gt;= CAST(#{serviceStartDate} AS date)
+                          AND "dbd"."service_date" &gt;= CAST(#{serviceStartDate} AS date)
         </if>
         <if test="serviceEndDate != null and serviceEndDate != ''">
-            AND "dbd"."service_date" &lt;= CAST(#{serviceEndDate} AS date)
+                          AND "dbd"."service_date" &lt;= CAST(#{serviceEndDate} AS date)
         </if>
-        )
+             )
         <if test="operatingCompanyId != null and operatingCompanyId != ''">
-            AND "oc"."operating_company_id" = #{operatingCompanyId}
+           AND "oc"."operating_company_id" = #{operatingCompanyId}
         </if>
         <if test="rosenId != null and rosenId != ''">
-            AND "l"."rosen_id" = #{rosenId}
+           AND "l"."rosen_id" = #{rosenId}
         </if>
         <if test="busStopDepartureTimeStart != null and busStopDepartureTimeStart != ''">
-            AND "bd"."bus_stop_departure_time" &gt;= #{busStopDepartureTimeStart}
+           AND "bd"."bus_stop_departure_time" &gt;= #{busStopDepartureTimeStart}
         </if>
         <if test="busStopDepartureTimeEnd != null and busStopDepartureTimeEnd != ''">
-            AND "bd"."bus_stop_departure_time" &lt;= #{busStopDepartureTimeEnd}
+           AND "bd"."bus_stop_departure_time" &lt;= #{busStopDepartureTimeEnd}
         </if>
     </select>
 
@@ -391,16 +391,20 @@
     <select id="getBusDaiyasLineRouteBusStop"
             parameterType="maint.form.busDaiyas.BusDaiyasDetailForm"
             resultType="maint.dto.operation.busDaiyas.BusDaiyasLineRouteBusStopDto">
-            SELECT "lr"."line_route_id"                AS "lineRouteId"
-                 , "lrbs"."rosen_bus_stop_id"          AS "rosenBusStopId"
-                 , "lrbs"."line_route_bus_stop_id"     AS "lineRouteBusStopId"
-              FROM "line_routes"                          "lr"
-        INNER JOIN "line_route_bus_stops"                 "lrbs"
-                ON "lrbs"."line_route_id"              =  "lr"."line_route_id"
-               AND "lrbs"."del_flag"                   =  0
-             WHERE "lr"."del_flag"                     =  0
-               AND "lr"."rosen_id"                     =  #{rosenId}
-               AND "lr"."line_detail_service_division" =  #{lineDetailServiceDivision}
-          ORDER BY "lr"."line_route_id"                ASC
+        SELECT "lr"."line_route_id"                AS "lineRouteId"
+             , "lrbs"."rosen_bus_stop_id"          AS "rosenBusStopId"
+             , "lrbs"."line_route_bus_stop_id"     AS "lineRouteBusStopId"
+          FROM "line_routes"                          "lr"
+    INNER JOIN "line_route_bus_stops"                 "lrbs"
+            ON "lrbs"."line_route_id"              =  "lr"."line_route_id"
+           AND "lrbs"."del_flag"                   =  0
+    INNER JOIN "signposts"                            "s"
+            ON "lrbs"."signpost_id"                =  "s"."signpost_id"
+           AND "s"."del_flag"                      =  0
+           AND "s"."available_flag"                =  1
+         WHERE "lr"."del_flag"                     =  0
+           AND "lr"."rosen_id"                     =  #{rosenId}
+           AND "lr"."line_detail_service_division" =  #{lineDetailServiceDivision}
+      ORDER BY "lr"."line_route_id"                ASC
     </select>
 </mapper>

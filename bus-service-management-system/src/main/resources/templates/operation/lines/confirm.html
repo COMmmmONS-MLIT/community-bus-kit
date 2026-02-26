@@ -104,13 +104,11 @@
                       class="form-item-name">利用区分</span></label>
               <div class="col-md-9">
                 <div class="col-md-12 radio">
-                  <input type="radio" id="r-dsp1" name="availableFlag"
-                         th:checked="*{availableFlag} eq null or *{availableFlag} eq 1"
-                         value="1" disabled/>
-                  <label class="inner-title" for="r-dsp1">利用中</label>
-                  <input type="radio" id="r-dsp2" name="availableFlag"
-                         th:checked="*{availableFlag} eq 0" value="0" disabled/>
-                  <label class="inner-title" for="r-dsp2">利用不可</label>
+                  <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                    <input type="radio" name="availableFlag" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                           th:checked="${flg.value} == (*{availableFlag} != null ? *{availableFlag} : '1')" th:classappend="${#fields.hasErrors('availableFlag')} ? 'error' : ''" disabled />
+                    <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}" disabled ></label>
+                  </th:block>
                 </div>
                 <p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}"
                    style="color:red"></p>
@@ -169,9 +167,9 @@
               <input type="hidden" th:field="*{page}">
               <div class="pull-right">
                 <a th:if="*{dispMode.value} eq '3'" th:href="'/operation/lines/' + *{page} + '/'" class=" btn btn-default">戻る</a>
-                <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/operation/lines/detail/back/}"
+                <button type="button" th:if="*{dispMode.value} neq '3'" th:formaction="@{/operation/lines/detail/back/}"
                         class="btn btn-default double-click">戻る</button>
-                <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary double-click"
+                <button type="button" th:if="*{dispMode.value} neq '3'" class="btn btn-primary double-click"
                         th:formaction="@{/operation/lines/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録':'変更'">登録</button>
               </div>
             </form>

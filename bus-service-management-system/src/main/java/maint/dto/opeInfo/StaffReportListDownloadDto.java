@@ -43,6 +43,8 @@ public class StaffReportListDownloadDto extends BaseDto {
   private Long busServiceId;
   /** 便名 */
   private String busServiceName;
+  /** 便番号 */
+  private String busServiceTripId;
   /** 出発時刻 */
   private String busStopDepartureTime;
 

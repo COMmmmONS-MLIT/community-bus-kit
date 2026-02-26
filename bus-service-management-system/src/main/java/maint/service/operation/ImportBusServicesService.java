@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.util.*;
  *
  */
 @Service
+@Validated
 public class ImportBusServicesService extends BaseService {
 
   /** テンプレートEXCELファイル */
@@ -125,6 +127,14 @@ public class ImportBusServicesService extends BaseService {
     return new ResponseEntity<>(documentContent, headers, HttpStatus.OK);
   }
 
+  /**
+   * Excelのインポートファイルをもとに便情報のデータ登録処理
+   *
+   * @param excel インポート対象Excel
+   * @param msgList メッセージリスト
+   * @param file インポート対象ファイル
+   * @param uploadFileName インポート対象ファイル名
+   */
   @Transactional
   public void importBusServices(ImportBusServicesExcelUpload excel, List<String> msgList,
       MultipartFile file, String uploadFileName) throws IOException {
@@ -140,13 +150,15 @@ public class ImportBusServicesService extends BaseService {
     Validator localValidator = factory.getValidator();
 
     // 1列ずつ検証する
-    ImportBusServicesExcelDto rowDto = null;
+    ImportBusServicesExcelDto rowDto;
     for (int i = 0; i < excel.getDataCount(); i++) {
       rowDto = excel.getData(i);
       java.util.Set<jakarta.validation.ConstraintViolation<ImportBusServicesExcelDto>> violations =
           localValidator.validate(rowDto);
 
       int rowNo = excel.getDataStartDataRow() + i; // 実際のExcel行番号
+
+      // 必須項目の未入力チェック
       if (!violations.isEmpty()) {
         for (jakarta.validation.ConstraintViolation<ImportBusServicesExcelDto> v : violations) {
           String resolved = v.getMessage();
@@ -173,70 +185,81 @@ public class ImportBusServicesService extends BaseService {
           getUserSession().getBusinessCorpId()) && !ExObjectUtils.equals(rowDto.getBusinessCorpId(),
           getUserSession().getBusinessCorpId())) {
         msgList.add(
-            "行" + rowNo + " " + this.getMessage("validation.busServiceImport.agency.mismatch"));
+            "行" + rowNo + " " + this.getMessage("validation.busServiceImport.agency.notFound"));
       }
 
       // 事業者存在チェック（削除フラグ=0・利用可否=1・事業者ID=EXCEL）
       String businessCorpId = rowDto.getBusinessCorpId();
       if (ExObjectUtils.isNotBlank(businessCorpId)) {
-        boolean exist = this.existsBusinessActive(businessCorpId);
-        if (!exist) {
-          msgList.add(
-              "行" + rowNo + " " + this.getMessage("validation.busServiceImport.agency.notFound"));
+        if (isInteger(businessCorpId)) {
+          boolean exist = this.existsBusinessActive(businessCorpId);
+          if (!exist) {
+            msgList.add(
+                "行" + rowNo + " " + this.getMessage("validation.busServiceImport.agency.notFound"));
+          }
         }
       }
 
       // 便ダイヤ改正存在チェック（削除=0・開始日>システム日付・路線ID・改正ID）
       String daiyaRevisionId = rowDto.getDaiyaRevisionId();
       if (ExObjectUtils.isNotBlank(businessCorpId) && ExObjectUtils.isNotBlank(daiyaRevisionId)) {
-        int exist =
-            this.existsRevisionActiveAfterDate(businessCorpId, daiyaRevisionId, LocalDate.now());
-        if (exist <= 0) {
-          msgList.add("行" + rowNo + " " + this.getMessage(
-              "validation.busServiceImport.daiyaRevision.notFound"));
+        if (isInteger(daiyaRevisionId) && isInteger(businessCorpId)) {
+          int exist =
+              this.existsRevisionActiveAfterDate(businessCorpId, daiyaRevisionId, LocalDate.now());
+          if (exist <= 0) {
+            msgList.add("行" + rowNo + " " + this.getMessage(
+                "validation.busServiceImport.daiyaRevision.notFound"));
+          }
         }
       }
 
       // 便番号重複チェック（便ダイヤ改正ID毎に）
       String busServiceTripId = rowDto.getBusServiceTripId();
       if (ExObjectUtils.isNotBlank(busServiceTripId) && ExObjectUtils.isNotBlank(
-          daiyaRevisionId) && this.existsDuplicatedBusServiceTripId(daiyaRevisionId, busServiceTripId)) {
-        msgList.add("行" + rowNo + " " + getMessage("validation.busServiceImport.serviceNo.duplicate"));
+          daiyaRevisionId)) {
+        if (isInteger(daiyaRevisionId) && isSizeOver(busServiceTripId, 50)) {
+          if (this.existsDuplicatedBusServiceTripId(daiyaRevisionId, busServiceTripId)) {
+            msgList.add("行" + rowNo + " " + getMessage("validation.busServiceImport.serviceNo.duplicate"));
+          }
+        }
       }
 
       // 運行カレンダー存在チェック（削除=0・利用可否=1・事業者ID・カレンダーID）
       String calendarId = rowDto.getCalendarId();
       if (ExObjectUtils.isNotBlank(businessCorpId) && ExObjectUtils.isNotBlank(calendarId)) {
-        int exist = this.existsCalendarActive(businessCorpId, calendarId);
-        if (exist <= 0) {
-          msgList.add("行" + rowNo + " " + this.getMessage(
-              "validation.busServiceImport.calendar.notFound"));
+        if (isInteger(calendarId) && isInteger(businessCorpId)) {
+          int exist = this.existsCalendarActive(businessCorpId, calendarId);
+          if (exist <= 0) {
+            msgList.add("行" + rowNo + " " + this.getMessage(
+                "validation.busServiceImport.calendar.notFound"));
+          }
         }
       }
 
       // 系統停留所存在チェック（削除=0・系統ID・系統停留所ID）
       String lineRouteId = null;
-      Optional<Integer> stopSeqOpt = Optional.empty();
       if (ExObjectUtils.isNotBlank(daiyaRevisionId) && ExObjectUtils.isNotBlank(businessCorpId)) {
-        List<FindLineRouteStopSequenceDto> busStopList =
-            this.getLineRouteStopSequence(daiyaRevisionId, businessCorpId);
-        if (ExObjectUtils.isEmpty(busStopList)) {
-          msgList.add("行" + rowNo + " " + this.getMessage(
-              "validation.busServiceImport.daiyaRevisionId.notFound"));
-        } else {
-          String targetBusStopId = rowDto.getLineRouteBusStopId();
-
-          // 系統停留所IDに一致するレコードを検索して系統IDを取得
-          FindLineRouteStopSequenceDto hit = busStopList.stream()
-              .filter(dto -> ExObjectUtils.equals(dto.getLineRouteBusStopId(), targetBusStopId))
-              .findFirst().orElse(null);
-
-          if (hit == null) {
+        if (isInteger(daiyaRevisionId) && isInteger(businessCorpId)) {
+          List<FindLineRouteStopSequenceDto> busStopList =
+              this.getLineRouteStopSequence(daiyaRevisionId, businessCorpId);
+          if (ExObjectUtils.isEmpty(busStopList)) {
             msgList.add("行" + rowNo + " " + this.getMessage(
-                "validation.busServiceImport.rosenBusStopId.notFound") + ExObjectUtils.toS(
-                targetBusStopId, "") + "）");
+                "validation.busServiceImport.daiyaRevisionId.notFound"));
           } else {
-            lineRouteId = hit.getLineRouteId();
+            String targetBusStopId = rowDto.getLineRouteBusStopId();
+
+            // 系統停留所IDに一致するレコードを検索して系統IDを取得
+            FindLineRouteStopSequenceDto hit = busStopList.stream()
+                .filter(dto -> ExObjectUtils.equals(dto.getLineRouteBusStopId(), targetBusStopId))
+                .findFirst().orElse(null);
+
+            if (hit == null) {
+              msgList.add("行" + rowNo + " " + this.getMessage(
+                  "validation.busServiceImport.daiyaRevisionId.notFound") + ExObjectUtils.toS(
+                  targetBusStopId, "") + "）");
+            } else {
+              lineRouteId = hit.getLineRouteId();
+            }
           }
         }
       }
@@ -245,7 +268,12 @@ public class ImportBusServicesService extends BaseService {
       String lineRouteBusStopId = rowDto.getLineRouteBusStopId();
       String busStopArrivalTime = rowDto.getBusStopArrivalTime();
       String busStopDepartureTime = rowDto.getBusStopDepartureTime();
-      int busStopSeq = this.getBusStopSeqSequence(lineRouteBusStopId);
+      int busStopSeq = 0;
+      if (!lineRouteBusStopId.isBlank()) {
+        if (isInteger(lineRouteBusStopId)) {
+          busStopSeq = this.getBusStopSeqSequence(lineRouteBusStopId);
+        }
+      }
 
       // 分変換（HHmmのみ有効）
       Integer arrMinForSeq = isHHmm(busStopArrivalTime) ? toMinutes(busStopArrivalTime) : null;
@@ -256,15 +284,18 @@ public class ImportBusServicesService extends BaseService {
       if (ExObjectUtils.isNotBlank(daiyaRevisionId) && ExObjectUtils.isNotBlank(
           lineRouteId) && ExObjectUtils.isNotBlank(busServiceTripId) && ExObjectUtils.isNotBlank(
           lineRouteBusStopId) && arrMinForSeq != null && depMinForSeq != null && busStopSeq > 0) {
-        stopSequenceList.add(new StopSequenceNodeDto(daiyaRevisionId,         // 便ダイヤ改正ID
-            lineRouteId,             // 系統ID
-            busServiceTripId,        // 便番号
-            lineRouteBusStopId,      // 系統停留所ID
-            arrMinForSeq,            // 出発(分)
-            depMinForSeq,            // 到着(分)
-            busStopSeq,              // 運行順序
-            rowNo                    // 行番号
-        ));
+        if (isInteger(daiyaRevisionId) && isInteger(lineRouteBusStopId)
+            && isSizeOver(busServiceTripId, 50)) {
+          stopSequenceList.add(new StopSequenceNodeDto(daiyaRevisionId,         // 便ダイヤ改正ID
+              lineRouteId,             // 系統ID
+              busServiceTripId,        // 便番号
+              lineRouteBusStopId,      // 系統停留所ID
+              arrMinForSeq,            // 出発(分)
+              depMinForSeq,            // 到着(分)
+              busStopSeq,              // 運行順序
+              rowNo                    // 行番号
+          ));
+        }
       }
 
       // 運行順序チェック: 改正ID → 便番号 → 運行順序 でソートし、同一便内で
@@ -298,17 +329,19 @@ public class ImportBusServicesService extends BaseService {
       List<String> stopListForDupCheck = routeStopListMapForDupCheck.get(mapKeyForDupCheck);
       // リストが未作成なら作成して現在の系統停留所IDを追加
       if (ExObjectUtils.isNotBlank(lineRouteBusStopId)) {
-        if (stopListForDupCheck == null) {
-          stopListForDupCheck = new ArrayList<>();
-          stopListForDupCheck.add(lineRouteBusStopId);
-          routeStopListMapForDupCheck.put(mapKeyForDupCheck, stopListForDupCheck);
-        } else {
-          // 既存リストに含まれていなければ追加、含まれていればエラー
-          if (stopListForDupCheck.contains(lineRouteBusStopId)) {
-            msgList.add("行" + rowNo + " " + this.getMessage(
-                "validation.busServiceImport.rosenBusStopId.duplicateInService") + lineRouteBusStopId + "）");
-          } else {
+        if (isInteger(lineRouteBusStopId)) {
+          if (stopListForDupCheck == null) {
+            stopListForDupCheck = new ArrayList<>();
             stopListForDupCheck.add(lineRouteBusStopId);
+            routeStopListMapForDupCheck.put(mapKeyForDupCheck, stopListForDupCheck);
+          } else {
+            // 既存リストに含まれていなければ追加、含まれていればエラー
+            if (stopListForDupCheck.contains(lineRouteBusStopId)) {
+              msgList.add("行" + rowNo + " " + this.getMessage(
+                  "validation.busServiceImport.rosenBusStopId.duplicateInService"));
+            } else {
+              stopListForDupCheck.add(lineRouteBusStopId);
+            }
           }
         }
       }
@@ -322,13 +355,15 @@ public class ImportBusServicesService extends BaseService {
       List<String> stopListForRequiredCheck = routeStopListMapForRequiredCheck.get(mapKeyForRequiredCheck);
       // リストが未作成なら作成して現在の系統停留所IDを追加
       if (ExObjectUtils.isNotBlank(lineRouteBusStopId)) {
-        if (stopListForRequiredCheck == null) {
-          stopListForRequiredCheck = new ArrayList<>();
-          stopListForRequiredCheck.add(lineRouteBusStopId);
-          routeStopListMapForRequiredCheck.put(mapKeyForRequiredCheck, stopListForRequiredCheck);
-        } else {
-          if (!stopListForRequiredCheck.contains(lineRouteBusStopId)) {
+        if (isInteger(lineRouteBusStopId)) {
+          if (stopListForRequiredCheck == null) {
+            stopListForRequiredCheck = new ArrayList<>();
             stopListForRequiredCheck.add(lineRouteBusStopId);
+            routeStopListMapForRequiredCheck.put(mapKeyForRequiredCheck, stopListForRequiredCheck);
+          } else {
+            if (!stopListForRequiredCheck.contains(lineRouteBusStopId)) {
+              stopListForRequiredCheck.add(lineRouteBusStopId);
+            }
           }
         }
       }
@@ -340,18 +375,14 @@ public class ImportBusServicesService extends BaseService {
         String key = e.getKey();                 // 形式: revId|lineRouteId|tripId
         List<String> list = e.getValue();        // 当該便に入力された系統停留所IDのリスト
         String[] parts = key.split("\\|", -1);
-        String kRev = parts.length > 0 ? parts[0] : "";
         String kLineRouteId = parts.length > 1 ? parts[1] : "";
-        String kTrip = parts.length > 2 ? parts[2] : "";
 
         if (ExObjectUtils.isNotBlank(kLineRouteId)) {
           int dbCount = this.countActiveLineRouteBusStops(kLineRouteId);
           int excelCount = (list != null) ? list.size() : 0;
           if (dbCount != excelCount) {
-            msgList.add(
-                "改正ID=" + kRev + " 系統ID=" + kLineRouteId + " 便番号=" + kTrip + " の" + this.getMessage(
-                    "validation.busServiceImport.rosenBusStopCount.inconsistent") + "（DB=" + dbCount + "件 / EXCEL=" + excelCount + "件）。" + this.getMessage(
-                    "validation.busServiceImport.input.missingOrExtra"));
+            msgList.add(this.getMessage(
+                "validation.busServiceImport.rosenBusStopCount.inconsistent"));
           }
         }
       }
@@ -680,5 +711,27 @@ public class ImportBusServicesService extends BaseService {
     int hh = Integer.parseInt(s.substring(0, 2));
     int mm = Integer.parseInt(s.substring(2, 4));
     return hh * 60 + mm;
+  }
+
+  /**
+   * 文字列が数値かを判定します。
+   * <p>
+   *
+   * @param s 判定対象の文字列（例: "12345678"）
+   * @return true = 数値、false = それ以外
+   */
+  private boolean isInteger(String s) {
+    return s != null && java.util.regex.Pattern.matches("^\\d{1,11}$", s);
+  }
+
+  /**
+   * 文字列が指定文字列以内になっているか
+   *
+   * @param s 判定対象の文字列
+   * @param size 文字列の最大長
+   * @return true = 指定文字列以内、false = それ以外
+   */
+  private boolean isSizeOver(String s, int size) {
+    return s != null && s.length() <= size;
   }
 }

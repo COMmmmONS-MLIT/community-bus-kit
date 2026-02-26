@@ -53,7 +53,7 @@ public class StaffReportListExcel extends BaseOriginMakeExcelSheet {
   }
 
   /** Excelテンプレートのシートを複製、シート命名 */
-  public void createSheetFromTemplate(Long busServiceId, String busServiceName) {
+  public void createSheetFromTemplate(Long busServiceId, String busServiceName, String busServiceTripId) {
     String sheetNameBase = "";
     if (busServiceName != null && !busServiceName.isBlank()) {
       String truncated = busServiceName.length() > 10
@@ -61,7 +61,7 @@ public class StaffReportListExcel extends BaseOriginMakeExcelSheet {
           : busServiceName;
       sheetNameBase += truncated;
     } else {
-      sheetNameBase += "無題";
+      sheetNameBase += busServiceTripId;
     }
 
     sheetNameBase += "_" + busServiceId;

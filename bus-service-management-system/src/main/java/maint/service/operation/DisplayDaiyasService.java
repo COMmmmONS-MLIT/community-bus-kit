@@ -5,10 +5,12 @@ import maint.dto.operation.displayDaiyas.DisplayTimelineResult;
 import maint.form.displayDaiyas.DisplayDaiyasSearchForm;
 import maint.mapper.*;
 import maint.service.BaseService;
+import maint.utils.ExObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,10 +38,17 @@ public class DisplayDaiyasService extends BaseService {
    */
   public DisplayTimelineResult buildTimelineData(List<DisplayDaiyasDto> data) {
 
-    // 仕業番号ごとにダイヤデータをグループ化する
-    Map<String, List<DisplayDaiyasDto>> grouped = data.stream().collect(
-        Collectors.groupingBy(DisplayDaiyasDto::getWorkNumber, LinkedHashMap::new,
-            Collectors.toList()));
+    // 仕業番号ごとにダイヤデータをグループ化する（仕業番号未設定は連番を付けて別グループとして扱う）
+    AtomicInteger unsetSeq = new AtomicInteger(0);
+    Map<String, List<DisplayDaiyasDto>> grouped =
+        data.stream().filter(Objects::nonNull).map(dto -> {
+          String key = dto.getWorkNumber();
+          if (ExObjectUtils.isBlank(key)) {
+            key = "仕業番号未設定" + unsetSeq.incrementAndGet();
+          }
+          return new AbstractMap.SimpleEntry<>(key, dto);
+        }).collect(Collectors.groupingBy(Map.Entry::getKey, LinkedHashMap::new,
+            Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
     // 表示対象の最小時刻（始発出発時刻）を分単位で取得
     int minMinute =

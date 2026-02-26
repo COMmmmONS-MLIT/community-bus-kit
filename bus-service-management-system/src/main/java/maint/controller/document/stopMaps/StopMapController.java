@@ -3,6 +3,7 @@ package maint.controller.document.stopMaps;
 import maint.controller.BaseController;
 import maint.enums.FlagValueEnums;
 import maint.enums.Menu;
+import maint.form.distanceReport.DistanceReportForm;
 import maint.form.report.StopMapExcelForm;
 import maint.message.CommonMessage;
 import maint.service.operation.LinesService;
@@ -79,7 +80,7 @@ public class StopMapController extends BaseController {
       form = new StopMapExcelForm();
     }
 
-    model.addAttribute("stopMapExcelForm", form);
+    initModelAttribute(model, form);
     return INDEX_PAGE;
   }
 
@@ -104,16 +105,30 @@ public class StopMapController extends BaseController {
     if (bindingResult.hasErrors()) {
       LOGGER.warn(">>> Validation errors: {}", bindingResult.getAllErrors());
       setErrorMsg(CommonMessage.ERROR_INPUT);
+      initModelAttribute(model, form);
       return INDEX_PAGE;
     }
     try {
       // ダウンロード
       LOGGER.info(">>> Calling stopMapListService.getStopMapInfo");
+      initModelAttribute(model, form);
       return stopMapListRegisterService.getStopMapInfo(form);
     } catch (Exception e) {
       LOGGER.error("【停留所付近図Excelダウンロード】Excelダウンロード時にエラー", e);
       setExcelDownloadErrorMessage("停留所付近図");
+      initModelAttribute(model, form);
       return INDEX_PAGE;
     }
+  }
+
+  /**
+   * 画面呼び出し前のModel初期設定
+   *
+   * @param model         Model
+   * @param form          停留所付近図出力FORM
+   */
+  private void initModelAttribute(Model model, StopMapExcelForm form) {
+    model.addAttribute("stopMapExcelForm", form);
+    model.addAttribute("downloadFlag", hasDownloadPermission(NOW_MENU));
   }
 }

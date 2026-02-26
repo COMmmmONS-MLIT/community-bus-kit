@@ -242,12 +242,14 @@
           FROM "line_routes"           AS "lr"
     INNER JOIN "lines"                 AS "l"
             ON "l"."del_flag"           = 0
+           AND "l"."available_flag"     = 1
            AND "l"."rosen_id"           = "lr"."rosen_id"
     INNER JOIN "agencies"              AS "ag"
             ON "ag"."del_flag"          = 0
            AND "ag"."available_flag"    = 1
            AND "ag"."business_corp_id"  = "l"."business_corp_id"
          WHERE "lr"."del_flag"          = 0
+           AND "lr"."available_flag"    = 1
            AND "lr"."rosen_id" IN
         <foreach collection="rosenIdList" item="id" open="(" close=")" separator=",">
             #{id}

@@ -264,6 +264,7 @@
                AND "bd"."bus_service_id"          = "bs"."bus_service_id"
         INNER JOIN "line_routes" "lr"
                 ON "lr"."del_flag"                = 0
+               AND "lr"."available_flag"          = 1
                AND "lr"."line_route_id"           = "bs"."line_route_id"
         <if test="operatingCompanyId != null">
         INNER JOIN "offices" "o"

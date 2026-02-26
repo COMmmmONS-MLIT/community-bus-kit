@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <form method="post" th:action="@{#}" class="form-horizontal">
+                    <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                         <div class="panel-heading">
                             <h3 class="panel-title">
                                 <strong>路線時刻表出力</strong>
@@ -38,7 +38,7 @@
                                                 </option>
                                             </select>
                                             <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}"
-                                               class="text-danger"/>
+                                               id="rosenIdError" class="text-danger"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -54,7 +54,7 @@
                                                 <option value="">------------</option>
                                             </select>
                                             <p th:if="${#fields.hasErrors('daiyaRevisionId')}"
-                                               th:errors="*{daiyaRevisionId}" class="text-danger"/>
+                                               th:errors="*{daiyaRevisionId}" id="daiyaRevisionIdError" class="text-danger"/>
                                         </div>
                                     </div>
                                 </div>
@@ -63,7 +63,7 @@
                         <div class="panel-footer">
                             <div style="display: flex;" class="pull-right">
                                 <button th:if="${downloadFlag}" type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
-                                        th:formaction="@{/plan/routeTimetable/downloadExcel}">
+                                        th:formaction="@{/plan/routeTimetable/downloadExcel}" onclick="errorObjClear()" >
                                     抽出する
                                 </button>
                             </div>
@@ -74,6 +74,7 @@
         </div>
     </div>
     <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:src="@{/js/plan/routeTimetable/index.js}"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         var allDaiyaDateList = /*[[${serviceStartDateList}]]*/ [];

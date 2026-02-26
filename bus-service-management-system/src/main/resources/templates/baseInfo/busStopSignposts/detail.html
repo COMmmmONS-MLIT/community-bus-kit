@@ -207,7 +207,7 @@
                                                         <td class="tcontents-space"></td>
                                                         <td colspan="4">
                                                             <div class="form-group error-position" style="margin-top:0px; margin-left:30%; margin-right:auto;">
-                                                                <p th:if="${#fields.hasErrors('busStopLinkDetailDtoList[' + stat.index + '].serviceEndDate')}" th:errors="*{busStopLinkDetailDtoList[__${stat.index}__].serviceEndDate}" class="text-danger" />
+                                                                <p th:if="${#fields.hasErrors('busStopLinkDetailDtoList[' + stat.index + '].serviceEndDate')}" th:errors="*{busStopLinkDetailDtoList[__${stat.index}__].serviceEndDate}" class="text-danger" ></p>
                                                             </div>
                                                             <div class="form-group" style="margin-top:0px;">
                                                                 <div class="alert alert-info" th:id="'serviceEndDate' + ${busStop.busStopListNo} + '-help'"
@@ -242,10 +242,12 @@
                                                         <label class="form-item-name">利用区分</label>
                                                     </td>
                                                     <td class="tcontents-input">
-                                                        <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].availableFlag}" th:value="1" th:id="'availableFlag_[' + ${stat.index} + ']_1'" th:checked="${busStop.availableFlag eq 1}" />
-                                                        <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + ']_1'" th:text="利用中" style="width:90px;"></label>
-                                                        <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].availableFlag}" th:value="0" th:id="'availableFlag_[' + ${stat.index} + ']_0'" th:checked="${busStop.availableFlag eq 0}" />
-                                                        <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + ']_0'" th:text="利用不可" style="width:90px;"></label>
+                                                        <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                                            <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].availableFlag}" th:id="'availableFlag_[' + ${stat.index} + ']_' + ${flg.value}" th:value="${flg.value}"
+                                                                   th:checked="${flg.value} == (*{busStopLinkDetailDtoList[__${stat.index}__].availableFlag} != null ? *{busStopLinkDetailDtoList[__${stat.index}__].availableFlag} : '1')"
+                                                                   th:classappend="${#fields.hasErrors('busStopLinkDetailDtoList[__${stat.index}__].availableFlag')} ? 'error' : ''"/>
+                                                            <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + ']_' + ${flg.value}" th:text="${flg.text}"></label>
+                                                        </th:block>
                                                     </td>
                                                     <td class="tcontents-help">
                                                         <button type="button" class="btn btn-default btn-xs help-toggle" th:onclick="|toggleHelp('availableFlag__${busStop.busStopListNo}__-help', this)|" style="margin-left: 6px; width: 66px;">この停留所を... ＞ </button>
@@ -700,12 +702,13 @@
                                                                     <label class="form-item-name">利用区分</label>
                                                                 </td>
                                                                 <td class="tcontents-input">
-                                                                    <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag}"
-                                                                           th:id="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_0'" th:value="1" th:checked="${signpost.availableFlag eq 1}" />
-                                                                    <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_0'" th:text="利用中" style="width:80px;"></label>
-                                                                    <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag}"
-                                                                           th:id="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_1'" th:value="0" th:checked="${signpost.availableFlag eq 0}" />
-                                                                    <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_1'" th:text="利用不可" style="width:80px;"></label>
+                                                                    <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                                                        <input type="radio" th:field="*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag}"
+                                                                               th:id="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_' + ${flg.value}" th:value="${flg.value}"
+                                                                               th:checked="${flg.value} == (*{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag} != null ? *{busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag} : '1')"
+                                                                               th:classappend="${#fields.hasErrors('busStopLinkDetailDtoList[__${stat.index}__].signpostsLinkDetailDtoList[__${stats.index}__].availableFlag')} ? 'error' : ''"/>
+                                                                        <label class="inner-title" th:for="'availableFlag_[' + ${stat.index} + '][' + ${stats.index} + ']_' + ${flg.value}" th:text="${flg.text}"></label>
+                                                                    </th:block>
                                                                 </td>
                                                                 <td class="tcontents-help"></td>
                                                             </tr>

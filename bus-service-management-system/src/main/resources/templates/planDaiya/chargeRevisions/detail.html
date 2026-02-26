@@ -8,7 +8,8 @@
         <div class="page-content-wrap">
             <div class="row">
                 <div class="col-md-12">
-                    <form method="post" class="form-horizontal" id="confirmForm" th:action="@{/planDaiya/chargeRevisions/detail/confirm/}">
+                    <form method="post" class="form-horizontal" id="confirmForm" th:action="@{/planDaiya/chargeRevisions/detail/confirm/}"
+                          onkeydown="return event.key !== 'Enter';">
                         <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
                         <input type="hidden" th:field="*{page}">
                         <input type="hidden" th:field="*{dispMode}">

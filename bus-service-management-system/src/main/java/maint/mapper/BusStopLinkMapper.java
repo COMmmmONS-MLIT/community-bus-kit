@@ -1,9 +1,6 @@
 package maint.mapper;
 
-import java.util.List;
-
 import maint.dto.baseInfo.busStopSignposts.BusStopLinkDetailDto;
-import maint.dto.baseInfo.busStopSignposts.BusStopSelectLinkDto;
 import maint.entity.BusStopsLinkEntity;
 import maint.entity.LineBusStopsReportListsExcelEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -56,32 +53,17 @@ public interface BusStopLinkMapper {
       @Param("serviceEndDate") String serviceEndDate);
 
   /**
-   * 停留所取得（SELECT用）
-   *
-   * @return 停留所リスト
-   */
-  List<BusStopSelectLinkDto> getBusStopsForSelectOption(
-      @Param("operatingCompanyId") Long operatingCompanyId);
-
-  /**
-   * 利用期間から停留所リスト取得
-   *
-   * @param serviceStartDate 利用開始日
-   * @param serviceEndDate 利用終了日
-   * @param businessCorpId 事業者ID
-   * @return 停留所リスト
-   */
-  List<BusStopsLinkEntity> getBusStopListByServiceDate(String serviceStartDate,
-      String serviceEndDate, Long businessCorpId);
-
-  /**
    * 指定された停留所コードが、指定された有効期間内に既に存在するかをチェックする。
-   * @param stopCode   停留所コード
-   * @param excelStart 利用開始年月日
-   * @param excelEnd   利用終了年月日
+   *
+   * @param businessCorpId 事業者ID
+   * @param busStopId      停留所ID
+   * @param stopCode       停留所コード
+   * @param excelStart     利用開始年月日
+   * @param excelEnd       利用終了年月日
    * @return 重複件数
    */
-  int countDuplicateStopCode(String stopCode, String excelStart, String excelEnd);
+  int countDuplicateStopCode(Long businessCorpId, Long busStopId, String stopCode,
+      String excelStart, String excelEnd);
 
   /**
    * 系統停留所IDに対応する「運行順序（停留所の並び順）」を取得します。

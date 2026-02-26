@@ -24,4 +24,7 @@ public class BusServiceOptionsDto extends BaseDto {
   /** 便名 */
   private String busServiceName;
 
+  /** 便番号 */
+  private String busServiceTripId;
+
 }

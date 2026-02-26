@@ -9,7 +9,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <form method="post" th:action="@{#}" class="form-horizontal">
+                    <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                         <div class="panel-heading">
                             <h3 class="panel-title">
                                 <strong>事業者一覧</strong>

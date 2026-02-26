@@ -5,10 +5,12 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import maint.dto.ListPager;
+import maint.dto.baseInfo.offices.OfficesDetailDto;
 import maint.dto.operation.busDaiyas.*;
 import maint.dto.planDaiya.dailyBusDaiyas.SearchDailyBusDaiyasDto;
 import maint.dto.planDaiya.daiyaRevisions.DaiyaRevisionsDetailDto;
 import maint.dto.operation.holidayCalendars.BusServiceInfoDto;
+import maint.dto.planDaiya.vehicles.VehiclesDetailDto;
 import maint.entity.BusDaiyasEntity;
 import maint.entity.BusServiceEntity;
 import maint.form.busDaiyas.BusDaiyasDetailForm;
@@ -48,6 +50,14 @@ public class BusDaiyasService extends BaseService {
   /** 系統停留所MAPPER */
   @Autowired
   BusServicesMapper busServicesMapper;
+
+  /** 車両MAPPER */
+  @Autowired
+  VehiclesMapper vehiclesMapper;
+
+  /** 営業所MAPPER */
+  @Autowired
+  OfficesMapper officesMapper;
 
   /** 日毎便ダイヤSERVICE */
   @Autowired
@@ -336,6 +346,41 @@ public class BusDaiyasService extends BaseService {
           msg = messageSource.getMessage(msg.substring(1, msg.length() - 1), null, Locale.JAPAN);
         }
         msgList.add(errmsg_prefix + colNum + " " + msg);
+      }
+
+      // 営業所と車両に紐づく運行会社が同一であることのチェック
+      String vehicleId = inputBusDaiyaList.get(i).getVehicleId();
+      String officeId = inputBusDaiyaList.get(i).getOfficeId();
+      // 営業所と車両が両方とも入力されている場合のみ実施
+      if (ExObjectUtils.isNotBlank(vehicleId) && ExObjectUtils.isNotBlank(officeId)) {
+        // 車両IDと事業者IDから車両マスタ検索
+        VehiclesDetailDto vehiclesDetailDto =
+            vehiclesMapper.getVehiclesByPk(Long.valueOf(vehicleId),
+                getUserSession().getBusinessCorpId());
+        // 車両マスタの検索結果が空の場合、有効な車両IDではないため、エラーメッセージ追加
+        boolean isValidVehicle = ExObjectUtils.isNotBlank(vehiclesDetailDto);
+        if (!isValidVehicle) {
+          msgList.add(
+              errmsg_prefix + colNum + " " + getMessage("validation.busDaiyas.error.invalidVehicleId"));
+        }
+
+        // 営業所IDと事業者IDから営業所マスタ検索
+        OfficesDetailDto officesDetailDto = officesMapper.getOfficesByPk(Long.valueOf(officeId),
+            getUserSession().getBusinessCorpId());
+
+        // 営業所マスタの検索結果が空の場合、有効な営業所IDではないため、エラーメッセージ追加
+        boolean isValidOffice = ExObjectUtils.isNotBlank(officesDetailDto);
+        if (!isValidOffice) {
+          msgList.add(
+              errmsg_prefix + colNum + " " + getMessage("validation.busDaiyas.error.invalidOfficeeId"));
+        }
+
+        // 車両IDと営業所IDが有効なので、相関チェックを実施。
+        if (isValidVehicle && isValidOffice && !ExObjectUtils.equals(
+            vehiclesDetailDto.getOperatingCompanyId(), officesDetailDto.getOperatingCompanyId())) {
+          msgList.add(
+              errmsg_prefix + colNum + " " + getMessage("validation.busDaiyas.error.differentOperationCompany"));
+        }
       }
 
       // 到着時刻、出発時刻の整合性チェック

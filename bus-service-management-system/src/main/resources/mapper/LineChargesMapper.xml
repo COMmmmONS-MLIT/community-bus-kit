@@ -29,6 +29,7 @@
         SELECT "lc"."line_charge_id"
              , "cr"."charge_revision_id"
              , "l"."rosen_name"
+             , "l"."rosen_id"
              , "cr"."service_start_date"
              , "cr"."service_end_date"
              , "cr"."revision_reason"
@@ -40,32 +41,31 @@
     </select>
 
     <sql id="fromWhereBySearch">
-        FROM "line_charges" "lc"
-        RIGHT JOIN "charge_revisions" "cr"
-        ON "cr"."del_flag"                = 0
-        AND "lc"."del_flag"          = 0
-        AND "cr"."charge_revision_id"        = "lc"."charge_revision_id"
-        JOIN "lines" "l"
-        ON "l"."del_flag" = 0
-        AND "l"."available_flag" = 1
-        AND "l"."rosen_id" = "cr"."rosen_id"
-        JOIN "agencies" "a"
-        ON "a"."del_flag" = 0
-        AND "a"."available_flag" = 1
-        AND "a"."business_corp_id" = "l"."business_corp_id"
-        WHERE "a"."business_corp_id" = #{businessCorpId}
-        AND "l"."business_corp_id" = #{businessCorpId}
+          FROM "charge_revisions" "cr"
+          JOIN "lines" "l"
+            ON "l"."del_flag"                   = 0
+           AND "l"."available_flag"             = 1
+           AND "l"."rosen_id" = "cr"."rosen_id"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"                   = 0
+           AND "a"."available_flag"             = 1
+           AND "a"."business_corp_id"           = "l"."business_corp_id"
+     LEFT JOIN "line_charges" "lc"
+            ON "lc"."del_flag"                  = 0
+           AND "lc"."charge_revision_id"        = "cr"."charge_revision_id"
+         WHERE "cr"."del_flag"                  = 0
+           AND "l"."business_corp_id"           = #{businessCorpId}
         <if test="revisionReason != null and revisionReason != ''">
-            AND "cr"."revision_reason"     LIKE #{likeSearchRevisionReason}
+           AND "cr"."revision_reason"        LIKE #{likeSearchRevisionReason}
         </if>
         <if test="rosenId != null and rosenId != ''">
-            AND "l"."rosen_id"                = #{rosenId}
+           AND "l"."rosen_id"                   = #{rosenId}
         </if>
         <if test="serviceStartDate != null and serviceStartDate != ''">
-            AND "cr"."service_start_date" &gt;= CAST(#{serviceStartDate} AS date)
+           AND "cr"."service_start_date"       &gt;= CAST(#{serviceStartDate} AS date)
         </if>
         <if test="serviceEndDate != null and serviceEndDate != ''">
-            AND "cr"."service_end_date"    &lt;= CAST(#{serviceEndDate} AS date)
+           AND "cr"."service_end_date"         &lt;= CAST(#{serviceEndDate} AS date)
         </if>
     </sql>
 

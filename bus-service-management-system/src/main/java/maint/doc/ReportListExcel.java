@@ -60,7 +60,7 @@ public class ReportListExcel extends BaseOriginMakeExcelSheet {
       applyBorders(getExcelSheet().getRow(rowIdx), 0, 19);
     } else if ((ReportType.SYSTEM_LIST.getValue()).equals(form.getReportType())) {
       writeLineRoutesListRow(rowIdx, dto);
-      applyBorders(getExcelSheet().getRow(rowIdx), 0, 21);
+      applyBorders(getExcelSheet().getRow(rowIdx), 0, 22);
     } else {
       writeDaiyaListRow(rowIdx, dto);
       applyBorders(getExcelSheet().getRow(rowIdx), 0, 15);
@@ -163,6 +163,7 @@ public class ReportListExcel extends BaseOriginMakeExcelSheet {
     setCellData(rowIdx, col++, dto.getLineRouteColor());
     setCellData(rowIdx, col++, dto.getLineRouteTextColor());
     setCellData(rowIdx, col++, dto.getLineRouteRemarks());
+    setCellData(rowIdx, col++, dto.getRosenBusStopId());
     setCellData(rowIdx, col++, dto.getLineRouteBusStopId());
     setCellData(rowIdx, col++, dto.getSignpostId());
     setCellData(rowIdx, col++, dto.getBusStopName());

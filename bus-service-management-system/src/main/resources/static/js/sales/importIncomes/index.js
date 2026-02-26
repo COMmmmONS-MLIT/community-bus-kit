@@ -37,8 +37,12 @@ $(function () {
       clearBusOptions();
       if (Array.isArray(list) && list.length > 0) {
         list.forEach(function (opt) {
+          let optBusServiceText = opt.busServiceName;
+          if (!optBusServiceText) {
+              optBusServiceText = opt.busServiceTripId;
+          }
           $bus.append(
-              new Option(opt.busServiceName, opt.busServiceId, false, false));
+              new Option(optBusServiceText, opt.busServiceId, false, false));
         });
 
         if (preselectValue) {

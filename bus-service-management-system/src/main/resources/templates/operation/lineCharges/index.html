@@ -9,7 +9,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <form method="post" th:action="@{#}" class="form-horizontal">
+                    <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                         <div class="panel-heading">
                             <h3 class="panel-title">
                                 <strong>運賃一覧</strong>
@@ -95,18 +95,20 @@
                                   + ' ～ ' + #strings.replace(lineCharge.serviceEndDate, '-', '/')}">2025/08/08 ~ 9999/12/31</td>
                                 <td th:text="${lineCharge.revisionReason}">運賃改定名称</td>
                                 <td>
-                                    <form th:if="${writeFlag}" method="post" th:action="@{/operation/lineCharges/detail/}">
-                                        <input type="hidden" name="chargeRevisionId" th:value="${lineCharge.chargeRevisionId}" />
-                                        <input type="hidden" name="page" th:value="*{page}" />
-                                        <input type="hidden" name="insertFlag" th:value="${lineCharge.lineChargeId} == null ? 1 : 0" />
-                                        <button type="submit" class="btn btn-sm double-click" th:classappend="${lineCharge.lineChargeId} == null ? ' btn-danger' : ' btn-info'"
-                                                th:text="${lineCharge.lineChargeId} == null ? '登録' : '変更'">登録</button>
-                                    </form>
-                                    <form th:if="${!writeFlag}" method="post" th:action="@{/operation/lineCharges/detail/content/}">
-                                        <input type="hidden" name="chargeRevisionId" th:value="${lineCharge.chargeRevisionId}" />
-                                        <input type="hidden" name="page" th:value="*{page}" />
-                                        <button type="submit" class="btn btn-info btn-sm double-click">確認</button>
-                                    </form>
+                                    <th:block th:if="${lineCharge.busStopCount >= 2}">
+                                        <form th:if="${writeFlag}" method="post" th:action="@{/operation/lineCharges/detail/}">
+                                            <input type="hidden" name="chargeRevisionId" th:value="${lineCharge.chargeRevisionId}" />
+                                            <input type="hidden" name="page" th:value="*{page}" />
+                                            <input type="hidden" name="insertFlag" th:value="${lineCharge.lineChargeId} == null ? 1 : 0" />
+                                            <button type="submit" class="btn btn-sm double-click" th:classappend="${lineCharge.lineChargeId} == null ? ' btn-danger' : ' btn-info'"
+                                                    th:text="${lineCharge.lineChargeId} == null ? '登録' : '変更'">登録</button>
+                                        </form>
+                                        <form th:if="${!writeFlag}" method="post" th:action="@{/operation/lineCharges/detail/content/}">
+                                            <input type="hidden" name="chargeRevisionId" th:value="${lineCharge.chargeRevisionId}" />
+                                            <input type="hidden" name="page" th:value="*{page}" />
+                                            <button type="submit" class="btn btn-info btn-sm double-click">確認</button>
+                                        </form>
+                                    </th:block>
                                 </td>
                             </tr>
                             </tbody>

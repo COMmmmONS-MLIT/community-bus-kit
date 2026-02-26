@@ -10,7 +10,8 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <form method="post" th:action="@{/operation/lineBusStopsReport/downloadExcel}" class="form-horizontal">
+                    <form method="post" th:action="@{/operation/lineBusStopsReport/downloadExcel}" class="form-horizontal"
+                          onkeydown="return event.key !== 'Enter';">
                         <div class="panel-heading">
                             <h3 class="panel-title">
                                 <strong>停留所情報インポート</strong>
@@ -20,7 +21,7 @@
                         <div th:replace="~{common/message :: common_message_box('success',${successMessages})}"></div>
                         <div th:replace="~{common/message :: common_message_box('danger',${errorMessages})}"></div>
                         <div th:replace="~{common/message :: common_message_box('warning',${warningMessages})}"></div>
-
+                        <input type="hidden" id="uploadFileName" name="uploadFileName" value="">
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div th:if="${downloadFlag}">
@@ -29,7 +30,7 @@
                                             <span class="form-item-name">雛形ダウンロード</span>
                                         </label>
                                         <div class="col-md-10">
-                                            <button type="submit" class="btn btn-primary">DOWNLOAD</button>
+                                            <button type="submit" class="btn btn-primary" style="margin-bottom: 12px;">DOWNLOAD</button>
                                         </div>
                                     </div>
                                 </div>

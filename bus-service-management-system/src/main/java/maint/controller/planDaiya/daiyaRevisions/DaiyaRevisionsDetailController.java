@@ -8,6 +8,8 @@ import maint.message.CommonMessage;
 import maint.message.DaiyaRevisionsErrorMessage;
 import maint.service.planDaiya.DaiyaRevisionsService;
 import maint.service.operation.LinesService;
+import maint.utils.ExObjectUtils;
+import maint.utils.date.ExDateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -256,6 +258,13 @@ public class DaiyaRevisionsDetailController extends BaseController {
 
     if (bindingResult.hasErrors()) {
       this.setErrorMsg(CommonMessage.ERROR_INPUT);
+    }
+
+    // 便ダイヤか改正日が空でなく、便ダイヤ改正日が未来日でない場合
+    if (ExObjectUtils.isNotBlank(form.getServiceStartDate()) && ExDateUtils.compareLocalDate(
+        form.getServiceStartDate(), ExDateUtils.getCurrentDate()) <= 0) {
+      this.setErrorMsg(
+          DaiyaRevisionsErrorMessage.ERROR_REVISION_START_BEFORE_TOMORROW.getMessage());
     }
 
     // 路線の利用期間内チェック

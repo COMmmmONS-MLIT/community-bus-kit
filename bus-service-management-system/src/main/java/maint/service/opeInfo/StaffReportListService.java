@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * スターフリストSERVICE
+ * スターフリストEXCEL出力SERVICE
  *
  * @author 林竜生
  *
@@ -96,8 +96,13 @@ public class StaffReportListService extends BaseService {
 
     // データを便IDでグループ化しつつ、順序を保持
     for (StaffReportListDownloadDto dto : staffReportDL) {
+      // グループ化
       Long busServiceId = dto.getBusServiceId();
       busServiceGroupData.computeIfAbsent(busServiceId, k -> new ArrayList<>()).add(dto);
+
+      // 出発時刻の文字列の変更　(HHMM　→　HH:MM)
+      dto.setBusStopDepartureTime(
+          ExDateUtils.convertTimeFormat(dto.getBusStopDepartureTime(), ExDateFormat.HHmm_COLON));
     }
 
     // シート毎に一意の組み合わせを追跡するためのセット
@@ -114,7 +119,8 @@ public class StaffReportListService extends BaseService {
         // このシート組み合わせが初めての場合、シートを作成
         if (uniqueSheetCombinations.add(combinationKey)) {
           // テンプレートからシートを作成し、静的情報を設定
-          workExcel.createSheetFromTemplate(firstDto.getBusServiceId(), firstDto.getBusServiceName());
+          workExcel.createSheetFromTemplate(firstDto.getBusServiceId(), firstDto.getBusServiceName(),
+              firstDto.getBusServiceTripId());
           workExcel.setStaffReportStaticPlot(firstDto);
         }
 

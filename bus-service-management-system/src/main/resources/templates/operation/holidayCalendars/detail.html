@@ -13,7 +13,8 @@
         <div class="page-content-wrap">
             <div class="row">
                 <div class="col-md-12">
-                    <form class="form-horizontal" method="post" enctype="multipart/form-data" th:action="@{/operation/holidayCalendar/register/}">
+                    <form class="form-horizontal" method="post" enctype="multipart/form-data"
+                          th:action="@{/operation/holidayCalendar/register/}" onkeydown="return event.key !== 'Enter';">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title">

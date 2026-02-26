@@ -3,6 +3,7 @@ package maint.controller.planDaiya.dailyBusDaiyas;
 import jakarta.validation.constraints.DecimalMin;
 import maint.controller.BaseController;
 import maint.dto.ListPager;
+import maint.dto.operation.busDaiyas.BusServicesOptionDto;
 import maint.dto.planDaiya.dailyBusDaiyas.SearchDailyBusDaiyasDto;
 import maint.enums.FlagValueEnums;
 import maint.enums.Menu;
@@ -18,6 +19,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 /**
@@ -137,9 +140,11 @@ public class DailyBusDaiyasController extends BaseController {
   }
 
   /**
-   * @param model  Model
-   * @param form   日毎便ダイヤ検索FORM
-   * @param pager  ListPager
+   * 画面表示項目などのModelへの設定
+   *
+   * @param model Model
+   * @param form  日毎便ダイヤ検索FORM
+   * @param pager ListPager
    */
   private void commonProcess(Model model, DailyBusDaiyasSearchForm form, ListPager pager) {
     // 日毎便ダイヤ管理一覧検索
@@ -150,6 +155,21 @@ public class DailyBusDaiyasController extends BaseController {
     model.addAttribute("pager", pager);
     model.addAttribute("busServiceNameList", busDaiyasService.getBusServicesForSelectOption(
         new SearchDailyBusDaiyasDto(form, pager.getStartIndex())));
+  }
+
+  /**
+   * 便オプション取得（SELECTボックス用）
+   *
+   * @param form  日毎便ダイヤ検索FORM
+   * @return 便の選択肢DTOリスト
+   */
+  @GetMapping("/getBusServiceOption")
+  @ResponseBody
+  public List<BusServicesOptionDto> getBusServices(@Validated DailyBusDaiyasSearchForm form) {
+
+    return busDaiyasService.getBusServicesForSelectOption(
+        new SearchDailyBusDaiyasDto(form, form.getPage()));
+
   }
 }
 

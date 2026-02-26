@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <form method="post" th:action="@{#}" class="form-horizontal">
+                    <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                         <div class="panel-heading">
                             <h3 class="panel-title">
                                 <strong>一覧表出力</strong>
@@ -29,12 +29,12 @@
                                             <span class="form-item-name">出力対象</span>
                                         </label>
                                         <div class="col-md-9">
-                                            <select class="form-control select2" th:field="*{reportType}"  th:classappend="${#fields.hasErrors('reportType')} ? 'error' : ''">
+                                            <select id="reportType" class="form-control select2" th:field="*{reportType}"  th:classappend="${#fields.hasErrors('reportType')} ? 'error' : ''">
                                                 <option value="">------------</option>
                                                 <option th:each="option : ${reportType}" th:value="${option.value} "
                                                         th:text="${option.text}"></option>
                                             </select>
-                                            <p th:if="${#fields.hasErrors('reportType')}" th:errors="*{reportType}" class="text-danger" />
+                                            <p th:if="${#fields.hasErrors('reportType')}" th:errors="*{reportType}" id="reportTypeError" class="text-danger" />
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -42,13 +42,13 @@
                                             <span class="form-item-name">路線</span>
                                         </label>
                                         <div class="col-md-9">
-                                            <select id="rosenSelect" class="form-control select2" th:field="*{rosenId}"  th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''">
+                                            <select id="rosenSelect" class="form-control select2" th:field="*{rosenId}"  th:classappend="${#fields.hasErrors('rosenId')} ? 'error' : ''">
                                                 <option value="">------------</option>
                                                 <option th:each="item : ${linesList}" th:value="${item.rosenId}"
                                                         th:text="${item.rosenName}">
                                                 </option>
                                             </select>
-                                            <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" class="text-danger" />
+                                            <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" id="rosenIdError" class="text-danger" />
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -60,7 +60,8 @@
                                                 th:attr="data-selected=*{serviceStartDate}" th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''">
                                                 <option value="">------------</option>
                                             </select>
-                                            <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}" class="text-danger" />
+                                            <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}"
+                                               id="serviceStartDateError" class="text-danger" />
                                             <input type="hidden" id="daiyaRevisionId" th:field="*{daiyaRevisionId}">
 
                                         </div>
@@ -72,7 +73,7 @@
                         <div class="panel-footer">
                             <div style="display: flex;" class="pull-right">
                                 <button th:if="${downloadFlag}" type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
-                                        th:formaction="@{/export/lists/downloadExcel}">
+                                        th:formaction="@{/export/lists/downloadExcel}" onclick="errorObjClear()" >
                                     抽出する
                                 </button>
                             </div>
@@ -83,6 +84,7 @@
         </div>
     </div>
     <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:src="@{/js/export/lists/index.js}"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         var allDaiyaDateList = /*[[${daiyaDateList}]]*/ [];

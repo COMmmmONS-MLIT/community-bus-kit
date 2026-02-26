@@ -102,6 +102,8 @@ public class ReportDownLoadDto extends BaseDto {
   private String shapeDistTraveled;
   /** 運行順序 */
   private Integer stopSequence;
+  /** 路線停留所ID */
+  private Long rosenBusStopId;
   /** 便ID */
   private Long busServiceId;
   /** 便番号 */

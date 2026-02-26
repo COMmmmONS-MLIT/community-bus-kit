@@ -23,6 +23,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * キロ程表EXCEL出力SERVICE
+ *
+ * @author k.takeuchi
+ */
 @Service
 public class DistanceReportService extends BaseService {
 

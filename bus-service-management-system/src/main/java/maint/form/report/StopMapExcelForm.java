@@ -1,5 +1,6 @@
 package maint.form.report;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,12 +21,20 @@ public class StopMapExcelForm extends BaseForm {
 
   /** 事業者ID */
   private Long businessCorpId;
+
   /** 便ダイヤ改正ID */
   private Long daiyaRevisionId;
+
   /** 路線ID */
   @NotNull
   private Long rosenId;
-  /** 処理対象日 */
-  @NotNull
+
+  /** 処理対象日(データアクセス用) */
   private LocalDate processingDate;
+
+  /** 処理対象日(画面出力用) */
+  @NotNull
+  @NotBlank
+  private String processingDateStr;
+
 }

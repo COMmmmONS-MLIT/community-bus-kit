@@ -36,10 +36,13 @@ public class UsersSearchForm extends BaseForm {
   @Size(max = 50)
   private String searchFirstName;
 
-  /** 利用区分 */
+  /** 利用区分(データアクセス用　退職フラグ設定値) */
+  private Integer searchUsageDivision;
+
+  /** 利用区分(画面表示用) */
   @NotNull
   @ValidEnumValue(enumClass = UsageDivision.class)
-  private Integer searchUsageDivision;
+  private Integer viewUsageDivision;
 
   /**
    * コンストラクタ

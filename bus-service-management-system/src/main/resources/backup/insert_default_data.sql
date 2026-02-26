@@ -53,7 +53,7 @@ INSERT INTO public.menus(del_flag,menu_name,menu_division,menu_code,parent_code,
   , (0,'マスタ出力','01','EXPORT000','-',1000,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP)
   , (0,'一覧表出力','02','EXPORT001','EXPORT000',1001,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP)
   , (0,'外部システム連携','01','INTEGRATE000','-',1100,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP)
-  , (0,'GTFSｰSchedule','02','INTEGRATE001','INTEGRATE000',1101,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP);
+  , (0,'GTFS Schedule','02','INTEGRATE001','INTEGRATE000',1101,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP);
 
 -- permission_roles
 INSERT INTO public.permission_roles(del_flag,perm_role_name,created_user,created_at,updated_user,updated_at) VALUES 

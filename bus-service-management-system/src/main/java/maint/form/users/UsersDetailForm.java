@@ -85,10 +85,13 @@ public class UsersDetailForm extends BaseForm {
   /** 運行会社ID */
   private Long operatingCompanyId;
 
-  /** 利用区分 */
+  /** 利用区分(退職フラグ用設定値) */
+  private Integer usageDivision;
+
+  /** 利用区分(画面表示用) */
   @NotNull
   @ValidEnumValue(enumClass = UsageDivision.class)
-  private Integer usageDivision;
+  private Integer viewUsageDivision;
 
   /** 退職年月日 */
   private String retirementDate;

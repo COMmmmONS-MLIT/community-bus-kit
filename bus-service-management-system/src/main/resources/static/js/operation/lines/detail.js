@@ -332,6 +332,13 @@ let map;
 
 /** OpenStreetMap(Leaflet) 初期化 */
 function initMap() {
+
+    // すでにmapが表示済みであれば、表示を切り替えて終了
+    if ($('#map').is(':visible')) {
+        $('#map').hide();
+        return;
+    }
+
     $('#map').show();
 
     const results = [];

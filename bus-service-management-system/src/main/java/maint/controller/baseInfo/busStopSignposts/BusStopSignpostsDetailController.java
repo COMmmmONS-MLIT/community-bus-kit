@@ -23,8 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static maint.utils.date.ExDateUtils.getCurrentDate;
 
@@ -431,6 +430,12 @@ public class BusStopSignpostsDetailController extends BaseController {
    */
   private void commonValidationProcess(BusStopSignpostsDetailForm form, BindingResult bindingResult) {
 
+    // 新規登録時、画面入力された停留所内での停留所コード重複チェック
+    if (DispMode.INSERT_MODE.equals(form.getDispMode())) {
+      busStopSignpostsService.validateDuplicateBusStopCodesOnInsert(
+          form.getBusStopLinkDetailDtoList(), bindingResult);
+    }
+
     // 停留所のリストの取得～チェック
     List<BusStopLinkDetailDto> busStopLinkDetailDto = form.getBusStopLinkDetailDtoList();
     for (int i=0; i<busStopLinkDetailDto.size(); i++) {
@@ -484,6 +489,15 @@ public class BusStopSignpostsDetailController extends BaseController {
             busStopLinkDetailDto.get(i).getServiceEndDate())) {
           this.setErrorMsg(BusStopsMessage.ERROR_DATE_ROUTE.getMessage());
         }
+      }
+
+      // 停留所コード重複チェック
+      valueName = "busStopLinkDetailDtoList[" + i + "].busStopCode";
+      if (busStopSignpostsService.isDuplicateCode(busStopLinkDetailDto.get(i).getBusStopId(),
+          busStopLinkDetailDto.get(i).getBusStopCode())) {
+        bindingResult.addError(new FieldError(bindingResult.getObjectName(), valueName,
+            busStopLinkDetailDto.get(i).getBusStopCode(), false, null, null,
+            getMessage(BusStopsMessage.ERROR_BUS_STOP_CODE_DUPLE.getMessage())));
       }
     }
 

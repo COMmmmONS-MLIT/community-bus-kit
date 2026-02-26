@@ -119,18 +119,9 @@
                                 <div class="col-md-10">
                                     <div class="d-flex align-items-center"
                                          style="display: flex; align-items:center; gap:10px; flex-wrap:nowrap;">
-                                        <select disabled id="revisionSelect" class="form-control select2" name="revisionSelect">
-                                            <option value="">-------</option>
-                                            <option th:each="opt : ${busDaiyasOptionList}"
-                                                    th:value="${opt.daiyaRevisionId}"
-                                                    th:text="${opt.text}"
-                                                    th:attr="data-start=${opt.serviceStartDate},data-end=${opt.serviceEndDate}"
-                                                    th:selected="${opt.daiyaRevisionId == busDaiyasDetailForm.revisionSelect}">
-                                            </option>
-                                        </select>
-                                        <button type="submit" class="btn btn-primary btn-submit"
-                                                th:formaction="@{/operation/busDaiyas/detail/disp/}">表示
-                                        </button>
+                                        <input type="text" class="form-control" style="width: 300px;"
+                                               th:value="${#strings.defaultString(displayForm.serviceStartDate,'') + ' ～ ' + #strings.defaultString(displayForm.serviceEndDate,'')}"
+                                               readonly>
                                     </div>
                                     <p th:if="${#fields.hasErrors('daiyaRevisionId')}" th:errors="*{daiyaRevisionId}"
                                        class="text-danger"></p>
@@ -140,13 +131,6 @@
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title"><strong>ダイヤ情報</strong></h3>
-                                <button id="disp-change-button" type="button" class="btn btn-default btn-busdaiya-opt">
-                                    付加情報表示
-                                </button>
-                                <button id="add-bus-daiya" type="button"
-                                        class="btn btn-primary btn-submit btn-add-busDaiya">
-                                    便追加
-                                </button>
                             </div>
                             <div class="panel-body">
                                 <div id="bus-daiya-area" class="div-flex">
@@ -400,9 +384,10 @@
                             </div>
                         </div>
                         <div class="panel-footer" style="text-align: right;">
-                            <button th:formaction="@{/operation/busDaiyas/detail/back/}"
+                            <button type="button" th:formaction="@{/operation/busDaiyas/detail/back/}"
                                     class="btn btn-default double-click">戻る</button>
-                            <input type="submit" value="登録" class="btn btn-primary pull-right double-click"/>
+                            <button th:if="*{dispMode.value} neq '3'" type="button"
+                                    class="btn btn-primary pull-right double-click">登録</button>
                         </div>
                     </div>
                     <div th:insert="~{common/modal :: passReissueDialog}" th:remove="tag"></div>

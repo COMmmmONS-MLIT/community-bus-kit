@@ -20,4 +20,6 @@ public class BusServicesOptionDto {
   private Long busServiceId;
   /** 便名称 */
   private String busServiceName;
+  /** 便番号 */
+  private String busServiceTripId;
 }

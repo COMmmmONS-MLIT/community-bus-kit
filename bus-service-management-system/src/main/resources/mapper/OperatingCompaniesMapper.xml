@@ -21,7 +21,10 @@
         UPDATE "operating_companies"
            SET "operating_name"             = #{operatingName}
              , "available_flag"             = #{availableFlag}
-        <include refid="maint.mapper.CommonMapper.updateCommon"/>
+             , "phone_number"               = #{phoneNumber}
+             , "mail_address"               = #{mailAddress}
+             , "url"                        = #{url}
+           <include refid="maint.mapper.CommonMapper.updateCommon"/>
          WHERE "del_flag"                   = 0
            AND "operating_company_id"       = #{operatingCompanyId}
     </update>

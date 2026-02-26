@@ -121,10 +121,10 @@
                                     <label class="col-md-1 control-label" style="width: 200px;"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">利用区分</span></label>
                                     <div class="col-md-9">
                                         <div class="radio col-md-12">
-                                            <th:block th:each="availableFlag : ${T(maint.enums.UsageDivision).values()}">
-                                                <input type="radio" name="availableFlag" th:id="availableFlag__${availableFlag.value}__" th:value="${availableFlag.value}"
-                                                       th:checked="${availableFlag.value} eq *{availableFlag}" />
-                                                <label class="inner-title" th:for="availableFlag__${availableFlag.value}__" th:text="${availableFlag.text}"></label>
+                                            <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                                <input type="radio" name="availableFlag" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                                                       th:checked="${flg.value} == (*{availableFlag} != null ? *{availableFlag} : '1')" th:classappend="${#fields.hasErrors('availableFlag')} ? 'error' : ''"/>
+                                                <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}"></label>
                                             </th:block>
                                             <button type="button" class="btn btn-default btn-xs help-toggle" onclick="toggleHelp('availableFlag-help', this)" >このカレンダー区分を... ＞ </button>
                                         </div>

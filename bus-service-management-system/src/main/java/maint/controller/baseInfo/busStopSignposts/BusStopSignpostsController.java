@@ -100,10 +100,13 @@ public class BusStopSignpostsController extends BaseController {
   public String search(Model model,
       @Validated @ModelAttribute("busStopsSearchForm") BusStopsSearchForm form,
       BindingResult bindingResult) {
+    // 権限と入力内容のチェック
     hasAccessPermission(NOW_MENU, false, false);
     if (bindingResult.hasErrors()) {
       setErrorMsg(CommonMessage.ERROR_INPUT);
     }
+
+    // 共通処理
     form.setPage(1L);
     commonProcess(model, form, createListPager(model));
     return INDEX_PAGE;

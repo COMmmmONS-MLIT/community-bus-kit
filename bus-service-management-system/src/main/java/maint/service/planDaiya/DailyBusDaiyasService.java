@@ -368,32 +368,32 @@ public class DailyBusDaiyasService extends BaseService {
 
     // 操作内容（変更点の要約）
     List<String> ops = new ArrayList<>();
-    if (changedOperation) ops.add("運行状態の変更");
-    if (changedReason)    ops.add("運休理由の変更");
     if (changedVehicle)   ops.add("車両名の変更");
+    if (changedOperation) ops.add("運行状態の変更");
+    if (changedReason)    ops.add("お知らせの変更");
 
     // 備考(変更前)
-   List<String> notesBefore = new ArrayList<>();
+    List<String> notesBefore = new ArrayList<>();
+    if (changedVehicle && beforeData.getVehicleName() != null && !beforeData.getVehicleName().isEmpty()) {
+      notesBefore.add(beforeData.getVehicleName());
+    }
     if (changedOperation) {
       notesBefore.add(SuspensionDivision.getTextByValue(beforeData.getSalesCancelFlg())); // 0:運行, 1:運休
     }
     if (changedReason && beforeData.getNotification() != null && !beforeData.getNotification().isEmpty()) {
       notesBefore.add(beforeData.getNotification());
     }
-    if (changedVehicle && beforeData.getVehicleName() != null && !beforeData.getVehicleName().isEmpty()) {
-      notesBefore.add(beforeData.getVehicleName());
-    }
 
     // 備考(変更後)
     List<String> notesAfter = new ArrayList<>();
+    if (changedVehicle && form.getVehicleName() != null && !form.getVehicleName().isEmpty()) {
+      notesAfter.add(form.getVehicleName());
+    }
     if (changedOperation) {
       notesAfter.add(SuspensionDivision.getTextByValue(form.getSalesCancelFlg())); // 0:運行, 1:運休
     }
     if (changedReason && form.getNotification() != null && !form.getNotification().isEmpty()) {
       notesAfter.add(form.getNotification());
-    }
-    if (changedVehicle && form.getVehicleName() != null && !form.getVehicleName().isEmpty()) {
-      notesAfter.add(form.getVehicleName());
     }
 
     StringBuilder operationText = new StringBuilder(String.join("、", ops));

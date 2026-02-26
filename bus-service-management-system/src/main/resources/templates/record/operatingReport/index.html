@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-default">
-                    <form method="post" th:action="@{#}" class="form-horizontal">
+                    <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                         <div class="panel-heading">
                             <h3 class="panel-title">
                                 <strong>運行回数出力</strong>
@@ -29,13 +29,13 @@
                                             <span class="form-item-name">路線</span>
                                         </label>
                                         <div class="col-md-9">
-                                            <select id="rosenSelect" class="form-control select2" th:field="*{rosenId}"  th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''">
+                                            <select id="rosenSelect" class="form-control select2" th:field="*{rosenId}"  th:classappend="${#fields.hasErrors('rosenId')} ? 'error' : ''">
                                                 <option value="">------------</option>
                                                 <option th:each="item : ${linesList}" th:value="${item.rosenId}"
                                                         th:text="${item.rosenName}">
                                                 </option>
                                             </select>
-                                            <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" class="text-danger" />
+                                            <p th:if="${#fields.hasErrors('rosenId')}" th:errors="*{rosenId}" id="rosenIdError" class="text-danger" />
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -47,32 +47,47 @@
                                                 th:attr="data-selected=*{serviceStartDate}" th:classappend="${#fields.hasErrors('serviceStartDate')} ? 'error' : ''">
                                                 <option value="">------------</option>
                                             </select>
-                                            <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}" class="text-danger" />
+                                            <p th:if="${#fields.hasErrors('serviceStartDate')}" th:errors="*{serviceStartDate}"
+                                               id="serviceStartDateError" class="text-danger" />
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-9">
                                     <div class="form-group">
-                                        <label style="width: 150px" class="col-md-1 control-label"><span class="badge badge-danger"></span><span class="badge badge-danger require-txt">必須</span>
-                                            <span class="form-item-name">運行期間</span></label>
+                                        <label style="width: 150px" class="col-md-1 control-label ichiran-label"> <span class="badge badge-danger require-txt">必須</span>
+                                            <span class="form-item-name">運行期間</span>
+                                        </label>
                                         <div class="col-md-9">
-                                            <div class="d-flex align-items-center">
-                                                <input class="form-control w-auto" type="month" th:field="*{serviceStartMonth}" max="9999-12-31"
-                                                       th:value="${#strings.isEmpty(serviceStartMonth) ? #dates.format(#dates.createNow(),'yyyy-MM') : serviceStartMonth}"
-                                                       th:classappend="${#fields.hasErrors('serviceStartMonth')} ? 'error' : ''" />
-                                                <span class="mx-2"> ～ </span>
-                                                <input class="form-control w-auto" type="month" th:field="*{serviceEndMonth}" max="9999-12-31"
-                                                       th:value="${#strings.isEmpty(serviceEndMonth) ? #dates.format(#dates.createNow(),'yyyy-MM') : serviceEndMonth}"
-                                                       th:classappend="${#fields.hasErrors('serviceEndMonth')} ? 'error' : ''">
+                                            <div style="display:flex; align-items:flex-start; gap:8px;">
+                                                <div style="display:flex; flex-direction:column; width:150px;">
+                                                    <div style="display:flex; align-items:center; gap:8px;">
+                                                        <input id="serviceStartMonth" class="form-control w-auto" type="month" th:field="*{serviceStartMonth}" max="9999-12-31"
+                                                               th:value="${#strings.isEmpty(serviceStartMonth) ? #dates.format(#dates.createNow(),'yyyy-MM') : serviceStartMonth}"
+                                                               th:classappend="${#fields.hasErrors('serviceStartMonth')} ? 'error' : ''" />
+                                                        <span>～</span>
+                                                    </div>
+                                                    <span th:if="${#fields.hasErrors('serviceStartMonth')}" th:errors="*{serviceStartMonth}"
+                                                          id="serviceStartMonthError" class="text-danger" style="margin-top:4px;"></span>
+                                                </div>
+                                                <div style="display:flex; flex-direction:column; width:150px;">
+                                                    <input id="serviceEndMonth" class="form-control w-auto" type="month" th:field="*{serviceEndMonth}" max="9999-12-31"
+                                                           th:value="${#strings.isEmpty(serviceEndMonth) ? #dates.format(#dates.createNow(),'yyyy-MM') : serviceEndMonth}"
+                                                           th:classappend="${#fields.hasErrors('serviceEndMonth')} ? 'error' : ''" />
+                                                    <span th:if="${#fields.hasErrors('serviceEndMonth')}" th:errors="*{serviceEndMonth}"
+                                                          id="serviceEndMonthError" class="text-danger" style="margin-top:4px;"></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="panel-footer">
                             <div style="display: flex;" class="pull-right">
                                 <button th:if="${downloadFlag}"  type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit"
-                                        th:formaction="@{/record/operatingReport/downloadExcel}">
+                                        th:formaction="@{/record/operatingReport/downloadExcel}" onclick="errorObjClear()" >
                                     抽出する
                                 </button>
                             </div>
@@ -83,6 +98,7 @@
         </div>
     </div>
     <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:src="@{/js/record/operatingReport/index.js}"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         var allDaiyaDateList = /*[[${daiyaDateList}]]*/ [];

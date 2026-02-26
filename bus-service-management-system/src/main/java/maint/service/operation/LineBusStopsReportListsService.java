@@ -89,7 +89,8 @@ public class LineBusStopsReportListsService extends BaseService {
     String stopCode = rowDto.getBusStopCode();
     String excelStart = getCurrentDate();
     String excelEnd = "9999-12-31";
-    return busStopMapper.countDuplicateStopCode(stopCode, excelStart, excelEnd);
+    return busStopMapper.countDuplicateStopCode(getUserSession().getBusinessCorpId(), stopCode,
+        excelStart, excelEnd);
   }
 
   /**
@@ -232,9 +233,22 @@ public class LineBusStopsReportListsService extends BaseService {
     try (LineBusStopsReportListsExcelUpload excel = new LineBusStopsReportListsExcelUpload(file,
         uploadFileName)) {
 
+      // データがない場合、エラー
       if (excel.getDataCount() == 0) {
         String msg = this.getMessage("validation.linebusstops.report.template.empty");
         msgList.add(msg);
+        return msgList;
+      }
+
+      // 停留所コード取得 + 停留所データなしチェック
+      List<LineBusStopsReportListsExcelDto> rows = readAllRows(excel);
+      Set<String> busStopCodeSet = prepareBusStopCodeSet(rows, msgList);
+      if (busStopCodeSet == null) {
+        return msgList;
+      }
+
+      // Excel内に重複停留所コードが存在する場合、エラー
+      if (!validateNoDuplicateStopCodesInExcel(rows, msgList)) {
         return msgList;
       }
 
@@ -248,6 +262,15 @@ public class LineBusStopsReportListsService extends BaseService {
       for (int i = 0; i < excel.getDataCount(); i++) {
         LineBusStopsReportListsExcelDto rowDto = excel.getData(i);
         int rowNo = excel.getDataStartDataRow() + i;
+
+        // 標柱データの停留所コードがExcel内の停留所コード一覧に存在しない場合、エラー
+        if (BusStopType.ROAD_SIGN.getValue().toString()
+            .equals(rowDto.getBusStopType()) && ExObjectUtils.isNotBlank(
+            rowDto.getBusStopCode()) && !busStopCodeSet.contains(rowDto.getBusStopCode())) {
+          msgList.add("行" + rowNo + " " + getMessage(
+              "validation.signposts.excel.error.invalid.busstopcode"));
+          break;
+        }
 
         // Default（必須） グループ
         validateAndAddMessagesGeneric(localValidator, rowDto, rowNo, msgList,
@@ -315,9 +338,6 @@ public class LineBusStopsReportListsService extends BaseService {
           insertDto.setIndoorBusTerminalFlag(rowDto.getIndoorBusTerminalFlag());
           insertDto.setBusStopType(BusStopType.BUS_STOP.getValue());
 
-          Integer busStopId = this.insertLineBusStop(insertDto);
-          insertDto.setBusStopId("" + busStopId);
-
           LineBusStopsReportinsertList.add(insertDto);
 
         } else if (BusStopType.ROAD_SIGN.getValue().toString().equals(rowDto.getBusStopType())) {
@@ -356,16 +376,84 @@ public class LineBusStopsReportListsService extends BaseService {
       }
     }
 
-    for (SignpostInsertDto iter : SignpostInsertList) {
-      for (LineBusStopsReportInsertDto compare : LineBusStopsReportinsertList) {
-        if (compare.getBusStopCode().equals(iter.getBusStopCode())) {
-          iter.setBusStopId(compare.getBusStopId());
+    if (ExObjectUtils.isBlank(msgList)) {
+      // 停留所登録
+      Map<String, String> busStopIdByCode = new HashMap<>();
+      for (LineBusStopsReportInsertDto dto : LineBusStopsReportinsertList) {
+        Integer busStopId = this.insertLineBusStop(dto);
+        dto.setBusStopId(String.valueOf(busStopId));
+        busStopIdByCode.put(dto.getBusStopCode(), dto.getBusStopId());
+      }
+
+      // 標柱登録
+      for (SignpostInsertDto iter : SignpostInsertList) {
+        String busStopId = busStopIdByCode.get(iter.getBusStopCode());
+        if (ExObjectUtils.isNotBlank(busStopId)) {
+          iter.setBusStopId(busStopId);
           this.insertSignpost(iter);
         }
       }
     }
 
     return msgList;
+  }
+
+  /**
+   * アップロードされたExcelから全行データを読み込み、DTOリストとして返す。
+   *
+   * @param excel 停留所情報インポートエクセルアップロードクラス
+   * @return Excel全行のDTOリスト
+   */
+  private List<LineBusStopsReportListsExcelDto> readAllRows(
+      LineBusStopsReportListsExcelUpload excel) {
+    return java.util.stream.IntStream.range(0, excel.getDataCount()).mapToObj(excel::getData)
+        .toList();
+  }
+
+  /**
+   * 停留所の停留所コード一覧を作成し、停留所データが存在しない場合はmsgListにエラーを追加。
+   *
+   * @return 停留所コードSet
+   */
+  private Set<String> prepareBusStopCodeSet(List<LineBusStopsReportListsExcelDto> rows,
+      List<String> msgList) {
+    List<String> busStopCodes = rows.stream()
+        .filter(r -> BusStopType.BUS_STOP.getValue().toString().equals(r.getBusStopType()))
+        .map(LineBusStopsReportListsExcelDto::getBusStopCode)
+        .filter(maint.utils.ExObjectUtils::isNotBlank).distinct().toList();
+
+    // 停留所データがない場合、エラー
+    if (busStopCodes.isEmpty()) {
+      msgList.add(getMessage("validation.linebusstops.report.template.busstops.empty"));
+      return null;
+    }
+
+    // チェック用停留所コード
+    return new HashSet<>(busStopCodes);
+  }
+
+  /**
+   * Excel内の停留所コード重複チェック
+   *
+   * @return true: OK、false: NG
+   */
+  private boolean validateNoDuplicateStopCodesInExcel(List<LineBusStopsReportListsExcelDto> rows,
+      List<String> msgList) {
+    Map<String, Long> stopCodeCountsInExcel = rows.stream()
+        .filter(r -> BusStopType.BUS_STOP.getValue().toString().equals(r.getBusStopType()))
+        .map(LineBusStopsReportListsExcelDto::getBusStopCode)
+        .filter(maint.utils.ExObjectUtils::isNotBlank).collect(
+            java.util.stream.Collectors.groupingBy(s -> s, java.util.stream.Collectors.counting()));
+
+    List<String> duplicatedStopCodesInExcel = stopCodeCountsInExcel.entrySet().stream()
+        .filter(e -> e.getValue() != null && e.getValue() > 1).map(Map.Entry::getKey).sorted()
+        .toList();
+
+    if (!duplicatedStopCodesInExcel.isEmpty()) {
+      msgList.add(getMessage("validation.linebusstops.report.excel.error.busstopcode.duplicate"));
+      return false;
+    }
+    return true;
   }
 
   /**

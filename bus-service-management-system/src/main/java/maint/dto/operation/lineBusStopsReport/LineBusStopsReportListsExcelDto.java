@@ -76,6 +76,7 @@ public class LineBusStopsReportListsExcelDto extends BaseDto {
   private String busStopUrl;
 
   /** 屋内バスターミナルフラグ（0:屋外、1:屋内） ※停留所のみ */
+  @NotBlank(message = "{validation.linebusstops.report.indoorbusterminalflag.notblank}", groups = StopGroup.class)
   @Pattern(regexp = ExRegUtils.zeroToOneOptionalReg, message = "{validation.linebusstops.report.indoorbusterminalflag.pattern}", groups = StopGroup.class)
   private String indoorBusTerminalFlag;
 

@@ -33,8 +33,9 @@
         <div class="form-group">
           <div class="col-md-12" style="padding-top:10px;">
             <div style="display: flex; justify-content: space-between;">
-              <input type="submit" id="resend-auth-Btn" class="btn btn-info" value="再送信" th:formaction="@{/auth/login/resend-auth-code}" />
-              <input type="submit" class="btn btn-info" value="LOGIN" th:formaction="@{/auth/login/check-auth-code}" />
+              <button type="button" id="resend-auth-Btn" class="btn btn-info"
+                      th:formaction="@{/auth/login/resend-auth-code}">再送信</button>
+              <button type="submit" class="btn btn-info" th:formaction="@{/auth/login/check-auth-code}">LOGIN</button>
             </div>
           </div>
         </div>

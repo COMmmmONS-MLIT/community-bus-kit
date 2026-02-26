@@ -33,12 +33,6 @@ public class SearchDailyBusDaiyasDto extends BaseDto {
   private String busStopDepartureTimeStart;
   /** 始発出発時刻_終了 */
   private String busStopDepartureTimeEnd;
-  /** 到着時刻時刻 */
-  private String busStopArrivalTime;
-  /** 始発出発時刻 */
-  private String busStopDepartureTime;
-  /** 運休フラグ */
-  private Integer suspensionDivisionFlag;
   /** 便ID */
   private Long busServiceId;
   /** 系統ID */
@@ -66,11 +60,8 @@ public class SearchDailyBusDaiyasDto extends BaseDto {
     this.daiyaRevisionName = form.getSearchDaiyaRevisionName();
     this.serviceStartDate = form.getSearchServiceStartDate();
     this.serviceEndDate = form.getSearchServiceEndDate();
-    this.busStopArrivalTime = form.getSearchBusStopArrivalTime();
-    this.busStopDepartureTime = form.getSearchBusStopDepartureTime();
-    this.busStopDepartureTimeStart = form.getSearchBusStopArrivalTime();
-    this.busStopDepartureTimeEnd = form.getSearchBusStopDepartureTime();
-    this.suspensionDivisionFlag = form.getSearchSalesCancelFlg();
+    this.busStopDepartureTimeStart = form.getSearchBusStopDepartureTimeStart();
+    this.busStopDepartureTimeEnd = form.getSearchBusStopDepartureTimeEnd();
+    this.salesCancelFlg = form.getSearchSalesCancelFlg();
   }
-
 }

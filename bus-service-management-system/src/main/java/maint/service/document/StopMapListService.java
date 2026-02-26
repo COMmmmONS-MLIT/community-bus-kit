@@ -19,10 +19,11 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 一覧表出SERVICE
+ * 停留所付近図EXCEL出力SERVICE
  *
  * @author 林竜生
  *
@@ -61,6 +62,11 @@ public class StopMapListService extends BaseService {
    */
   public ResponseEntity<?> getStopMapInfo(
       StopMapExcelForm form) throws Exception {
+
+    // 対象日付を画面の入力フォーマットから変換してFormに入れる
+    String processingDateStr = form.getProcessingDateStr();
+    LocalDate processingDate = LocalDate.parse(processingDateStr, ExDateFormat.uuuuMMdd_HYPEN);
+    form.setProcessingDate(processingDate);
 
     // テンプレートを読み込み 作業用のBookを作成
     Resource resource = resourceLoader.getResource(

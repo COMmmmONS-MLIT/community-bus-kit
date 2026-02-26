@@ -209,6 +209,10 @@ public class lineRoutesDetailController extends BaseController {
     }
 
     commonInitProcess(model, form);
+    List<LineRouteBusStopsDto> lineBusStopList =
+        commonService.getLineBusStopListByServiceDateAndRosenId(form.getServiceStartDate(),
+            form.getServiceEndDate(), form.getRosenId());
+    model.addAttribute("lineBusStopList", lineBusStopList);
     model.addAttribute("dispLineBusStopsFlag", true);
 
     return CONFIRM_PAGE;

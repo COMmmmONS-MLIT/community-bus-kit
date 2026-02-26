@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
@@ -114,6 +115,22 @@ public class ExDateUtils {
   }
 
   /**
+   * 文字列時刻（HHmm）をLocalTimeにパース
+   *
+   * @param time 文字列時刻（HHmm）
+   * @return LocalTime
+   */
+  public static LocalTime parseLocalTime(String time) {
+    try {
+      return LocalTime.parse(time, ExDateFormat.HHmm);
+    } catch (DateTimeParseException e) {
+      // 引数の時刻形式が「HHmm」以外の場合、ログを出力してエラー発生
+      LOGGER.error("【日付Utils】引数の文字列時刻（HHmm）が正しくありません。引数=" + time);
+      throw e;
+    }
+  }
+
+  /**
    * 日時のフォーマットを変換（画面表示兼用）<br>
    * <br>
    * ※変換元の日時は「uuuu-MM-dd HH:mm:ss」形式であること<br> 例）uuuu-MM-dd HH:mm:ss -> uuuu年MM月dd日<br> 例）uuuu-MM-dd
@@ -139,6 +156,20 @@ public class ExDateUtils {
    */
   public static String convertDateFormat(String date, DateTimeFormatter targetFormat) {
     return parseLocalDate(date).format(targetFormat);
+  }
+
+  /**
+   * 時刻のフォーマットを変換（表示用）<br>
+   * <br>
+   * ※変換元の時刻は「HHmm」形式であること<br>
+   * 例）HHmm -> HH:mm<br>
+   *
+   * @param time 文字列時刻（HHmm）
+   * @param targetFormat 出力したい時刻フォーマッター
+   * @return 変換された時刻
+   */
+  public static String convertTimeFormat(String time, DateTimeFormatter targetFormat) {
+    return parseLocalTime(time).format(targetFormat);
   }
 
   /**

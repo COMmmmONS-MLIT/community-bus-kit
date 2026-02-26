@@ -106,6 +106,7 @@ public class UsersDetailController extends BaseController {
     form.setSessionKey(UUID.randomUUID().toString());
     // 共通処理
     commonProcess(model, form);
+    form.setViewUsageDivision(UsageDivision.ACTIVE.getValue());
 
     return DETAIL_PAGE;
   }
@@ -124,6 +125,7 @@ public class UsersDetailController extends BaseController {
 
     // ユーザー情報取得
     form.setInfo(usersService.getUserByPk(form.getUserId()), form.getPage(), DispMode.UPDATE_MODE);
+    inputViewUsageDivision(form);
 
     // 複数タブ用にUUID設定
     form.setSessionKey(UUID.randomUUID().toString());
@@ -170,6 +172,7 @@ public class UsersDetailController extends BaseController {
     form.setSessionKey(UUID.randomUUID().toString());
 
     form.setInfo(usersService.getUserByPk(form.getUserId()), form.getPage(), DispMode.CONTENT_MODE);
+    inputViewUsageDivision(form);
 
     // 共通処理
     commonProcess(model, form);
@@ -243,6 +246,9 @@ public class UsersDetailController extends BaseController {
       model.addAttribute(className + "." + attributeName, bindingResult);
       return DETAIL_PAGE;
     }
+
+    // 画面入力の利用区分を検索用(退職フラグ用)に変換してセットする
+    outputViewUsageDivision(form);
 
     // 登録、変更処理
     if (form.getDispMode().equals(DispMode.INSERT_MODE)) {
@@ -348,5 +354,39 @@ public class UsersDetailController extends BaseController {
     model.addAttribute("isAgencyWithOperatingCompany",
         getUserSession().getAccountDivision().equals(AccountDivision.AGENCY.getValue())
             && ExObjectUtils.isNotBlank(getUserSession().getOperatingCompanyId()));
+  }
+
+  /**
+   * DB取得の利用区分を画面出力用に変換してセット
+   *
+   * @param form  ユーザー検索FORM
+   */
+  private void inputViewUsageDivision(UsersDetailForm form) {
+    // ユーザ管理画面での利用区分はデータ上では退職フラグを参照としており、
+    // 設定値が以下のようになっているため0／1を入れ替えてFormに設定している。
+    // 利用区分：0(利用不可)／1(利用可)　⇔　退職フラグ：0(在職)／1(退職)
+    // 画面に出力するための変換処理
+    if (form.getUsageDivision().equals(UsageDivision.DISABLED.getValue())) {
+      form.setViewUsageDivision(UsageDivision.ACTIVE.getValue());
+    } else {
+      form.setViewUsageDivision(UsageDivision.DISABLED.getValue());
+    }
+  }
+
+  /**
+   * 画面出力用利用区分をDB検索用に変換してセット
+   *
+   * @param form  ユーザー検索FORM
+   */
+  private void outputViewUsageDivision(UsersDetailForm form) {
+    // ユーザ管理画面での利用区分はデータ上では退職フラグを参照としており、
+    // 設定値が以下のようになっているため0／1を入れ替えてFormに設定している。
+    // 利用区分：0(利用不可)／1(利用可)　⇔　退職フラグ：0(在職)／1(退職)
+    // DB登録・変更をするための変換処理
+    if (form.getViewUsageDivision().equals(UsageDivision.DISABLED.getValue())) {
+      form.setUsageDivision(UsageDivision.ACTIVE.getValue());
+    } else {
+      form.setUsageDivision(UsageDivision.DISABLED.getValue());
+    }
   }
 }

@@ -53,6 +53,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     // 2要素認証が必要であるかチェック
     if (authService.isNeedTwoFactorAuth(userSession)) {
+      userSession.setAuthenticatedFlag(false);
 
       // 6桁英数字の認証コード生成
       String authCode = authService.createRandomAlphanumeric(6);

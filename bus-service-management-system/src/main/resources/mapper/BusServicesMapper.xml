@@ -36,6 +36,7 @@
     <select id="getBusServiceOptions" resultType="BusServiceOptionsDto">
         SELECT "bs"."bus_service_id"
              , "bs"."bus_service_name"
+             , "bs"."bus_service_trip_id"
           FROM "bus_services" "bs"
           JOIN "daiya_revisions" "dr"
             ON "dr"."del_flag"               = 0
@@ -86,51 +87,10 @@
              , CASE WHEN "cd5"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType6Flag"
              , CASE WHEN "cd6"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "dayType7Flag"
              , CASE WHEN "cd7"."calendar_detail_id" IS NULL THEN 0 ELSE 1 END AS "HolidaysFlag"
-             , CASE
-                   WHEN (
-                            "cd1"."calendar_detail_id" IS NOT NULL OR
-                            "cd2"."calendar_detail_id" IS NOT NULL OR
-                            "cd3"."calendar_detail_id" IS NOT NULL OR
-                            "cd4"."calendar_detail_id" IS NOT NULL OR
-                            "cd5"."calendar_detail_id" IS NOT NULL
-                            )
-                       AND (
-                            "cd0"."calendar_detail_id" IS NULL AND
-                            "cd6"."calendar_detail_id" IS NULL AND
-                            "cd7"."calendar_detail_id" IS NULL
-                            )
-                       THEN '平日（月～金）'
-                   WHEN (
-                            "cd0"."calendar_detail_id" IS NOT NULL OR
-                            "cd6"."calendar_detail_id" IS NOT NULL OR
-                            "cd7"."calendar_detail_id" IS NOT NULL
-                            )
-                       AND (
-                            "cd1"."calendar_detail_id" IS NULL AND
-                            "cd2"."calendar_detail_id" IS NULL AND
-                            "cd3"."calendar_detail_id" IS NULL AND
-                            "cd4"."calendar_detail_id" IS NULL AND
-                            "cd5"."calendar_detail_id" IS NULL
-                            )
-                       THEN '土曜・日曜・祝日'
-                   WHEN (
-                            "cd1"."calendar_detail_id" IS NOT NULL OR
-                            "cd2"."calendar_detail_id" IS NOT NULL OR
-                            "cd3"."calendar_detail_id" IS NOT NULL OR
-                            "cd4"."calendar_detail_id" IS NOT NULL OR
-                            "cd5"."calendar_detail_id" IS NOT NULL
-                            )
-                       AND (
-                            "cd0"."calendar_detail_id" IS NOT NULL OR
-                            "cd6"."calendar_detail_id" IS NOT NULL OR
-                            "cd7"."calendar_detail_id" IS NOT NULL
-                            )
-                       THEN '平日・土曜・日曜・祝日'
-                   ELSE '運行なし'
-           END                            AS "service_id"
           FROM "bus_services"             AS "bsrv"
     INNER JOIN "calendars"                AS "cal"
             ON "cal"."del_flag"            = 0
+           AND "cal"."available_flag"      = 1
            AND "cal"."calendar_id"         = "bsrv"."calendar_id"
     INNER JOIN "daiya_revisions"          AS "dr"
             ON "dr"."del_flag"             = 0
@@ -219,27 +179,31 @@
             ON "lrbs"."del_flag"                                                              = 0
            AND "lrbs"."line_route_bus_stop_id"                                                = "bd"."line_route_bus_stop_id"
     INNER JOIN "line_routes"                                                                 AS "lr"
-            ON  "lr"."del_flag"                                                               = 0
+            ON "lr"."del_flag"                                                                = 0
+           AND "lr"."available_flag"                                                          = 1
            AND "lr"."line_route_id"                                                           = "lrbs"."line_route_id"
     INNER JOIN "lines"                                                                       AS "l"
             ON "l"."del_flag"                                                                 = 0
            AND "l"."available_flag"                                                           = 1
            AND "l"."rosen_id"                                                                 = "lr"."rosen_id"
     INNER JOIN "signposts"                                                                   AS "sp"
-            ON  "sp"."del_flag"                                                               = 0
+            ON "sp"."del_flag"                                                                = 0
+           AND "sp"."available_flag"                                                          = 1
            AND "sp"."signpost_id"                                                             = "lrbs"."signpost_id"
     INNER JOIN "bus_stops"                                                                   AS "bs"
-            ON  "bs"."del_flag"                                                               = 0
+            ON "bs"."del_flag"                                                                = 0
+           AND "bs"."available_flag"                                                          = 1
            AND "bs"."bus_stop_id"                                                             = "sp"."bus_stop_id"
     INNER JOIN "calendars"                                                                   AS "cal"
-            ON  "cal"."del_flag"                                                              = 0
+            ON "cal"."del_flag"                                                               = 0
+           AND "cal"."available_flag"                                                         = 1
            AND "cal"."calendar_id"                                                            = "bsrv"."calendar_id"
      LEFT JOIN "offices"                                                                     AS "ofc"
-            ON  "ofc"."del_flag"                                                              = 0
+            ON "ofc"."del_flag"                                                               = 0
            AND "ofc"."available_flag"                                                         = 1
            AND "ofc"."office_id"                                                              = "bsrv"."office_id"
      LEFT JOIN "operating_companies"                                                         AS "oc"
-            ON  "oc"."del_flag"                                                               = 0
+            ON "oc"."del_flag"                                                                = 0
            AND "oc"."available_flag"                                                          = 1
            AND "oc"."operating_company_id"                                                    = "ofc"."operating_company_id"
          WHERE "bsrv"."del_flag"                                                              = 0

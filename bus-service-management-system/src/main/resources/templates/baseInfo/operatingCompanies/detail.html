@@ -87,10 +87,11 @@
                                 </label>
                                 <div class="col-md-10">
                                     <div class="col-md-12 radio">
-                                        <input type="radio" name="availableFlag" th:id="availableFlag__0__" th:value="1" th:checked="*{availableFlag eq 1}"/>
-                                        <label class="inner-title" th:for="availableFlag__0__" th:text="利用中"></label>
-                                        <input type="radio" name="availableFlag" th:id="availableFlag__1__" th:value="0" th:checked="*{availableFlag eq 0}"/>
-                                        <label class="inner-title" th:for="availableFlag__1__" th:text="利用不可"></label>
+                                        <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                            <input type="radio" name="availableFlag" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                                                   th:checked="${flg.value} == (*{availableFlag} != null ? *{availableFlag} : '1')" th:classappend="${#fields.hasErrors('availableFlag')} ? 'error' : ''"/>
+                                            <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}"></label>
+                                        </th:block>
                                         <p th:if="${#fields.hasErrors('availableFlag')}" th:errors="*{availableFlag}" class="text-danger"></p>
                                     </div>
                                 </div>

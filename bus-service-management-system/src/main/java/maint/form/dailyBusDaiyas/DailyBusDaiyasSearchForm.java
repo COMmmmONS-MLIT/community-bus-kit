@@ -28,14 +28,14 @@ public class DailyBusDaiyasSearchForm extends BaseForm {
   private String searchServiceStartDate;
   /** 日毎便ダイヤ終了日 */
   private String searchServiceEndDate;
-  /** 到着時刻時刻 */
+  /** 始発出発時刻_開始 */
   @IllegalCharacters
   @Size(max = 4)
-  private String searchBusStopArrivalTime;
-  /** 始発出発時刻 */
+  private String searchBusStopDepartureTimeStart;
+  /** 始発出発時刻_終了 */
   @IllegalCharacters
   @Size(max = 4)
-  private String searchBusStopDepartureTime;
+  private String searchBusStopDepartureTimeEnd;
   /** 運休フラグ */
   private Integer searchSalesCancelFlg;
   /** 便ID */

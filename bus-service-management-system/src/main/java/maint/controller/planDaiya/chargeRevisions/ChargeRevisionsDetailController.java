@@ -240,8 +240,8 @@ public class ChargeRevisionsDetailController extends BaseController {
 
     // 運賃適用開始日チェック
     if (ExObjectUtils.isNotBlank(form.getServiceStartDate())) {
-      // 過去日の場合、エラー
-      if (ExDateUtils.compareLocalDate(form.getServiceStartDate(), getCurrentDate()) < 0) {
+      // 本日日付以前の場合、エラー
+      if (ExDateUtils.compareLocalDate(form.getServiceStartDate(), getCurrentDate()) <= 0) {
         bindingResult.addError(new FieldError(bindingResult.getObjectName(), "serviceStartDate",
             form.getServiceStartDate(), false, null, null,
             getMessage(ChargeRevisionsMessage.FARE_REVISION_INVALID_DATE.getMessage())));

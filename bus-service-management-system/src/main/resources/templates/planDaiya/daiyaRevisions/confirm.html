@@ -59,8 +59,8 @@
                             <input type="hidden" name="daiyaRevisionId" th:value="*{daiyaRevisionId}">
                             <input type="hidden" th:field="*{page}">
                             <a th:if="*{dispMode.value} eq '3'" th:href="'/planDaiya/daiyaRevisions/' + *{page} + '/'" class=" btn btn-default">戻る</a>
-                            <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/planDaiya/daiyaRevisions/detail/back/}" class="btn btn-default double-click" style="margin-right: 5px">戻る</button>
-                            <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/planDaiya/daiyaRevisions/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
+                            <button type="button" th:if="*{dispMode.value} neq '3'" th:formaction="@{/planDaiya/daiyaRevisions/detail/back/}" class="btn btn-default double-click" style="margin-right: 5px">戻る</button>
+                            <button type="button" th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/planDaiya/daiyaRevisions/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
                         </form>
                     </div>
                 </div>

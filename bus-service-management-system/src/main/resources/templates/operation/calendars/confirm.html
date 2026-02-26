@@ -97,10 +97,10 @@
                                 <label class="col-md-1 control-label" style="width: 200px;"> <span class="form-item-name">利用区分</span></label>
                                 <div class="col-md-9">
                                     <div class="radio col-md-12">
-                                        <th:block th:each="availableFlag : ${T(maint.enums.UsageDivision).values()}">
-                                            <input type="radio" name="availableFlag" th:id="availableFlag__${availableFlag.value}__" th:value="${availableFlag.value}"
-                                                   th:checked="${availableFlag.value} eq *{availableFlag}" disabled />
-                                            <label class="inner-title" th:for="availableFlag__${availableFlag.value}__" th:text="${availableFlag.text}"></label>
+                                        <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                            <input type="radio" name="availableFlag" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                                                   th:checked="${flg.value} == (*{availableFlag} != null ? *{availableFlag} : '1')" th:classappend="${#fields.hasErrors('availableFlag')} ? 'error' : ''" disabled />
+                                            <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}" disabled ></label>
                                         </th:block>
                                     </div>
                                 </div>
@@ -250,8 +250,8 @@
                                     <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
                                     <input type="hidden" th:field="*{page}">
                                     <a th:if="*{dispMode.value} eq '3'" th:href="'/operation/calendars/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
-                                    <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/operation/calendars/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
-                                    <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/operation/calendars/detail/register/}"
+                                    <button type="button" th:if="*{dispMode.value} neq '3'" th:formaction="@{/operation/calendars/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
+                                    <button type="button" th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/operation/calendars/detail/register/}"
                                             th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
                                 </form>
                             </div>

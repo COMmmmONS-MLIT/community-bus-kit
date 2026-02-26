@@ -18,12 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 路線時刻表リストSERVICE
@@ -101,12 +96,17 @@ public class RouteTimetableListService extends BaseService {
     Map<SheetKey, List<RouteTimetableListDownloadDto>> sheetGroupedData = new LinkedHashMap<>();
 
     for (RouteTimetableListDownloadDto dto : routeTimetableDL) {
+      // グループ化
       SheetKey key = new SheetKey(
           dto.getRosenId(),
           dto.getCalendarType(),
           dto.getLineDetailServiceDivision()
       );
       sheetGroupedData.computeIfAbsent(key, k -> new ArrayList<>()).add(dto);
+
+      // 出発時刻の文字列の変更　(HHMM　→　HH:MM)
+      dto.setBusStopDepartureTime(
+          ExDateUtils.convertTimeFormat(dto.getBusStopDepartureTime(), ExDateFormat.HHmm_COLON));
     }
 
     // シート毎に一意の組み合わせを追跡するためのセット
@@ -188,6 +188,18 @@ public class RouteTimetableListService extends BaseService {
       }
 
       // 停留所名を行に書き出し
+      // 往路、復路区分が復路の時は出力順を逆順に変更
+      if (entry.getKey().lineDetailServiceDivision().equals("0")) {
+        List<Integer> rowNums = new ArrayList<>(rowIndexByStop.values());
+        List<Long> busStops = new ArrayList<>(rowIndexByStop.keySet());
+        rowIndexByStop.clear();
+        for (int i = 0; i < rowNums.size(); i++) {
+          long busStop = busStops.get(i);
+          int num = rowNums.size() - 1 - i;
+          int rowCnt = rowNums.get(num);
+          rowIndexByStop.put(busStop, rowCnt);
+        }
+      }
       for (var e2 : rowIndexByStop.entrySet()) {
         Long stopId = e2.getKey();
         int r = e2.getValue();

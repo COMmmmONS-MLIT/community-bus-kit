@@ -44,22 +44,6 @@ public interface BusStopMapper {
   BusStopDetailDto getBusStopByPk(Long Id);
 
   /**
-   * 登録
-   *
-   * @param busStopsEntity 停留所ENTITY
-   * @return 登録数
-   */
-  int registerBusStop(BusStopsEntity busStopsEntity);
-
-  /**
-   * 変更
-   *
-   * @param busStopsEntity 停留所ENTITY
-   * @return 変更数
-   */
-  int updateBusStop(BusStopsEntity busStopsEntity);
-
-  /**
    * 利用期間による停留所数取得（系統利用期間チェック用）
    *
    * @param busStopId 停留所ID
@@ -93,12 +77,15 @@ public interface BusStopMapper {
 
   /**
    * 指定された停留所コードが、指定された有効期間内に既に存在するかをチェックする。
-   * @param stopCode   停留所コード
-   * @param excelStart 利用開始年月日
-   * @param excelEnd   利用終了年月日
+   *
+   * @param businessCorpId 事業者ID
+   * @param stopCode       停留所コード
+   * @param excelStart     利用開始年月日
+   * @param excelEnd       利用終了年月日
    * @return 重複件数
    */
-  int countDuplicateStopCode(String stopCode, String excelStart, String excelEnd);
+  int countDuplicateStopCode(Long businessCorpId, String stopCode, String excelStart,
+      String excelEnd);
 
   /**
    * 系統停留所IDに対応する「運行順序（停留所の並び順）」を取得します。

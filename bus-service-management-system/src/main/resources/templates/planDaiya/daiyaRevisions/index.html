@@ -8,7 +8,8 @@
     <div class="page-content-wrap">
         <div class="row">
             <div class="col-md-12">
-                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${daiyaRevisionsSearchForm}">
+                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${daiyaRevisionsSearchForm}"
+                      onkeydown="return event.key !== 'Enter';">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <h3 class="panel-title">
@@ -80,7 +81,7 @@
                                 <td>
                                     <form method="post" th:action="@{/planDaiya/daiyaRevisions/detail/}">
                                         <input type="hidden" name="daiyaRevisionId" th:value="${daiyaRevisions.daiyaRevisionId}" />
-                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <input type="hidden" name="page" th:value="${daiyaRevisionsSearchForm.page}" />
                                         <button type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/planDaiya/daiyaRevisions/detail/content/}">確認</button>
                                     </form>
                                 </td>

@@ -9,7 +9,8 @@
     <div class="page-content-wrap">
         <div class="row">
             <div class="col-md-12">
-                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${dailyBusDaiyasSearchForm}">
+                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${dailyBusDaiyasSearchForm}"
+                      onkeydown="return event.key !== 'Enter';">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <h3 class="panel-title">
@@ -27,7 +28,7 @@
                                     <span class="form-item-name">路線</span>
                                 </label>
                                 <div class="col-md-9">
-                                    <select class="form-control select2" th:field="*{searchRosenId}">
+                                    <select class="form-control select2" th:field="*{searchRosenId}" id="rosenSelect">
                                         <option value="">-------</option>
                                         <option th:each="item : ${linesList}" th:value="${item.rosenId}" th:text="${item.rosenName}"></option>
                                     </select>
@@ -41,11 +42,11 @@
                                 </label>
                                 <div class="col-md-9">
                                     <div class="d-flex align-items-center">
-                                        <input class="form-control w-auto" type="date"
+                                        <input class="form-control w-auto" type="date" id="serviceStartDate"
                                                th:field="*{searchServiceStartDate}" max="9999-12-31"
                                                th:classappend="${#fields.hasErrors('searchServiceStartDate')} ? 'error' : ''" />
                                         <span class="mx-2"> ～ </span>
-                                        <input class="form-control w-auto" type="date"
+                                        <input class="form-control w-auto" type="date" id="serviceEndDate"
                                                th:field="*{searchServiceEndDate}" max="9999-12-31"
                                                th:classappend="${#fields.hasErrors('searchServiceEndDate')} ? 'error' : ''" />
                                     </div>
@@ -58,13 +59,13 @@
                                 </label>
                                 <div class="col-md-9">
                                     <div class="d-flex align-items-center">
-                                        <input type="text" class="form-control w-auto" maxlength="4"
-                                           th:field="*{searchBusStopArrivalTime}" style="width: 80px;"
-                                           th:classappend="${#fields.hasErrors('searchBusStopArrivalTime')} ? 'error' : ''"/>
+                                        <input type="text" class="form-control w-auto" maxlength="4" id="busStopDepartureTimeStart"
+                                           th:field="*{searchBusStopDepartureTimeStart}" style="width: 80px;"
+                                           th:classappend="${#fields.hasErrors('searchBusStopDepartureTimeStart')} ? 'error' : ''"/>
                                         <span class="mx-2" style="margin-top: 5px;"> ～ </span>
-                                        <input type="text" class="form-control w-auto" maxlength="4"
-                                               th:field="*{searchBusStopDepartureTime}" style="width: 80px;"
-                                               th:classappend="${#fields.hasErrors('searchBusStopDepartureTime')} ? 'error' : ''"/>
+                                        <input type="text" class="form-control w-auto" maxlength="4" id="busStopDepartureTimeEnd"
+                                               th:field="*{searchBusStopDepartureTimeEnd}" style="width: 80px;"
+                                               th:classappend="${#fields.hasErrors('searchBusStopDepartureTimeEnd')} ? 'error' : ''"/>
                                     </div>
                                 </div>
                             </div>
@@ -74,9 +75,9 @@
                                 </label>
                                 <div class="col-md-9">
                                     <div class="radio col-md-12">
-                                        <input type="radio" name="searchSalesCancelFlg" th:id="searchSalesCancelFlg__0__" th:value="0" th:checked="*{searchSalesCancelFlg eq 0}"/>
+                                        <input type="radio" name="salesCancelFlg" th:id="searchSalesCancelFlg__0__" th:value="0" th:checked="*{searchSalesCancelFlg eq 0}" th:field="*{searchSalesCancelFlg}"/>
                                         <label class="inner-title" th:for="searchSalesCancelFlg__0__" th:text="通常運行"></label>
-                                        <input type="radio" name="searchSalesCancelFlg" th:id="searchSalesCancelFlg__1__" th:value="1" th:checked="*{searchSalesCancelFlg eq 1}"/>
+                                        <input type="radio" name="salesCancelFlg" th:id="searchSalesCancelFlg__1__" th:value="1" th:checked="*{searchSalesCancelFlg eq 1}" th:field="*{searchSalesCancelFlg}"/>
                                         <label class="inner-title" th:for="searchSalesCancelFlg__1__" th:text="運休便"></label>
                                     </div>
                                     <p th:if="${#fields.hasErrors('searchSalesCancelFlg')}" th:errors="*{searchSalesCancelFlg}" class="text-danger"></p>
@@ -87,9 +88,8 @@
                                     <span class="form-item-name">便名</span>
                                 </label>
                                 <div class="col-md-9">
-                                    <select class="form-control select2" th:field="*{searchBusServiceId}">
+                                    <select class="form-control select2" th:field="*{searchBusServiceId}" th:attr="data-initial-bus=*{searchBusServiceId}" id="busServiceSelect">
                                         <option value="">-------</option>
-                                        <option th:each="item : ${busServiceNameList}" th:value="${item.busServiceId}" th:text="${item.busServiceName}"></option>
                                     </select>
                                     <p th:if="${#fields.hasErrors('searchBusServiceId')}" th:errors="*{searchBusServiceId}" class="text-danger"></p>
                                 </div>
@@ -129,7 +129,7 @@
                                     <form method="post" th:action="@{/planDaiya/dailyBusDaiyas/detail/}">
                                         <input type="hidden" name="dailyBusDaiyaId" th:value="${dailyBusDaiyas.dailyBusDaiyaId}" />
                                         <input type="hidden" name="lineDetailServiceDivision" th:value="${dailyBusDaiyas.lineDetailServiceDivision}" />
-                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <input type="hidden" name="page" th:value="${dailyBusDaiyasSearchForm.page}" />
                                         <button th:if="${writeFlag}" type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/planDaiya/dailyBusDaiyas/detail/}">変更</button>
                                         <button th:if="!${writeFlag}" type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/planDaiya/dailyBusDaiyas/detail/content/}">確認</button>
                                     </form>
@@ -145,6 +145,7 @@
     </div>
     <div th:insert="~{common/modal :: customDialog}"></div>
     <th:block th:insert="~{common/script :: common_script}"></th:block>
+    <script th:src="@{/js/planDaiya/dailyBusDaiyas/index.js}"></script>
 
 </div>
 <!-- END PAGE CONTENT WRAPPER -->

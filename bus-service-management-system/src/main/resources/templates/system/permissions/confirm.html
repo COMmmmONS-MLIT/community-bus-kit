@@ -68,9 +68,9 @@
                           <input type="hidden" th:field="*{page}">
 								<div class="pull-right">
 									<a th:if="*{dispMode.value} eq '3'" th:href="'/system/permissions/' + *{page} + '/'" class=" btn btn-default">戻る</a>
-									<button th:if="*{dispMode.value} neq '3'" th:formaction="@{/system/permissions/detail/back/}"
+									<button type="button" th:if="*{dispMode.value} neq '3'" th:formaction="@{/system/permissions/detail/back/}"
 											class="btn btn-default double-click">戻る</button>
-									<button th:if="*{dispMode.value} neq '3'" class="btn btn-primary double-click"
+									<button type="button" th:if="*{dispMode.value} neq '3'" class="btn btn-primary double-click"
 											th:formaction="@{/system/permissions/detail/register/}" th:text="*{dispMode.value} neq '1' ? '登録':'変更'">登録</button>
 								</div>
 			              </form>

@@ -7,6 +7,7 @@ import maint.enums.Menu;
 import maint.form.busDaiyas.BusDaiyasDetailForm;
 import maint.message.CommonMessage;
 import maint.service.operation.BusDaiyasService;
+import maint.utils.ExObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -213,6 +214,46 @@ public class BusDaiyasDetailController extends BaseController {
   }
 
   /**
+   * 便ダイヤ確認画面(参照権限)
+   *
+   * @param model Model
+   * @param form  便ダイヤ詳細FORM
+   * @return 便ダイヤ確認画面
+   */
+  @PostMapping("/content/")
+  public String content(Model model, @ModelAttribute("displayForm") BusDaiyasDetailForm form) {
+
+    hasAccessPermission(NOW_MENU, false, false);
+
+    // 前画面の選択行の往路、復路区分を退避（PK再取得で上書きされるため）
+    final Integer lineDetailServiceDivision = form.getLineDetailServiceDivision();
+
+    // PKで最新のヘッダ情報を再取得して画面モード設定
+    form.setInfo(busDaiyasService.getBusDaiyasByPk(form), form.getPage(), DispMode.CONTENT_MODE);
+
+    // 前画面の選択行の往路、復路区分を復元
+    form.setLineDetailServiceDivision(lineDetailServiceDivision);
+
+    // 画面表示用の初期値
+    form.setSessionKey(UUID.randomUUID().toString());
+    form.setDisplayDivisionFlag(1);
+    model.addAttribute("detailOptionFlag", 1);
+
+    // 表示対象の改正IDを設定
+    if (ExObjectUtils.isBlank(form.getRevisionSelect())) {
+      form.setRevisionSelect(form.getDaiyaRevisionId());
+    }
+
+    // ダイヤ情報を設定
+    model.addAttribute("busDaiyasRegistedList", busDaiyasService.getBusDaiyasRegistedList(form));
+
+    // 共通処理
+    commonInitProcess(model, form);
+
+    return CONFIRM_PAGE;
+  }
+
+  /**
    * 便ダイヤ管理確認画面
    *
    * @param model Model
@@ -231,7 +272,7 @@ public class BusDaiyasDetailController extends BaseController {
     // セッション情報の整合性チェック
     form.isInvalidSession();
 
-    form.setInfo(busDaiyasService.getBusDaiyasByPk(form), form.getPage(), DispMode.CONTENT_MODE);
+    form.setInfo(busDaiyasService.getBusDaiyasByPk(form), form.getPage(), DispMode.INSERT_MODE);
     form.setLineDetailServiceDivision(lineDetailServiceDivision);
     for (BusDaiyasRegistedDto dto : form.getBusDaiyasRegistedList()) {
       dto.setDaiyaRevisionId(form.getDaiyaRevisionId());

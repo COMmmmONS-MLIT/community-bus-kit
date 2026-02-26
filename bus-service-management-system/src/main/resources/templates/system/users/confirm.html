@@ -95,13 +95,12 @@
                                 <label class="col-md-1 control-label"><span class="badge badge-danger require-txt">必須</span> <span class="form-item-name">利用区分</span></label>
                                 <div class="col-md-10">
                                     <div class="col-md-12 radio">
-                                        <input type="radio" name="usageDivision" id="usageDivision__0__" value="0"
-                                               th:checked="*{usageDivision eq 0}" disabled/>
-                                        <label class="inner-title" for="usageDivision__0__" >利用中</label>
-                                        <input type="radio" name="usageDivision" id="usageDivision__1__" value="1"
-                                               th:checked="*{usageDivision eq 1}" disabled/>
-                                        <label class="inner-title" for="usageDivision__1__">利用不可</label>
-                                        <p th:if="${#fields.hasErrors('usageDivision')}" th:errors="*{usageDivision}" class="text-danger" />
+                                        <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                            <input type="radio" name="viewUsageDivision" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                                                   th:checked="${flg.value} == (*{viewUsageDivision} != null ? *{viewUsageDivision} : '1')" th:classappend="${#fields.hasErrors('viewUsageDivision')} ? 'error' : ''" disabled />
+                                            <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}" disabled ></label>
+                                        </th:block>
+                                        <p th:if="${#fields.hasErrors('viewUsageDivision')}" th:errors="*{viewUsageDivision}" class="text-danger"></p>
                                     </div>
                                 </div>
                             </div>
@@ -128,24 +127,24 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="panel-footer">
-                        <div class="pull-right">
-                            <form class="form-horizontal" method="post" th:action="@{#}">
-                                <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
-                                <input type="hidden" th:field="*{page}">
-                                <a th:if="*{dispMode.value} eq '3'" th:href="'/system/users/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
-                                <button th:if="*{dispMode.value} neq '3'" th:formaction="@{/system/users/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
-                                <button th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/system/users/detail/register/}"
-                                        th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
-                            </form>
+                        <div class="panel-footer">
+                            <div class="pull-right">
+                                <form class="form-horizontal" method="post" th:action="@{#}">
+                                    <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
+                                    <input type="hidden" th:field="*{page}">
+                                    <a th:if="*{dispMode.value} eq '3'" th:href="'/system/users/' + *{page} + '/'" class=" btn btn-default" style="margin-right: 8px;">戻る</a>
+                                    <button type="button" th:if="*{dispMode.value} neq '3'" th:formaction="@{/system/users/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
+                                    <button type="button" th:if="*{dispMode.value} neq '3'" class="btn btn-primary pull-right double-click" th:formaction="@{/system/users/detail/register/}"
+                                            th:text="*{dispMode.value} neq '1' ? '登録' : '変更'">登録</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <th:block th:insert="~{common/script :: common_script}"></th:block>
     </div>
-    <th:block th:insert="~{common/script :: common_script}"></th:block>
     <!-- end: contents -->
 </body>
 </html>

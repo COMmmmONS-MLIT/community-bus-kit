@@ -81,6 +81,11 @@ public class MainService {
         List<CalendarInfoDto> calendarList =
             this.mainDao.getCalendarsById(sqlSession, busServiceDto);
 
+        // 便情報から運行カレンダーが取得できない場合、処理をスキップする。
+        if (ExObjectUtils.isBlank(calendarList)) {
+          continue;
+        }
+
         // 曜日指定可否区分
         Integer weekDesignatableFlag = calendarList.get(0).getWeekDesignatableFlag();
         // 運行カレンダー除外日設定データ

@@ -255,4 +255,13 @@ public interface LinesMapper {
   List<OperatingReportDaiyasRegisterDownLoadDto> getOperatingReportDaiyasRegisterForDownload(
       OperatingReportListsExcelForm form);
 
+
+  /**
+   * 路線の停留所件数取得
+   *
+   * @param rosenId 路線ID
+   * @return 路線停留所件数
+   */
+  Integer countBusStopLines(@Param("rosenId") Long rosenId);
+
 }

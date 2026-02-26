@@ -54,8 +54,8 @@
                                 <form class="form-horizontal" method="post" th:action="@{#}">
                                     <input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
                                     <input type="hidden" th:field="*{page}">
-                                    <button th:formaction="@{/planDaiya/chargeRevisions/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
-                                    <button class="btn btn-primary pull-right double-click" th:formaction="@{/planDaiya/chargeRevisions/detail/register/}">登録</button>
+                                    <button type="button" th:formaction="@{/planDaiya/chargeRevisions/detail/back/}" class="btn btn-default double-click" style="margin-right: 8px;">戻る</button>
+                                    <button type="button" class="btn btn-primary pull-right double-click" th:formaction="@{/planDaiya/chargeRevisions/detail/register/}">登録</button>
                                 </form>
                             </div>
                         </div>

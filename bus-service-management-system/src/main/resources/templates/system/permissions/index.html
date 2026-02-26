@@ -8,7 +8,8 @@
         <div class="page-content-wrap">
             <div class="row">
                 <div class="col-md-12">
-                    <form method="post" th:action="@{#}" class="form-horizontal" th:object="${permissionsSearchForm}">
+                    <form method="post" th:action="@{#}" class="form-horizontal" th:object="${permissionsSearchForm}"
+                          onkeydown="return event.key !== 'Enter';">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
@@ -44,7 +45,7 @@
                                 aria-hidden="true"></i>新規登録
                             </a>
                             <div style="display: flex;" class="pull-right">
-                                <button type="submit" style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/system/permissions/}">
+                                <button style="margin-left: 10px;" class="btn btn-primary btn-submit" th:formaction="@{/system/permissions/}">
                                     <i class="fa fa-search" aria-hidden="true"></i>検索
                                 </button>
                             </div>

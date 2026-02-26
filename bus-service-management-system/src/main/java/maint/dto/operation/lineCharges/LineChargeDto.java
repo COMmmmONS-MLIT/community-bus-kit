@@ -26,6 +26,9 @@ public class LineChargeDto extends BaseDto {
   /** 運賃改定ID */
   private Long chargeRevisionId;
 
+  /** 路線ID */
+  private Long rosenId;
+
   /** 路線名 */
   private String rosenName;
 
@@ -37,5 +40,8 @@ public class LineChargeDto extends BaseDto {
 
   /** 運賃改定名称 */
   private String revisionReason;
+
+  /** 路線の停留所の数 */
+  private Integer busStopCount;
 
 }

@@ -1,0 +1,12 @@
+function errorObjClear() {
+    // 表示になっているエラーを消去する
+    $('.panel-message').each(function() {
+        $(this).hide();
+    });
+    $('#rosenIdError').hide();
+    $('#rosenSelect').select2('destroy');
+    $('#rosenSelect').removeClass('error');
+    $('#rosenSelect').select2();
+    $('#processingDateStrError').hide();
+    $('#processingDateStr').removeClass('error');
+}

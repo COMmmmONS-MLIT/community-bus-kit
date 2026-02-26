@@ -1,12 +1,15 @@
 package maint.controller.baseInfo.agencies;
 
 import maint.controller.BaseController;
+import maint.enums.AccountDivision;
 import maint.enums.DispMode;
 import maint.enums.Menu;
 import maint.enums.UsageDivision;
+import maint.exception.PermissionException;
 import maint.form.agencies.AgenciesDetailForm;
 import maint.message.CommonMessage;
 import maint.service.baseInfo.AgenciesService;
+import maint.session.UserSession;
 import maint.utils.ExObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -77,6 +80,12 @@ public class AgenciesDetailController extends BaseController {
    */
   @GetMapping("/")
   public String newAgency(Model model, @ModelAttribute("displayForm") AgenciesDetailForm form) {
+    UserSession userSession = getUserSession();
+    String accountDivision = userSession.getAccountDivision();
+    // システム管理者ではないアカウントからのアクセスの場合、権限エラーの例外をスローする(URL直打ち対策)
+    if (!AccountDivision.SYSTEM_ADMIN.getValue().equals(accountDivision)) {
+      throw new PermissionException(NOW_MENU.getName() + "への権限がありません。");
+    }
 
     hasAccessPermission(NOW_MENU, true, false);
 

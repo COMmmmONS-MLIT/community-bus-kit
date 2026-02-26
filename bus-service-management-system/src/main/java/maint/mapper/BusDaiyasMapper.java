@@ -51,10 +51,10 @@ public interface BusDaiyasMapper {
   List<BusDaiyasOptionDto> getBusDaiyasOptionList(SearchBusDaiyasDto dto);
 
   /**
-   * 便ダイヤ登録ダウンロード用一覧取得
+   * 日毎便ダイヤ画面項目用 便名一覧取得
    *
-   * @param dto 日毎便ダイヤ一覧DTO
-   * @return 便DTOリスト
+   * @param dto 日毎便ダイヤ検索DTO
+   * @return 便の選択肢DTOリスト
    */
   List<BusServicesOptionDto> getBusServicesForSelectOption(SearchDailyBusDaiyasDto dto);
 

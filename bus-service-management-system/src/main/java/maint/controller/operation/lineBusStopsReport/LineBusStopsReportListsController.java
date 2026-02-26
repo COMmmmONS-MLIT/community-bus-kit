@@ -18,7 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -117,49 +116,114 @@ public class LineBusStopsReportListsController extends BaseController {
    * @param file           アップロードされたExcelファイル
    * @param uploadFileName 表示用のファイル名（画面に返す目的など）
    * @return 処理結果（画面遷移やJSONレスポンスなど）
-   * @throws IOException ファイル読み込みに失敗した場合に発生
    */
-  @Transactional
-  @PostMapping("/uploadExcel")
-  public Object uploadExcel(Model model, @Validated @ModelAttribute("lineBusStopsReportListsExcelForm") LineBusStopsReportListsExcelForm form,
-      BindingResult bindingResult, @RequestParam("excel_file") MultipartFile file, @RequestParam("uploadFileName") String uploadFileName) throws IOException {
-    // 権限チェック
-    hasAccessPermission(NOW_MENU, true, false);
+  @PostMapping(value = "/uploadExcel", produces = "application/json")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> uploadExcel(
+      Model model,
+      @Validated @ModelAttribute("lineBusStopsReportListsExcelForm") LineBusStopsReportListsExcelForm form,
+      BindingResult bindingResult,
+      @RequestParam("excel_file") MultipartFile file,
+      @RequestParam("uploadFileName") String uploadFileName) {
 
-    execCommonProc(model, this.NOW_MENU);
+    hasAccessPermission(NOW_MENU, true, false);
+    execCommonProc(model, NOW_MENU);
 
     if (bindingResult.hasErrors()) {
-      setErrorMsg(CommonMessage.ERROR_INPUT);
-      return INDEX_PAGE;
+      return badRequest(errorBody(List.of(getMessage(CommonMessage.ERROR_INPUT.getMessage()))));
     }
 
-    if (file == null || file.isEmpty()) {
-      setErrorMsg(getMessage("message.error.file.heck.required"));
-      return INDEX_PAGE;
+    if (ExObjectUtils.isBlank(file)) {
+      return badRequest(errorBody(List.of(getMessage("message.error.file.heck.required"))));
     }
 
+    if (!isExcelFile(file)) {
+      return badRequest(errorBody(List.of(getMessage("message.error.file.no.content.found"))));
+    }
+
+    try {
+      // ファイルアップロード処理
+      List<String> msgList = lineBusStopsReportListsService.processUploadExcel(file, uploadFileName);
+      if (msgList != null && !msgList.isEmpty()) {
+        return internalServerError(errorBody(msgList));
+      }
+      return ok(successBody());
+    } catch (Exception e) {
+      LOGGER.error("【停留所情報インポート】アップロード処理失敗", e);
+      return internalServerError(
+          errorBody(List.of(getMessage(CommonMessage.ERROR_REGISTER.getMessage()))));
+    }
+  }
+
+  /**
+   * JSONエラーレスポンス用のBody
+   *
+   * @param errors エラーメッセージ一覧
+   * @return 共通エラーレスポンスBody
+   */
+  private Map<String, Object> errorBody(List<String> errors) {
+    Map<String, Object> body = new HashMap<>();
+    body.put("success", false);
+    body.put("errors", (errors == null) ? List.of() : errors);
+    body.put("redirect", false);
+    return body;
+  }
+
+  /**
+   * JSON成功レスポンス用のBody
+   *
+   * @return 共通成功レスポンスBody
+   */
+  private Map<String, Object> successBody() {
+    Map<String, Object> body = new HashMap<>();
+    body.put("success", true);
+    body.put("message", "アップロードが成功しました。");
+    body.put("redirect", true);
+    return body;
+  }
+
+  /**
+   * アップロードファイル形式判定（.xlsx/.xlsかどうか）
+   *
+   * @param file アップロードファイル
+   * @return true：Excel形式、false：それ以外
+   */
+  private boolean isExcelFile(MultipartFile file) {
+    if (file == null) return false;
     String originalFilename = file.getOriginalFilename();
-    if (originalFilename == null || !(originalFilename.endsWith(".xlsx") || originalFilename.endsWith(".xls"))) {
-      setErrorMsg(getMessage("message.error.file.no.content.found"));
-      return INDEX_PAGE;
-    }
+    if (originalFilename == null) return false;
+    String name = originalFilename.toLowerCase(Locale.ROOT);
+    return name.endsWith(".xlsx") || name.endsWith(".xls");
+  }
 
-    // ファイルアップロード処理
-    List<String> msgList = lineBusStopsReportListsService.processUploadExcel(file, uploadFileName);
+  /**
+   * HTTP 200 OK のResponseEntity
+   *
+   * @param body JSONレスポンスBody
+   * @return 200 OKレスポンス
+   */
+  private ResponseEntity<Map<String, Object>> ok(Map<String, Object> body) {
+    return ResponseEntity.ok(body);
+  }
 
-    if (!msgList.isEmpty()) {
-      Map<String, Object> okBody = new HashMap<>();
-      okBody.put("success", false);
-      okBody.put("errors", msgList);
-      okBody.put("redirect", false); // エラー時はリダイレクト不要
-      return ResponseEntity.internalServerError().body(okBody);
-    }
+  /**
+   * エラーのResponseEntity（400 Bad Request エラー）
+   *
+   * @param body JSONレスポンスBody
+   * @return エラーレスポンス
+   */
+  private ResponseEntity<Map<String, Object>> badRequest(Map<String, Object> body) {
+    return ResponseEntity.badRequest().body(body);
+  }
 
-    Map<String, Object> okBody = new HashMap<>();
-    okBody.put("success", true);
-    okBody.put("message", "アップロードが成功しました。");
-    okBody.put("redirect", true);
-    return ResponseEntity.ok(okBody);
+  /**
+   * エラーのResponseEntity（500 サーバ側エラー）
+   *
+   * @param body JSONレスポンスBody
+   * @return エラーレスポンス
+   */
+  private ResponseEntity<Map<String, Object>> internalServerError(Map<String, Object> body) {
+    return ResponseEntity.status(500).body(body);
   }
 
 }

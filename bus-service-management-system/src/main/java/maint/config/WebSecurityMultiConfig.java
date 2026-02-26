@@ -1,5 +1,6 @@
 package maint.config;
 
+import maint.controller.TwoFactorAuthenticationFilter;
 import maint.handler.CustomAuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import jakarta.servlet.DispatcherType;
 import maint.handler.CustomAuthenticationFailureHandler;
 import maint.provider.CustomAuthenticationProvider;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.withDefaults;
 
 /**
@@ -48,9 +50,12 @@ public class WebSecurityMultiConfig {
 
     // 認証なしでのアクセス（CSRF有効)
     http.authorizeHttpRequests(
-        (authorizeHttpRequests) -> authorizeHttpRequests.requestMatchers("/css/**", "/fonts/**",
-            "/img/**", "/js/**", "/page/**", "/auth/login", "/auth/login/error",
+        (authorizeHttpRequests) -> authorizeHttpRequests.requestMatchers(
+            "/css/**", "/fonts/**", "/img/**", "/js/**", "/page/**",
+            "/auth/login", "/auth/login/error", "/auth/login/two-factor",
+            "/auth/login/check-auth-code", "/auth/login/resend-auth-code",
             "/auth/session-timeout", "/error/*").permitAll());
+
 
     // 認証なしでのアクセス以外は、認証後でないとアクセス出来ない設定
     http.authorizeHttpRequests(
@@ -70,6 +75,9 @@ public class WebSecurityMultiConfig {
         .invalidateHttpSession(true) // セッションを無効にする
         .permitAll()
     );
+
+    // 二要素認証前は認証を確定しない
+    http.addFilterBefore(new TwoFactorAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     // セッション切れの遷移先設定
     http.sessionManagement(

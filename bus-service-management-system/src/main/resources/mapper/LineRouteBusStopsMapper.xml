@@ -48,7 +48,7 @@
     <select id="getStopsOtherInfoList" resultType="maint.dto.integrate.gtfsReport.GtfsStopsOtherInfoDto">
         SELECT DISTINCT ON ("sp"."signpost_id")
                "bs"."bus_stop_code"              AS "busStopCode"
-             , "lrbs"."signpost_id"               AS "signpostId"
+             , "lrbs"."signpost_id"              AS "signpostId"
              , "sp"."bus_stop_id"                AS "busStopId"
              , "sp"."bus_stop_type"              AS "busStopType"
              , "sp"."latitude_longitude"         AS "latitudeLongitude"
@@ -66,17 +66,18 @@
           FROM "line_route_bus_stops"            AS "lrbs"
     INNER JOIN "line_routes"                     AS "lr"
             ON "lr"."del_flag"                    = 0
+           AND "lr"."available_flag"              = 1
            AND "lr"."line_route_id"               = "lrbs"."line_route_id"
            AND "lr"."rosen_id" IN
         <foreach collection="rosenIdList" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
     INNER JOIN "signposts"                       AS "sp"
-            ON  "sp"."del_flag"                   = 0
+            ON "sp"."del_flag"                    = 0
            AND "sp"."available_flag"              = 1
            AND "sp"."signpost_id"                 = "lrbs"."signpost_id"
     INNER JOIN "bus_stops"                       AS "bs"
-            ON  "bs"."del_flag"                   = 0
+            ON "bs"."del_flag"                    = 0
            AND "bs"."available_flag"              = 1
            AND "bs"."bus_stop_id"                 = "sp"."bus_stop_id"
          WHERE "lrbs"."del_flag"                  = 0

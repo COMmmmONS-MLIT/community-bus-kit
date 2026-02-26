@@ -118,7 +118,7 @@ public class ImportBusServicesController extends BaseController {
    * @param uploadFileName ファイル名
    */
   @Transactional
-  @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+  @PostMapping(value = "/uploadExcel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   public ResponseEntity<Map<String, Object>> register(
@@ -177,7 +177,7 @@ public class ImportBusServicesController extends BaseController {
       return ResponseEntity.badRequest().body(body);
 
     }
-    String successMsg = "検証が完了しました。";
+    String successMsg = "アップロードが成功しました。";
     session.setAttribute("successMessages", java.util.List.of(successMsg));
 
     Map<String, Object> okBody = new HashMap<>();

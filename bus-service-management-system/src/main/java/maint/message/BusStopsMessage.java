@@ -26,7 +26,12 @@ public enum BusStopsMessage {
       "validation.busStop.error.route.usingBusStopOutsideServicePeriod"),
   /** ERROR_LATITUDELONGITUDE_REQUIRED */
   ERROR_LATITUDELONGITUDE_REQUIRED("屋内設定時の緯度経度の入力チェックエラー",
-      "validation.busStop.error.latitudeLongitude.required");
+      "validation.busStop.error.latitudeLongitude.required"),
+  /** ERROR_BUS_STOP_CODE_DUPLE */
+  ERROR_BUS_STOP_CODE_DUPLE("停留所コード重複エラー", "validation.busStop.error.code.duple"),
+  /** ERROR_BUS_STOP_CODE_DUPLE */
+  ERROR_INPUT_BUS_STOP_CODE_DUPLE("入力停留所コード重複エラー",
+      "validation.busStop.error.input.code.duple");
 
   /** 概要 */
   private final String overview;

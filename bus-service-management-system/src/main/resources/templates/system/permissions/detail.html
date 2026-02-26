@@ -8,7 +8,8 @@
 		<div class="page-content-wrap">
 			<div class="row">
 				<div class="col-md-12">
-					<form id="form" method="post" class="form-horizontal" th:action="@{/system/permissions/detail/confirm/}">
+					<form id="form" method="post" class="form-horizontal" th:action="@{/system/permissions/detail/confirm/}"
+						  onkeydown="return event.key !== 'Enter';">
 						<input type="hidden" th:field="*{permRoleId}"/>
 						<input type="hidden" th:field="*{page}"/>
 						<input type="hidden" th:field="*{dispMode}" />
@@ -72,7 +73,8 @@
 								<input type="hidden" name="originSessionKey" th:value="*{sessionKey}">
 								<div class="pull-right">
 									<a th:href="@{'/system/permissions/' + *{page} + '/'}" class="btn btn-default">戻る</a>
-									<button class="btn btn-primary" onclick="makePermissionList();">確認</button>
+									<button type="button" class="btn btn-primary pull-right double-click"
+											onclick="makePermissionList();">確認</button>
 								</div>
 							</div>
 						</div>

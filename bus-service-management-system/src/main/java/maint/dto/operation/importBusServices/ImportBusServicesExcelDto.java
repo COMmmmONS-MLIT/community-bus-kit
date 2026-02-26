@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import maint.dto.BaseDto;
+import maint.utils.ExRegUtils;
 
 /**
  * 便ダイヤ登録 EXCEL Dto すべて文字列で保持し、バリデーションはアノテーションで実施する。
@@ -23,13 +24,13 @@ public class ImportBusServicesExcelDto extends BaseDto {
   private static final long serialVersionUID = -8347533418575928411L;
 
   /** 事業者ID（1～11桁の数値） */
-  @NotBlank(message = "{validation.agency.error.agencyId}")
-  @Pattern(regexp = "^\\d{1,11}$", message = "{validation.agency.error.agencyIdDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.businesscorpid.notblank}")
+  @Pattern(regexp = ExRegUtils.numeric1to11Reg, message = "{validation.busdaiyas.register.excel.businesscorpid.pattern}")
   private String businessCorpId;
 
   /** ダイヤ改正ID（1～11桁の数値） */
-  @NotBlank(message = "{validation.daiyaRevisions.error.daiyaRevisionId}")
-  @Pattern(regexp = "^\\d{1,11}$", message = "{validation.daiyaRevisions.error.daiyaRevisionIdDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.daiyarevisionid.notblank}")
+  @Pattern(regexp = ExRegUtils.numeric1to11Reg, message = "{validation.busdaiyas.register.excel.daiyarevisionid.pattern}")
   private String daiyaRevisionId;
 
   /** 路線名 */
@@ -48,74 +49,70 @@ public class ImportBusServicesExcelDto extends BaseDto {
   private String daiyaRevisionName;
 
   /** 便番号（必須/1～50文字） */
-  @NotBlank(message = "{validation.busServices.error.busServiceTripId}")
-  @Size(min = 1, max = 50, message = "{validation.busServices.error.busServiceTripIdDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.busservicetripid.notblank}")
+  @Size(min = 1, max = 50, message = "{validation.busdaiyas.register.excel.busservicetripid.size}")
   private String busServiceTripId;
 
   /** 便行先（表示用 headsign/最大50文字） */
-  @Size(max = 50, message = "{validation.busServices.error.busServiceTripHeadsign}")
+  @Size(max = 50, message = "{validation.busdaiyas.register.excel.busservicetripheadsign.size}")
   private String busServiceTripHeadsign;
 
   /** 便名称（最大50文字） */
-  @Size(max = 50, message = "{validation.busServices.error.busServiceName}")
+  @Size(max = 50, message = "{validation.busdaiyas.register.excel.busservicename.size}")
   private String busServiceName;
 
   /** 運行カレンダーID（1～11桁の数値） */
-  @NotBlank(message = "{validation.busServices.error.calendarId}")
-  @Pattern(regexp = "^\\d{1,11}$", message = "{validation.busServices.error.calendarIdDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.calendarid.notblank}")
+  @Pattern(regexp = ExRegUtils.numeric1to11Reg, message = "{validation.busdaiyas.register.excel.calendarid.pattern}")
   private String calendarId;
 
   /** 車いす利用区分（0～2） */
-  @Pattern(regexp = "^[0-2]?$", message = "{validation.busServices.error.wheelchairAccessibleTypeDigit}")
+  @Pattern(regexp = ExRegUtils.zeroToTwoOptionalReg, message = "{validation.busdaiyas.register.excel.wheelchairaccessibletype.pattern}")
   private String wheelchairAccessibleType;
 
   /** 自転車持ち込み区分（0～2） */
-  @Pattern(regexp = "^[0-2]?$", message = "{validation.busServices.error.bikesAllowedTypeDigit}")
+  @Pattern(regexp = ExRegUtils.zeroToTwoOptionalReg, message = "{validation.busdaiyas.register.excel.bikesallowedtype.pattern}")
   private String bikesAllowedType;
 
   /** 便情報（最大50文字） */
-  @Size(max = 50, message = "{validation.busServices.error.busServiceTripDescDigit}")
+  @Size(max = 50, message = "{validation.busdaiyas.register.excel.busservicetripdesc.size}")
   private String busServiceTripDesc;
 
   /** 便記号（最大50文字） */
-  @Size(max = 50, message = "{validation.busServices.error.busServiceTripDescSymbolDigit}")
+  @Size(max = 50, message = "{validation.busdaiyas.register.excel.busservicetripdescsymbol.size}")
   private String busServiceTripDescSymbol;
 
   /** 営業所ID（1～11桁の数値/任意） */
-  @Pattern(regexp = "^(\\d{1,11})?$", message = "{validation.busServices.error.officeIdDigit}")
+  @Pattern(regexp = ExRegUtils.optionalNumeric1to11Reg, message = "{validation.busdaiyas.register.excel.officeId.pattern}")
   private String officeId;
 
   /** 仕業番号（最大20文字） */
-  @Size(max = 20, message = "{validation.busServices.error.workNumberDigit}")
+  @Size(max = 20, message = "{validation.busdaiyas.register.excel.worknumber.size}")
   private String workNumber;
 
   /** 便結合区分（最大20文字） */
-  @Size(max = 20, message = "{validation.busServices.error.blockIdDigit}")
+  @Size(max = 20, message = "{validation.busdaiyas.register.excel.blockid.size}")
   private String blockId;
 
   /** 運行順序（数値文字列を想定） */
   private String stopSequence;
 
   /** 系統停留所ID（1～11桁の数値） */
-  @NotBlank(message = "{validation.lineRouteBusStops.error.lineRouteBusStopId}")
-  @Pattern(regexp = "^\\d{1,11}$", message = "{validation.lineRouteBusStops.error.lineRouteBusStopIdDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.lineroutebusstopid.notblank}")
+  @Pattern(regexp = ExRegUtils.numeric1to11Reg, message = "{validation.busdaiyas.register.excel.lineroutebusstopid.pattern}")
   private String lineRouteBusStopId;
 
   /** 系統停留所名 */
   private String signpostName;
 
   /** 到着時刻（HHMM/4桁） */
-  @NotBlank(message = "{validation.common.error.busStopArrivalTime}")
-  @Size(min = 4, max = 4, message = "{validation.common.error.busStopArrivalTimeSize}")
-  @Pattern(regexp = "^([01]\\d|2[0-3])[0-5]\\d$", message = "{validation.common.error.busStopArrivalTimeDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.busstoparrivaltime.notblank}")
+  @Pattern(regexp = ExRegUtils.timeHHmmReg, message = "{validation.busdaiyas.register.excel.busstoparrivaltime.pattern}")
   private String busStopArrivalTime;
 
   /** 出発時刻（HHMM/4桁） */
-  @NotBlank(message = "{validation.common.error.busStopDepartureTime}")
-  @Size(min = 4, max = 4, message = "{validation.common.error.busStopDepartureTimeSize}")
-  @Pattern(regexp = "^([01]\\d|2[0-3])[0-5]\\d$", message = "{validation.common.error.busStopDepartureTimeDigit}")
+  @NotBlank(message = "{validation.busdaiyas.register.excel.busstopdeparturetime.notblank}")
+  @Pattern(regexp = ExRegUtils.timeHHmmReg, message = "{validation.busdaiyas.register.excel.busstopdeparturetime.pattern}")
   private String busStopDepartureTime;
-
-
 }
 

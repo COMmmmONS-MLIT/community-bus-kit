@@ -36,10 +36,6 @@ public enum Menu {
   OP_COMPANY("運行会社管理", "02", "BASEINFO002", "BASEINFO000", "/baseInfo/operatingCompanies/?init=1", BASE_INFO, "UI005"),
   /** 営業所管理 */
   OFFICE("営業所管理", "02", "BASEINFO003", "BASEINFO000", "/baseInfo/offices/?init=1", BASE_INFO, "UI006"),
-//  /** 停留所管理 */
-//  STOP("停留所管理", "02", "BASEINFO004", "BASEINFO000", "/baseInfo/busStops/?init=1", BASE_INFO, "UI008"),
-//  /** 標柱管理 */
-//  MARKER("標柱管理", "02", "BASEINFO005", "BASEINFO000", "/baseInfo/signposts/?init=1", BASE_INFO, "UI009"),
   /** 停留所・標柱管理 */
   STOP_MARKER("停留所・標柱管理", "02", "BASEINFO006", "BASEINFO000", "/baseInfo/busStopSignposts/?init=1", BASE_INFO, "UI050"),
 
@@ -118,7 +114,7 @@ public enum Menu {
   /** 外部システム連携 */
   INTEGRATE("外部システム連携", "01", "INTEGRATE000", null, null, null, "null"),
   /** GTFS-Schedule */
-  GTFS("GTFS-Schedule", "02", "INTEGRATE001", "INTEGRATE000", "/integrate/gtfsReport/?init=1", INTEGRATE, "UI022"),
+  GTFS("GTFS Schedule", "02", "INTEGRATE001", "INTEGRATE000", "/integrate/gtfsReport/?init=1", INTEGRATE, "UI022"),
   ;
 
   /** 名称 */

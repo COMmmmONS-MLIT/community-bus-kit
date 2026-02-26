@@ -9,7 +9,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="panel panel-default">
-                        <form method="post" th:action="@{#}" class="form-horizontal">
+                        <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
                                     <strong>アカウント一覧</strong>
@@ -38,14 +38,13 @@
                                             <label class="col-md-1 control-label"><span class="badge badge-danger"></span> <span class="form-item-name">利用区分</span></label>
                                             <div class="col-md-9">
                                                 <div class="radio col-md-12">
-                                                    <input type="radio" name="searchUsageDivision" id="usageDivision__0__" value="0"
-                                                           th:checked="*{searchUsageDivision eq 0}" />
-                                                    <label class="inner-title" for="usageDivision__0__" >利用中</label>
-                                                    <input type="radio" name="searchUsageDivision" id="usageDivision__1__" value="1"
-                                                           th:checked="*{searchUsageDivision eq 1}" />
-                                                    <label class="inner-title" for="usageDivision__1__">利用不可</label>
+                                                    <th:block th:each="flg : ${T(maint.enums.UsageDivision).values()}">
+                                                        <input type="radio" name="viewUsageDivision" th:id="avFlg__${flg.value}__" th:value="${flg.value}"
+                                                               th:checked="${flg.value} == (*{viewUsageDivision} != null ? *{viewUsageDivision} : '1')" th:classappend="${#fields.hasErrors('viewUsageDivision')} ? 'error' : ''"/>
+                                                        <label class="inner-title" th:for="avFlg__${flg.value}__" th:text="${flg.text}"></label>
+                                                    </th:block>
                                                 </div>
-                                                <span th:if="${#fields.hasErrors('searchUsageDivision')}" th:errors="*{searchUsageDivision}" class="text-danger" ></span>
+                                                <span th:if="${#fields.hasErrors('viewUsageDivision')}" th:errors="*{viewUsageDivision}" class="text-danger" ></span>
                                             </div>
                                         </div>
                                     </div>

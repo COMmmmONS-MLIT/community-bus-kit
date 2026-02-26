@@ -8,6 +8,7 @@ import java.util.Map;
 
 import maint.dto.ListPager;
 import maint.dto.operation.lineCharges.LineChargeDetailDto;
+import maint.dto.operation.lineCharges.LineChargeDto;
 import maint.dto.operation.lineCharges.LineChargeIdDivisionDto;
 import maint.dto.operation.lineCharges.SearchLineChargesDto;
 import maint.entity.LineChargeDetailsEntity;
@@ -20,6 +21,7 @@ import maint.form.lineCharges.LineChargeSearchForm;
 import maint.mapper.LineChargeDetailsMapper;
 import maint.mapper.LineChargesMapper;
 
+import maint.mapper.LinesMapper;
 import maint.service.BaseService;
 import maint.utils.ExObjectUtils;
 import java.util.ArrayList;
@@ -43,6 +45,10 @@ public class LineChargesService extends BaseService {
   @Autowired
   LineChargeDetailsMapper lineChargeDetailsMapper;
 
+  /** 路線MAPPER */
+  @Autowired
+  LinesMapper linesMapper;
+
   /**
    * 運賃一覧取得
    *
@@ -54,7 +60,15 @@ public class LineChargesService extends BaseService {
         new SearchLineChargesDto(form, pager.getStartIndex(), getUserSession());
     pager.setTotalListSize(lineChargesMapper.countLineChargesBySearch(dto));
     if (pager.getTotalListSize().compareTo(0L) > 0) {
-      pager.setList(lineChargesMapper.getLineChargesBySearch(dto));
+      // 運賃一覧取得
+      List<LineChargeDto> list = lineChargesMapper.getLineChargesBySearch(dto);
+
+      // 一覧に紐づく停留所の数取得
+      for (LineChargeDto dtoLineCharge : list) {
+        Integer count = linesMapper.countBusStopLines(dtoLineCharge.getRosenId());
+        dtoLineCharge.setBusStopCount(count);
+      }
+      pager.setList(list);
     }
   }
 

@@ -38,10 +38,10 @@
             AND "bs"."bus_stop_code"          = #{busStopCode}
         </if>
         <if test="serviceStartDate != null and serviceStartDate != ''">
-            AND "bs"."service_start_date" &lt;= CAST(#{serviceEndDate} AS date)
+            AND "bs"."service_end_date"    &gt;= CAST(#{serviceStartDate} AS date)
         </if>
         <if test="serviceEndDate != null and serviceEndDate != ''">
-            AND "bs"."service_end_date"    &gt;= CAST(#{serviceStartDate} AS date)
+            AND "bs"."service_start_date" &lt;= CAST(#{serviceEndDate} AS date)
         </if>
         <if test="searchUsageDivision != null">
             AND "bs"."available_flag"          = #{searchUsageDivision}
@@ -118,67 +118,6 @@
         ORDER BY "b"."bus_stop_id"
     </select>
 
-    <insert id="registerBusStop" useGeneratedKeys="true" keyProperty="busStopId">
-        INSERT INTO "bus_stops" (
-        "business_corp_id"
-        , "bus_stop_code"
-        , "service_start_date"
-        , "service_end_date"
-        , "bus_stop_name"
-        , "bus_stop_kana_name"
-        , "bus_stop_en_name"
-        , "bus_stop_url"
-        , "bus_stop_type"
-        , "available_flag"
-        <if test="latitudeLongitude != null and latitudeLongitude != ''">
-            , "latitude_longitude"
-        </if>
-        , "indoor_bus_terminal_flag"
-        <include refid="maint.mapper.CommonMapper.insertCommonItemColumns"/>
-        )
-        VALUES (
-        #{session.businessCorpId}
-        , #{busStopCode}
-        , CAST(#{serviceStartDate} AS date)
-        , CAST(#{serviceEndDate} AS date)
-        , #{busStopName}
-        , #{busStopKanaName}
-        , #{busStopEnName}
-        , #{busStopUrl}
-        , #{busStopType}
-        , #{availableFlag}
-        <if test="latitudeLongitude != null and latitudeLongitude != ''">
-            , #{latitudeLongitude}
-        </if>
-        , #{indoorBusTerminalFlag}
-        <include refid="maint.mapper.CommonMapper.insertCommonValues"/>
-        )
-    </insert>
-
-    <update id="updateBusStop">
-        UPDATE "bus_stops"
-        SET "bus_stop_code"      = #{busStopCode}
-        , "service_start_date" = CAST(#{serviceStartDate} AS date)
-        , "service_end_date"   = CAST(#{serviceEndDate} AS date)
-        , "bus_stop_name"      = #{busStopName}
-        , "bus_stop_kana_name" = #{busStopKanaName}
-        , "bus_stop_en_name"   = #{busStopEnName}
-        , "bus_stop_url"       = #{busStopUrl}
-        , "available_flag"     = #{availableFlag}
-        <choose>
-            <when test="latitudeLongitude != null and latitudeLongitude != ''">
-                , "latitude_longitude" = #{latitudeLongitude}
-            </when>
-            <otherwise>
-                , "latitude_longitude" = NULL
-            </otherwise>
-        </choose>
-        , "indoor_bus_terminal_flag" = #{indoorBusTerminalFlag}
-        <include refid="maint.mapper.CommonMapper.updateCommon"/>
-        WHERE "del_flag"            = 0
-        AND "bus_stop_id"         = #{busStopId}
-    </update>
-
     <select id="getBusStopListByServiceDate" resultType="BusStopsEntity">
         SELECT "bs"."bus_stop_id"
         , "bs"."bus_stop_code"
@@ -206,12 +145,17 @@
 
     <select id="countDuplicateStopCode" parameterType="map" resultType="int">
         SELECT COUNT(*)
-        FROM "bus_stops" AS "s"
-        WHERE "s"."del_flag"               = 0
-          AND "s"."available_flag"         = 1
-          AND "s"."service_start_date" &lt;= CAST(#{excelEnd} AS DATE)
-          AND "s"."service_end_date"   &gt;= CAST(#{excelStart} AS DATE)
-          AND "s"."bus_stop_code"          = #{stopCode}
+          FROM "bus_stops" AS "s"
+          JOIN "agencies" "a"
+            ON "a"."del_flag"               = 0
+           AND "a"."available_flag"         = 1
+           AND "a"."business_corp_id"       = "s"."business_corp_id"
+         WHERE "s"."del_flag"               = 0
+           AND "s"."available_flag"         = 1
+           AND "s"."business_corp_id"       = #{businessCorpId}
+           AND "s"."service_start_date" &lt;= CAST(#{excelEnd} AS DATE)
+           AND "s"."service_end_date"   &gt;= CAST(#{excelStart} AS DATE)
+           AND "s"."bus_stop_code"          = #{stopCode}
     </select>
 
     <select id="getBusStopSeqSequence" resultType="int">

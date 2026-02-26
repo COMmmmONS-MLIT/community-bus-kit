@@ -8,7 +8,8 @@
     <div class="page-content-wrap">
         <div class="row">
             <div class="col-md-12">
-                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${busDaiyasSearchForm}">
+                <form method="post" th:action="@{#}" class="form-horizontal" th:object="${busDaiyasSearchForm}"
+                      onkeydown="return event.key !== 'Enter';">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <h3 class="panel-title">
@@ -105,7 +106,7 @@
                                         <input type="hidden" name="lineRouteId" th:value="${busDaiyas.lineRouteId}" />
                                         <input type="hidden" name="daiyaRevisionId" th:value="${busDaiyas.daiyaRevisionId}" />
                                         <input type="hidden" name="lineDetailServiceDivision" th:value="${busDaiyas.lineDetailServiceDivision}" />
-                                        <input type="hidden" name="page" th:value="*{page}" />
+                                        <input type="hidden" name="page" th:value="${busDaiyasSearchForm.page}" />
                                         <button th:if="${writeFlag}" type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/operation/busDaiyas/detail/}">変更</button>
                                         <button th:if="!${writeFlag}" type="submit" class="btn btn-info btn-sm double-click" th:formaction="@{/operation/busDaiyas/detail/content/}">確認</button>
                                     </form>

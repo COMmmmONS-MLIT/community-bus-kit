@@ -9,7 +9,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="panel panel-default">
-                        <form method="post" th:action="@{#}" class="form-horizontal">
+                        <form method="post" th:action="@{#}" class="form-horizontal" onkeydown="return event.key !== 'Enter';">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
                                     <strong>収入情報インポート</strong>
@@ -113,7 +113,7 @@
                                         <td th:if="${writeFlag}">
                                                 <input type="hidden" name="dailyBusDaiyaId" th:value="*{dailyBusDaiyaId}" />
                                                 <input type="hidden" name="incomeInfoId" th:value="*{incomeInfoId}" />
-                                                <button type="submit" class="btn btn-info btn-sm double-click"
+                                                <button type="button" class="btn btn-info btn-sm double-click"
                                                         th:text="*{incomeInfoId} == null ? '登録' : '変更'">登録</button>
                                         </td>
                                     </tr>

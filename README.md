@@ -49,7 +49,7 @@
 
 ### ②運行管理
 - 車両に搭載されたGPSトラッカーなどの外部デバイスから車両動態情報を取得し、運行中の車両位置を把握することができます。
-- 取得した動態情報は、後続の実績集計やGTFS-RT出力にも活用されます。
+- 取得した動態情報は、後続の実績集計やGTFS Realtime出力にも活用されます。
 <img width="859" height="675" alt="image" src="https://github.com/user-attachments/assets/e5aa9828-a7a4-4912-99ef-2ae296204b2a" />
 
 
@@ -59,7 +59,7 @@
 <img width="860" height="390" alt="image" src="https://github.com/user-attachments/assets/c4180298-5e13-4f4b-9fe4-dc566c8a361d" />
 
 ### ④GTFS出力
-- 運行計画で作成した静的データをGTFS Scheduleとして、また、運行管理で取得した動態情報をGTFS Realtimeとしてエクスポートすることができます。
+- 運行計画で作成した静的データをGTFS Scheduleとして、また、運行管理で取得した動態情報および日毎の運休情報をGTFS Realtimeの「VehiclePosition」「TripUpdate」「Alert」として配信することができます。
 <img width="866" height="389" alt="image" src="https://github.com/user-attachments/assets/65d70100-8b08-418d-9ea8-94d67f8c9107" />
 
 ### ⑤データインポート機能
@@ -106,12 +106,12 @@
 
 本リポジトリ（community-bus-kit）直下には、以下のサブプロジェクト／コンポーネントが配置されています。
 
-| フォルダ名 | 詳細 |
-|---|---|
+| フォルダ名 | 詳細                                     |
+|---|----------------------------------------|
 | bus-service-management-system | Webアプリケーション（運行計画管理・運行管理・実績集計・GTFS出力 等） |
-| daily-bus-daiya-batch | 日毎便ダイヤ作成バッチ |
-| output-gtfs-rt-batch | GTFS-RT出力バッチ |
-| oss-bus-gps-tracker-import-lambda | GPSトラッカー取込Lambda |
+| daily-bus-daiya-batch | 日毎便ダイヤ作成バッチ                            |
+| output-gtfs-rt-batch | GTFS-Realtime出力バッチ                     |
+| oss-bus-gps-tracker-import-lambda | GPSトラッカー取込Lambda                       |
 
 ### 7.1 Webアプリケーション（bus-service-management-system）
 
@@ -177,7 +177,7 @@
 | src/main/java/jp/co/bus/batch/Main.java | バッチ実行エントリポイント |
 | src/main/resources/ | リソース一式（設定・Mapper等） |
 
-### 7.3 GTFS-RT出力バッチ（output-gtfs-rt-batch）
+### 7.3 GTFS-Realtime出力バッチ（output-gtfs-rt-batch）
 
 | フォルダ名 | 詳細 |
 |---|---|

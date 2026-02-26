@@ -5,6 +5,7 @@ import maint.enums.FlagValueEnums;
 import maint.enums.Menu;
 import maint.enums.ReportType;
 import maint.form.report.ReportListsExcelForm;
+import maint.message.CommonMessage;
 import maint.service.operation.LinesService;
 import maint.service.export.ReportListsService;
 import maint.service.export.ReportListExcelDownloadService;
@@ -114,9 +115,7 @@ public class ListsController extends BaseController {
     // 入力チェック
     if (bindingResult.hasErrors()) {
       // 出力対象ごとエラーメッセージ表示
-      if (!(form.getReportType() == null || form.getReportType().isEmpty())) {
-        setExcelDownloadErrorMessage(ReportType.getTextByValue(form.getReportType()));
-      }
+      setErrorMsg(CommonMessage.ERROR_INPUT);
       return INDEX_PAGE;
     }
     try {
