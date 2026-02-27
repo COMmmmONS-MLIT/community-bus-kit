@@ -1,7 +1,9 @@
 -- 初期データ作成クエリ
 -- 本システムに必要なマスタデータと管理者ユーザを作成します
--- ID  : admin+0@willsmart.co.jp
--- Pass: j87jeE9W
+-- 管理者ユーザのIDは下記の DEFAULT_USER_ID が設定されますので、適宜修正してから実行してください。
+-- 初期パスワード：j87jeE9W
+
+\set DEFAULT_USER_ID 'xxx@xxx'
 
 -- code_master
 INSERT INTO public.code_master(del_flag,code_name,main_code,sub_code,code_key,code_value,code_text,created_user,created_at,updated_user,updated_at) VALUES 
@@ -99,5 +101,5 @@ INSERT INTO public.agencies(del_flag,name,disp_name,kana_name,en_name,department
 
 -- users
 INSERT INTO public.users(del_flag,last_name,first_name,retirement_flag,retirement_date,email,password,password_changed_flag,account_division,business_corp_id,operating_company_id,perm_role_id,auth_failure_count,two_factor_auth_datetime,account_lock_at,last_login_at,created_user,created_at,updated_user,updated_at) VALUES 
-    (0,'コミュニティバス','OSS開発',0,NULL,'admin+0@willsmart.co.jp','8a5386e49deb3aa6fb5beb9c012f0915f2bfd358cd9d0364dc543b5a48b3b54a',0,'01',1,NULL,1,0,TIMESTAMP '9999-12-31 00:00:00.000',NULL,NULL,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP);
+    (0,'コミュニティバス','OSS開発',0,NULL,:'DEFAULT_USER_ID','8a5386e49deb3aa6fb5beb9c012f0915f2bfd358cd9d0364dc543b5a48b3b54a',0,'01',1,NULL,1,0,TIMESTAMP '9999-12-31 00:00:00.000',NULL,NULL,'SYSTEM',CURRENT_TIMESTAMP,'SYSTEM',CURRENT_TIMESTAMP);
 
