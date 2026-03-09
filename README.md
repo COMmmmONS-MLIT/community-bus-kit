@@ -35,7 +35,7 @@
 
 ## 3. 利用手順
 
-本システムの[構築手順](./devMan.md)及び利用手順については[利用マニュアル](https://www.test2.go.jp/)を参照してください。
+本システムの[構築手順](./devMan.md)及び利用手順については[利用マニュアル](https://www.mlit.go.jp/commmmons/document/009/commmmons_doc_009_ver01.pdf)を参照してください。
 
 ---
 
@@ -244,5 +244,5 @@
 ## 10. 参考資料
 - コミュニティバスキット開発プロジェクト　プロジェクトレポート
     - #1　https://www.mlit.go.jp/commmmons/projectreport/11_01/
-
+    - #2　https://www.mlit.go.jp/commmmons/projectreport/11_02/
 - 技術検証レポート: （2026年3月公開予定）
