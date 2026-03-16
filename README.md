@@ -6,7 +6,7 @@
 
 | 更新日時 | リリース | 更新内容 |
 |---|---|---|
-| 2026/2/27 | 1st Release | 初版リリース |
+| 2026/03/09 | 1st Release | 初版リリース |
 
 ---
 
@@ -29,7 +29,7 @@
 本システムは、国土交通省が推進する公共交通データ標準化の取組と整合する形で、[GTFS-JP](https://www.mlit.go.jp/sogoseisaku/transport/sosei_transport_tk_000067.html)に対応したデータ出力機能を備えています。
 また、自治体ごとに異なる申請様式や運用形態に柔軟に対応できるよう、OSSとして公開し、改変・拡張が可能な構成としています。
 
-本システムの技術的な詳細については、技術検証レポート（2026年3月公開予定）を参照してください。
+本システムの詳細は、技術検証レポート（2026年3月公開予定）を参照してください。
 
 ---
 
@@ -242,7 +242,9 @@
 ---
 
 ## 10. 参考資料
-- コミュニティバスキット開発プロジェクト　プロジェクトレポート
-    - #1　https://www.mlit.go.jp/commmmons/projectreport/11_01/
-    - #2　https://www.mlit.go.jp/commmmons/projectreport/11_02/
-- 技術検証レポート: （2026年3月公開予定）
+- コミュニティバスキット開発プロジェクト プロジェクトレポート
+  - #1　https://www.mlit.go.jp/commmmons/projectreport/11_01/
+  - #2　https://www.mlit.go.jp/commmmons/projectreport/11_02/
+- コミュニティバス運行支援キット 技術検証レポート: （2026年3月公開予定）
+- COMmmmONS Webサイト
+  - https://www.mlit.go.jp/commmmons/
