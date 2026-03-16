@@ -35,7 +35,9 @@
 
 ## 3. 利用手順
 
-本システムの[構築手順](./devMan.md)及び利用手順については[利用マニュアル](https://www.mlit.go.jp/commmmons/document/009/commmmons_doc_009_ver01.pdf)を参照してください。
+本システムの環境構築手順は[環境構築マニュアル](./devMan.md)、利用手順は[利用マニュアル](https://www.mlit.go.jp/commmmons/document/009/commmmons_doc_009_ver01.pdf)を参照してください。
+
+
 
 ---
 
