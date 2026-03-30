@@ -9,6 +9,7 @@
 - 本番利用時は、構成・インスタンスタイプ・ネットワーク設計・認証方式を
   **利用者自身の要件に応じて必ず見直してください**
 - 本ドキュメントは **OSS（MIT License）として公開することを前提** にしています
+- 本ドキュメントは **「AWS Certified Cloud Practitioner」相当の知識がある方** を対象としています。
 
 ---
 
@@ -70,7 +71,7 @@ AmazonSSMManagedInstanceCore
 
 ## 1.4 ストレージ
 
-### Amazon S3（成果物保存）
+### Amazon S3（GTFS Realtime公開用）
 
 | 項目 | 設定 |
 |---|---|
@@ -205,6 +206,16 @@ sudo tar xvf apache-maven-3.x.x-bin.tar.gz
 sudo ln -s apache-maven-3.x.x maven
 ```
 
+必要に応じてPATHに追加します
+```bash
+vi /etc/profile.d/maven.sh
+# ---------- maven.sh の内容 -------------------
+export M2_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+# ---------------------------------------------
+
+source /etc/profile.d/maven.sh
+```
 ---
 
 ## 2.4 Git
@@ -372,11 +383,12 @@ sudo systemctl enable postgresql
 ### テーブル・初期データ作成sqlの実行
 
 SQLスクリプトファイル `create_table.sql` と `insert_default_data.sql` は `src/main/resources/backup` フォルダに配置されています。
-これらのファイルを対象に実行してください。
+これらのファイルを対象に実行してください。<br>
+※ `insert_default_data.sql` の実行前にファイル内の DEFAULT_USER_ID を適宜修正してください。
 
 ※ psql のプロンプト上で実行してください。
 
-DB作成（pom確認）：
+DB作成（pom.xml確認）：
 ```bash
 CREATE DATABASE mlit_community_bus_kit;
 ```
@@ -390,10 +402,10 @@ CREATE DATABASE mlit_community_bus_kit;
 - postgresql.conf：
 ```
 listen_addresses = '*'
+password_encryption = scram-sha-256
 ```
-- password_encryption = scram-sha-256
+ 
 - pg_hba.conf：
-
 ```
 host all app_user 10.0.0.0/24 scram-sha-256
 ```
@@ -411,13 +423,27 @@ sudo systemctl restart postgresql
 
 ## 4.3 アプリケーション設定
 
+### ソースファイルの取得（例）
+```bash
+# 初回
+git clone [REPOSITORY_URL]
+
+# 2回目以降
+git checkout [BRANCH_NAME]
+git pull origin [BRANCH_NAME]
+```
+**補足**
+- `[REPOSITORY_URL]`：ソースコード取得元リポジトリのクローンURL
+- `[BRANCH_NAME]`：ソースコード取得対象のブランチ名
+- Gitリポジトリを参照するための認証設定等は利用環境に合わせて適宜実施してください
+
 ### ソースファイルのコンパイル
 ```bash
 cd [SRC_BASE]
 sudo [MAVEN_PATH] clean package -P [PROFILE_ID]
 ```
 **補足**
-- `[SRC_BASE]`：ソースコード配置ディレクトリ
+- `[SRC_BASE]`：ソースコード配置ディレクトリ。git clone等で事前に取得しておきます
 - `[MAVEN_PATH]`：maven 配置ディレクトリ
 - `[PROFILE_ID]`：`pom.xml` に定義されている Maven Profile ID
 - 環境別（dev / stg / prod）で Profile を切り替えることを推奨します
@@ -449,6 +475,10 @@ sudo mkdir -p /opt/backup/log
 
 ※ 作成したデータベース名に合わせて、各スクリプト内の {DB_NAME} を修正してください。
 
+バックアップ実行例：
+```bash
+sudo bash output-db-backup-batch.sh
+```
 dump生成例：
 ```bash
 dumpfile_20260205190103.dump
@@ -484,13 +514,27 @@ cat /opt/backup/log/restore-db-batch_YYYYMMDD.log
 
 ## 5.1 アプリケーション設定
 
+### ソースファイルの取得（例）
+```bash
+# 初回
+git clone [REPOSITORY_URL]
+
+# 2回目以降
+git checkout [BRANCH_NAME]
+git pull origin [BRANCH_NAME]
+```
+**補足**
+- `[REPOSITORY_URL]`：ソースコード取得元リポジトリのクローンURL
+- `[BRANCH_NAME]`：ソースコード取得対象のブランチ名
+- Gitリポジトリを参照するための認証設定等は利用環境に合わせて適宜実施してください
+
 ### ソースファイルのコンパイル
 ```bash
 cd [SRC_BASE]
 sudo [MAVEN_PATH] clean package -P [PROFILE_ID]
 ```
 **補足**
-- `[SRC_BASE]`：ソースコード配置ディレクトリ
+- `[SRC_BASE]`：ソースコード配置ディレクトリ。git clone等で事前に取得しておきます
 - `[MAVEN_PATH]`：maven 配置ディレクトリ
 - `[PROFILE_ID]`：`pom.xml` に定義されている Maven Profile ID
 - 環境別（dev / stg / prod）で Profile を切り替えることを推奨します
@@ -512,7 +556,7 @@ sudo java -jar target/output-gtfs-rt-batch-jar-with-dependencies.jar --spring.pr
 
 - ビルド成功後は、各バッチ処理を実行して成果物を確認してください。
 
-    GTFS-RT作成バッチの場合：
+    GTFS Realtime作成バッチの場合：
 
      ・ S3バケット内に事業者IDごとのフォルダが作成されているか確認
 
@@ -525,6 +569,9 @@ sudo java -jar target/output-gtfs-rt-batch-jar-with-dependencies.jar --spring.pr
      ・ 日毎便ダイヤのテーブルを確認し、更新日が今日のデータが正しく作成されているか確認
 
 - cronでの自動化を推奨します。
+```bash
+crontab -e
+```
 
 ---
 
