@@ -63,6 +63,7 @@
              , "sp"."signpost_sub_name"          AS "signpostSubName"
              , "sp"."signpost_url"               AS "signpostUrl"
              , "sp"."wheelchair_accessible_type" AS "wheelchairAccessibleType"
+             , "bs"."indoor_bus_terminal_flag"   AS "indoorBusTerminalFlag"
           FROM "line_route_bus_stops"            AS "lrbs"
     INNER JOIN "line_routes"                     AS "lr"
             ON "lr"."del_flag"                    = 0

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import maint.enums.IndoorDivision;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -74,6 +75,9 @@ public class GtfsStopsOtherInfoDto extends GtfsBaseDto {
   /** 停留所コード */
   private String busStopCode;
 
+  /** 屋内バスターミナルフラグ */
+  private Integer indoorBusTerminalFlag;
+
   /**
    * 緯度を取得する
    * @return 緯度
@@ -88,6 +92,16 @@ public class GtfsStopsOtherInfoDto extends GtfsBaseDto {
    */
   public Double getLongitude() {
     return Double.valueOf(latitudeLongitude.split(",")[1]);
+  }
+
+  /**
+   * 親停留所情報を取得する
+   * 屋内バスターミナルフラグが「1：屋内」の場合のみ停留所コードを返却する
+   *
+   * @return 親停留所情報（屋内でない場合は空文字）
+   */
+  public String getParentStation() {
+    return IndoorDivision.INDOOR.getValue().equals(indoorBusTerminalFlag) ? busStopCode : "";
   }
 
   public record StopRow(
@@ -185,7 +199,7 @@ public class GtfsStopsOtherInfoDto extends GtfsBaseDto {
           stopId,                                           // zoneId
           nz(m.getSignpostUrl()),                           // stopUrl
           nz(m.getBusStopType()),                           // locationType
-          nz(m.getBusStopCode()),                           // parentStation
+          nz(m.getParentStation()),                         // parentStation
           "",                                               // stopTimezone
           nz(m.getWheelchairAccessibleType()),              // wheelchairBoarding
           nz(m.getPlatformCode())                           // platformCode
